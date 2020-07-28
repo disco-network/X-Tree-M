@@ -12,11 +12,11 @@
 // Example :
 //   http://datokrat.sirius.uberspace.de/xtreem/getNodeInfos.php?ids[]=1
 //        Object { 
-//          .name: "Was nützt effektiv dem Weltfrieden?", 
+//          .name: "Was nï¿½tzt effektiv dem Weltfrieden?", 
 //          .content: "Eine sehr schwierige Frage, die geeignete Werkzeuge braucht, um konstruktiv diskutiert zu werden.", 
-//          .author: {…}, 
+//          .author: {ï¿½}, 
 //          .type: "general", 
-//          .children: (1) […], 
+//          .children: (1) [ï¿½], 
 //          .parents: [] }
 //   http://datokrat.sirius.uberspace.de/xtreem/create_item.php?parentnodeid=1&authorid=1&name=Titel
 //   http://datokrat.sirius.uberspace.de/xtreem/changeItem.php?id=1&name=NeuerName&content=NeuerContent
@@ -1139,7 +1139,7 @@ function lib_data_paul_clone_items(iparams)
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
 
-  //  URL example : .../cloneNode?id=[Kind-ID]&targetparentid=[ID, unter der der Knoten eingefügt werden sollte]
+  //  URL example : .../cloneNode?id=[Kind-ID]&targetparentid=[ID, unter der der Knoten eingefï¿½gt werden sollte]
   if ((iparams_cp.src_elem[0].elem_id != undefined) && (iparams_cp.dst_elem.elem_id != undefined))
   {
     var post_params = "id=" + iparams_cp.src_elem[0].elem_id;
@@ -2157,7 +2157,7 @@ function lib_data_disco_get_tree_item_field(itemId, fieldId)
 
 
 
-// Bsp. für Peer-to-Perr :
+// Bsp. fï¿½r Peer-to-Perr :
 // ========================
 // Freenet
 // Media Goblin

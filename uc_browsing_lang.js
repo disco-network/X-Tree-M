@@ -74,7 +74,7 @@ function f_set_menubar()
               // Menu Title                                 
             ["help_menu"                                    ,"Help"                                 ,"Hilfe"                                ],
     //        [    "tutorial"                                   ,"Tutorial"                             ,"Tutorial"                           ],
-            [    "erase_cookies"                            ,"Clear Cookies"                        ,"Cookies löschen"                      ],
+            [    "erase_cookies"                            ,"Clear Cookies"                        ,"Cookies lï¿½schen"                      ],
             [    "send_err_log"                             ,"Send Error Log"                       ,"Fehlerbericht senden"                 ],
             [    "display_hint"                             ,"Hints"                                ,"Tips"                                 ],
             [    "source_code"                              ,"Source Code"                          ,"Quellcode"                            ],
@@ -93,7 +93,7 @@ var c_LANG_UC_BROWSING_MENU_LANG_TITLE = c_LANG_UC_BROWSING_MENUBAR[3][1][0];
 var c_LANG_UC_BROWSING_HELP_HINTS =
 ["do_nothing"           ,
  "Useful hints :\n(1) The X-Tree-M tool can be controlled through Touchscreen and Mouse but is optimized for Keyboard usage. If you want to use X-Tree-M for fast info recording you should learn the 10-Finger-System and know the various Keyboard-Shortcuts which can often be found next to each element in the Menu. \n(2) A mouseover on the graphical Element Type Symbols in the Tree Panel usually opens/closes the next level. Please mind that the displayed level depth is limited and that you sometimes need to select an item to reach the next level. \n(3) If you want to load a Favorite Entry you can press CTRL and click at it. \n(4) If you concentrate on a special topic it is recommended to lock it to save loading time and memory and to reduce the displayed complexity. \n(5) The Tickers are made to inform you about changes. When you have chosen a Topic as Ticker content by clicking 'as ... Ticker' in the Element Menu it is loaded instantly and further updated after some minutes. \n(6) While the DISCO version offers more professional access to the database, the XML-Version is useful to work offline and to save your database content as File. \n(7) Reset corrupt Cookies by using \'Help/Clear Cookies\'",
- "Nützliche Hinweise :\n(1) Das X-Tree-M-Tool can per Touchscreen oder Maus bedient werden, ist aber für Keyboard-Gebrauch optimiert. Wenn Sie X-Tree-M für das schnelle Festhalten von Information benutzen wollen, sollten Sie das 10-Finger-System und diverse Keyboard-Shortcuts kennen, welche oft neben dem Element im Menü stehen. \n(2) Ein Berühren der Element-Typ-Symbole in der Baumdarstellung öffnet/schließt die nächste Ebene. Bitte beachten Sie, daß die dargestellte Level-Tiefe begrenzt ist und Sie manchmal ein Element selektieren müssen, um auf weitere Ebenen zugreifen zu können. \n(3) Wenn die einen Favoriten-Eintrag laden möchten, können Sie einfach CTRL drücken und dabei auf den Eintrag klicken. \n(4) Falls Sie sich auf ein Thema konzentrieren, können Sie es locken, um Ladezeit und Speicher zu sparen und die Darstellung einfacher zu machen. \n(5) Die Ticker wurden erstellt, um Sie über Änderungen zu informieren. Nachdem Sie ein Thema als Ticker-Inhalt ausgewählt und 'als ... Ticker' geklickt haben, wird dieses geladen und alle paar Minuten aktualisiert. \n(6) Während die DISCO-Variante des Tools einen professionellen geshareten Datenbank-Zugriff gewährleistet, kommt die XML-Version dann zum Tragen, wenn Sie Offline arbeiten oder die Daten als File abspeichern wollen. \n(7) Löschen Sie kaputte Cookies durch \'Hilfe/Cookies löschen\'"
+ "Nï¿½tzliche Hinweise :\n(1) Das X-Tree-M-Tool can per Touchscreen oder Maus bedient werden, ist aber fï¿½r Keyboard-Gebrauch optimiert. Wenn Sie X-Tree-M fï¿½r das schnelle Festhalten von Information benutzen wollen, sollten Sie das 10-Finger-System und diverse Keyboard-Shortcuts kennen, welche oft neben dem Element im Menï¿½ stehen. \n(2) Ein Berï¿½hren der Element-Typ-Symbole in der Baumdarstellung ï¿½ffnet/schlieï¿½t die nï¿½chste Ebene. Bitte beachten Sie, daï¿½ die dargestellte Level-Tiefe begrenzt ist und Sie manchmal ein Element selektieren mï¿½ssen, um auf weitere Ebenen zugreifen zu kï¿½nnen. \n(3) Wenn die einen Favoriten-Eintrag laden mï¿½chten, kï¿½nnen Sie einfach CTRL drï¿½cken und dabei auf den Eintrag klicken. \n(4) Falls Sie sich auf ein Thema konzentrieren, kï¿½nnen Sie es locken, um Ladezeit und Speicher zu sparen und die Darstellung einfacher zu machen. \n(5) Die Ticker wurden erstellt, um Sie ï¿½ber ï¿½nderungen zu informieren. Nachdem Sie ein Thema als Ticker-Inhalt ausgewï¿½hlt und 'als ... Ticker' geklickt haben, wird dieses geladen und alle paar Minuten aktualisiert. \n(6) Wï¿½hrend die DISCO-Variante des Tools einen professionellen geshareten Datenbank-Zugriff gewï¿½hrleistet, kommt die XML-Version dann zum Tragen, wenn Sie Offline arbeiten oder die Daten als File abspeichern wollen. \n(7) Lï¿½schen Sie kaputte Cookies durch \'Hilfe/Cookies lï¿½schen\'"
 ];
 
 var c_LANG_UC_BROWSING_HELP_CREATED = 
@@ -111,7 +111,7 @@ var c_LANG_UC_BROWSING_TOOLBAR_OTHER_FILTERS =
 
 
 var c_LANG_UC_BROWSING_TOOLBAR_BACK_TO_MSG =
-["do_nothing"           ,"Back to"                                    ,"Zurück zu"                          ];
+["do_nothing"           ,"Back to"                                    ,"Zurï¿½ck zu"                          ];
 
 
 var c_LANG_UC_BROWSING_PANEL1_TITLE =
@@ -134,7 +134,7 @@ var c_LANG_UC_BROWSING_PANEL2_EVAL_CATS =
 [
         ["category"                                     ,"Category"                             ,"Kategory"                             ],      
         [    "fitting"                                  ,"Fitting"                              ,"Passung"                              ],
-        [    "priority"                                 ,"Priority"                             ,"Priorität"                            ],
+        [    "priority"                                 ,"Priority"                             ,"Prioritï¿½t"                            ],
         [    "quality"                                  ,"Quality"                              ,"Qualit&auml;t"                        ]
 ];
 
@@ -158,11 +158,11 @@ var c_LANG_UC_BROWSING_PANEL4_TITLE =
 var c_LANG_UC_BROWSING_PANEL4_FAVORITES =
 [
         ["favorites"                                    ,"Favorites"                            ,"Favoriten"                            ],      
-        [    "favorites_add"                            ,"Add"                                  ,"Hinzufügen"                           ],
+        [    "favorites_add"                            ,"Add"                                  ,"Hinzufï¿½gen"                           ],
         [    "favorites_load"                           ,"Load"                                 ,"Laden"                                ],        
         [    "favorites_del"                            ,"Delete"                               ,"Loeschen"                             ],
         [    "favorites_del_all"                        ,"Delete All"                           ,"Alle Loeschen"                        ],        
-        [    "favorites_up"                             ,"Move Up"                              ,"Höher"                                ],
+        [    "favorites_up"                             ,"Move Up"                              ,"Hï¿½her"                                ],
         [    "favorites_down"                           ,"Move Down"                            ,"Tiefer"                               ]                        
 ];
 
@@ -171,11 +171,11 @@ var c_LANG_UC_BROWSING_PANEL4_FAVORITES =
 var c_LANG_UC_BROWSING_PANEL4_STREE_CFG =
 [
         ["stree_cfg"                                    ,"Tree Hierarchy"                       ,"Baum-Hierarchie"                      ],      
-        [    "stree_cfg_add"                            ,"Add"                                  ,"Hinzufügen"                           ],
+        [    "stree_cfg_add"                            ,"Add"                                  ,"Hinzufï¿½gen"                           ],
         [    "stree_cfg_load"                           ,"Load"                                 ,"Laden"                                ],        
         [    "stree_cfg_del"                            ,"Delete"                               ,"Loeschen"                             ],
         [    "stree_cfg_del_all"                        ,"Delete All"                           ,"Alle Loeschen"                        ],        
-        [    "stree_cfg_up"                             ,"Move Up"                              ,"Höher"                                ],
+        [    "stree_cfg_up"                             ,"Move Up"                              ,"Hï¿½her"                                ],
         [    "stree_cfg_down"                           ,"Move Down"                            ,"Tiefer"                               ],
         [    "stree_cfg_cancel"                         ,"Cancel"                               ,"Abbruch"                              ],
         [    "stree_cfg_finish"                         ,"Finish"                               ,"Fertig"                               ]                        
@@ -186,7 +186,7 @@ var c_LANG_UC_BROWSING_PANEL4_STREE_CFG =
 var c_LANG_UC_BROWSING_MSG_INVALID_KEYB_MODE  =
 [ "no_nothing",
   "Invalid keyboard mode !",
-  "Ungültiger Keyboard Modus !"
+  "Ungï¿½ltiger Keyboard Modus !"
 ];
 
 
@@ -235,5 +235,5 @@ var c_LANG_UC_BROWSING_MSG_ITEM_TOO_LONG =
 var c_LANG_UC_BROWSING_MSG_SELECT_MAIN_TREE =
 [ "do_nothing",
   "Do not select the Root Item to perform this action !",
-  "Bitte nicht den Wurzelknoten auswählen, um diese Einstellung vorzunehmen !"
+  "Bitte nicht den Wurzelknoten auswï¿½hlen, um diese Einstellung vorzunehmen !"
 ];

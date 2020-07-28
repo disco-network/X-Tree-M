@@ -56,7 +56,7 @@ function uc_browsing_content_clicked_at(submodule, item, mode)
                 this.text_focus = 0;
                                     // save text content to database
                 var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-// URL-Ersetzung : -> Problem : Text-Box nicht HTML-fähig !!!
+// URL-Ersetzung : -> Problem : Text-Box nicht HTML-fï¿½hig !!!
                 if (submodule == "content")
                   this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:URLlinks(getInnerHTML(document.getElementById("panel2_content_fulltext"))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
 //                this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:URLlinks(nl2br(getInnerHTML(document.getElementById("panel2_content_fulltext")))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
@@ -295,16 +295,16 @@ function uc_browsing_load_item_content(item_content)
 // 
 // - Abspeichern in Datenbank (Flow, Struktur)
 //   - db_obj in Klasse geholt
-//   - lib_data_xml für eval vorbereitet
-// - Laden der Bewertungen aus Datenbank beim Laden der Einträge
+//   - lib_data_xml fï¿½r eval vorbereitet
+// - Laden der Bewertungen aus Datenbank beim Laden der Eintrï¿½ge
 //   - 
 // - Speichern eigener Bewertung in Cookie
-//   + Korrektur, falls man Bewertung ändert
+//   + Korrektur, falls man Bewertung ï¿½ndert
 // - Sortierung nach Bewertung
 // - Umwandlung Cookies in lokalen Speicher
-// - Multi-Language-Unterstützung
-//   -> noch zu lösen : bei Sprach-Änderung müssen auch Kategorie-Namen umgeladen werden
-// - DISCO-Unterstützung
+// - Multi-Language-Unterstï¿½tzung
+//   -> noch zu lï¿½sen : bei Sprach-ï¿½nderung mï¿½ssen auch Kategorie-Namen umgeladen werden
+// - DISCO-Unterstï¿½tzung
 // 
 // ==============================================================================
 // 

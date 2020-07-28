@@ -1,4 +1,4 @@
-﻿// Class 'lib_dbg_log'
+// Class 'lib_dbg_log'
 function lib_dbg_log()
 {
   // import params

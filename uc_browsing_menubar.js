@@ -491,7 +491,7 @@ function uc_browsing_menubar_add_submenu(sub_ul, submenu_data)
       }
       else
       {                
-        // multilinguale Einträge als Blätter
+        // multilinguale Eintrï¿½ge als Blï¿½tter
       }
     }                          
   }

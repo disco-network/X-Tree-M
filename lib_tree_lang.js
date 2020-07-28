@@ -1,5 +1,5 @@
 var c_LANG_LIB_TREE_MSG_MULTI_CHOICE =
-["do_nothing", "Please choose the proper parent item !", "Bitte wählen Sie das passende Eltern-Element !"];
+["do_nothing", "Please choose the proper parent item !", "Bitte wï¿½hlen Sie das passende Eltern-Element !"];
 
 var c_LANG_LIB_TREE_ELEMTYPE = 
 [
