@@ -84,11 +84,12 @@ function global_main_event(receiver, sender, submodule, item, mode, event)
 // ### Events from the Main Window (resize, mouseover, etc.)              ###
 // ##########################################################################
 
-var currently_selected_panel = 0; 
-var formerly_selected_panel = 0; 
+var currently_selected_panel = 0; // === window.currently_selected_panel
+var formerly_selected_panel = 0;  // === window.formerly_selected_panel
 var panel_names = new Array("div_panel1", "div_panel2", "div_panel3", "div_panel4");
-var curr_uc_main;
+var curr_uc_main; // current use case
 
+// update the sizes of the window, its panels and so on
 function global_main_win_resize()
 {
 //  alert("resize1");
@@ -134,6 +135,9 @@ function global_main_win_resize()
 }
 
 
+/*
+ * Changes the selected panel to selected_panel but only if selected_panel is also the currently selected panel.
+ */
 function global_main_change_panel_focus_aux(selected_panel)
 {
   var elem;
@@ -157,9 +161,12 @@ function global_main_change_panel_focus_aux(selected_panel)
   }
 }
 
-
+/*
+ * Changes the visible selected panel with a delay. If the currently selected panel is still the given one after a delay, then the visible selected panel is updated.
+ */
 function global_main_change_panel_focus(selected_panel)
 {
+  console.log("global_main.change_panel_focus");
   setTimeout(function() {global_main_change_panel_focus_aux(selected_panel);},500); 
   currently_selected_panel = selected_panel;
 }
@@ -170,6 +177,7 @@ function global_main_change_panel_focus(selected_panel)
 // ##########################################################################
 
 
+// Save information in cookie (if configured)
 function global_main_save_setup()
 {
   if (global_status.global_setup_loaded == true)
