@@ -1038,7 +1038,7 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
       .done(function(data) {
         newId = data.id.toString();
         eval(iparams_cp.cb_fctn_str);
-//        this.req_tree({elemId:[iparams_cp.parent_elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});      
+        this.req_tree({elemId:[iparams_cp.parent_elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});      
       }.bind(this))
       .fail(function() 
       {
