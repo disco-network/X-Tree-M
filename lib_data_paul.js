@@ -361,7 +361,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                         this.rts_ret_struct.tree_nodes[0] = {};                                         
                         this.rts_ret_struct.tree_nodes[0].elem_id = this.req_elem_ids[0];
                         this.rts_ret_struct.tree_nodes[0].gui_id = "T0";      
-                        this.rts_ret_struct.tree_nodes[0].name = unescape(data.nodes[0].name); 
+                        this.rts_ret_struct.tree_nodes[0].name = data.nodes[0].name;
                         if (data.nodes[0].parents.length > 0)
                         {
                           this.rts_ret_struct.tree_nodes[0].parent_elem_id = my_parent_ids;
@@ -376,7 +376,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                           this.rts_ret_struct.tree_nodes[0].isMultiPar = true;             
                         else                                                               
                           this.rts_ret_struct.tree_nodes[0].isMultiPar = false;
-                        this.rts_ret_struct.tree_nodes[0].description = unescape(data.nodes[0].content);     
+                        this.rts_ret_struct.tree_nodes[0].description = data.nodes[0].content;
                         this.rts_ret_struct.tree_nodes[0].type = get_xtype("1", data.nodes[0].type);  
                         this.rts_ret_struct.tree_nodes[0].eval = c_EMPTY_EVAL_STRUCT;
                         this.rts_ret_struct.tree_nodes[0].children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
@@ -388,7 +388,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                         this.rts_ret_struct.explorer_path[this.new_item_offs] = {};                                         
                         this.rts_ret_struct.explorer_path[this.new_item_offs].elem_id = this.req_elem_ids[0];
                         this.rts_ret_struct.explorer_path[this.new_item_offs].gui_id = "E" + this.new_item_offs;      
-                        this.rts_ret_struct.explorer_path[this.new_item_offs].name = unescape(data.nodes[0].name); 
+                        this.rts_ret_struct.explorer_path[this.new_item_offs].name = data.nodes[0].name; 
                         if (my_parent_ids[0] == undefined)
                         {
                           this.rts_ret_struct.explorer_path[this.new_item_offs].parent_elem_id = null;
@@ -622,7 +622,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                         this.rts_ret_struct.tree_nodes[this.new_item_offs] = {};                                         
                         this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id = this.req_elem_ids[k];
                         this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id = "T" + this.new_item_offs;      
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].name = unescape(data.nodes[k].name); 
+                        this.rts_ret_struct.tree_nodes[this.new_item_offs].name = data.nodes[k].name; 
                         if (data.nodes[k].parents.length > 0)
                         {
                           data.nodes[k].parents = f_IntArr2StrArr(data.nodes[k].parents);
@@ -643,7 +643,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                         else
                           this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = null;
                         this.rts_ret_struct.tree_nodes[this.new_item_offs].isMultiPar = false;             
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].description = unescape(data.nodes[k].content);     
+                        this.rts_ret_struct.tree_nodes[this.new_item_offs].description = data.nodes[k].content;     
                         this.rts_ret_struct.tree_nodes[this.new_item_offs].type = get_xtype("1", data.nodes[k].type);  
                         if (this.is_deleted_arr[k] == 1)
                         {
@@ -1030,7 +1030,7 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
   if (iparams_cp.parent_elem_id != undefined)
   {
     var post_params = "parentnodeid=" + iparams_cp.parent_elem_id;
-    post_params = post_params + "&" + "name=" + escape(iparams_cp.name);
+    post_params = post_params + "&" + "name=" + encodeURIComponent(iparams_cp.name);
     post_params = post_params + "&" + "type=" + iparams_cp.type;  // general";    
     post_params = post_params + "&" + "authorid=1";
 
@@ -1216,7 +1216,7 @@ function lib_data_paul_change_tree_item_field(iparams) //  iparams = {items, fie
   //  URL example : .../update?id=7&name=yellow
   if (iparams_cp.items[0].elem_id != undefined)
   {
-    var post_params = "id=" + iparams_cp.items[0].elem_id + "&" + iparams_cp.field_id + "=" + escape(iparams_cp.content);
+    var post_params = "id=" + iparams_cp.items[0].elem_id + "&" + iparams_cp.field_id + "=" + encodeURIComponent(iparams_cp.content);
     
     $.post(this.data_src_path+"update?"+post_params, { }, null, "text")
       .done(function(data) {
@@ -1730,7 +1730,7 @@ function lib_data_disco_req_all_parents(iparams)
         this.curr_item_parents[i] = {};
         var my_parent_name = myRefersTo[i].initData.Referree.initData.Content.Title;
         if ((my_parent_name == null) || (my_parent_name == ""))
-          my_parent_name = unescape(myRefersTo[i].initData.Referree.initData.Content.Text);        
+          my_parent_name = myRefersTo[i].initData.Referree.initData.Content.Text;
         this.curr_item_parents[i].name = my_parent_name;
         this.curr_item_parents[i].elem_id = myRefersTo[i].initData.Referree.initData.Id;
       }
@@ -2113,7 +2113,7 @@ function lib_data_disco_change_tree_item_field(iparams) //  iparams = {items, fi
           function(response)                                                                                                 
           {                                                                                                                  
             this.context.Content.attach(response[0].Content);
-            response[0].Content.Text = escape(iparams.content);
+            response[0].Content.Text = encodeURIComponent(iparams.content);
             this.context.saveChanges().then
             (
               function(response) 
