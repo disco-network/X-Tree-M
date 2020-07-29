@@ -1,3 +1,12 @@
+const c_BS_UNINITIALIZED = 0;
+const c_BS_LOADING = 1;
+const c_BS_BROWSING = 2;
+const c_BS_NAMEINPUT = 3;
+const c_BS_ERROR = 4;
+const BROWSING_STATES = {
+  UNINITIALIZED: c_BS_UNINITIALIZED, LOADING: c_BS_LOADING, BROWSING: c_BS_BROWSING, NAMEINPUT: c_BS_NAMEINPUT, ERROR: c_BS_ERROR
+};
+
 function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_setup, my_path  ) 
 {
   // take over params into object
@@ -20,6 +29,9 @@ function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_set
   this.lang_change = uc_browsing_main_lang_change.bind(this);
   this.update_info_panel = uc_browsing_main_update_info_panel.bind(this);
 
+  this.error = uc_browsing_main_error.bind(this);
+  this.load = uc_browsing_main_load.bind(this);
+
 
   // object variables
   
@@ -38,6 +50,8 @@ function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_set
   this.info_panel;
   this.keyb;
                                     // control variables
+  this.state = c_BS_UNINITIALIZED;
+
   this.curr_tree_part = {};
   this.panel1_selected_items = [];
   this.panel1_selected_items_afterop = [];
@@ -46,9 +60,11 @@ function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_set
   this.cloned_items = [];    
   this.panel1_select_idx = 1;
   this.panel1_elem_type = 0;
-  this.panel1_new_tree_item_input = false;
+
+  // relevant in state NAMEINPUT
   this.panel1_saved_rename_item = null;
   this.panel1_input_too_long_occured = false;
+
 //  this.panel1_display_type = 0;     // 0=tree; 1=bubbles
   this.panel4_display_mode = c_FEATURE_MODE_FAVORITES;
   this.panel4_stree_cfg_selsave = [];
@@ -58,6 +74,12 @@ function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_set
   // constructor call
   this.init();    
 } 
+
+function uc_browsing_main_error(message) {
+  alert(message);
+  this.state = c_BS_ERROR;
+  throw new Error(message);
+}
 
 function uc_browsing_main_lang_change()
 {                                 
@@ -71,12 +93,21 @@ function uc_browsing_main_lang_change()
 }
 
 
+/*
+ * Select an item and apply changes to the GUI.
+ * This method is only valid if we are in the state BROWSING.
+ */
 function uc_browsing_main_select_by_id(elem_id)
 {
+  if (this.state !== c_BS_BROWSING) {
+    this.error("Invalid state: Item selection is only possible while browsing.");
+  }
+
                               // print whole tree + create new selection
   this.curr_tree_part = this.db_obj.command({}, "get_tree");
-  this.panel1_selected_items = [];                            
-  this.panel1_selected_items[0] = this.tree_panel.print_tree(this.curr_tree_part, elem_id);
+
+  const selected_element = this.tree_panel.print_tree(this.curr_tree_part, elem_id);
+  this.panel1_selected_items = [ selected_element ];
   this.panel1_select_idx = 1;
                               // save setup
   this.setup.tree_last_selected = this.panel1_selected_items[0].elem_id;
@@ -87,8 +118,21 @@ function uc_browsing_main_select_by_id(elem_id)
 }
 
 
+/*
+ * Select an item that is given by its gui_id.
+ * Several selection modes are available:
+ *  - mode is c_KEYB_MODE_CTRL_ONLY. Then the selection state of the given element will be toggled.
+ *  - mode is c_KEYB_MODE_SHIFT_ONLY. This mode is not implemented yet.
+ *  - mode is c_KEYB_MODE_NONE. Then the given element will be the only selected element. Here, some more magic happens.
+ *
+ *  Can only be invoked in the state BROWSING.
+ */
 function uc_browsing_main_select_item(submodule, gui_id, mode)
 {
+  if (this.state !== c_BS_BROWSING) {
+    error("Invalid state: You can only select items if you are browsing.");
+  }
+
   switch (mode)
   {
     case c_KEYB_MODE_CTRL_ONLY : 
@@ -158,8 +202,7 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
                                     // otherwise : request tree data from database  
         else
         {
-          var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";    
-          this.db_obj.command({elemId:[new_item.elem_id], lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree");
+          this.load([new_item.elem_id]);
         }
 
     break;
@@ -170,14 +213,31 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
   }
 }
 
+/*
+ * Load the tree in a way such that the item with the given id is selected.
+ * Must not be called in the state LOADING.
+ */
+function uc_browsing_main_load(ids) {
+  if (this.state === c_BS_LOADING) {
+    this.error("Invalid state: Cannot load something because we are already loading something other.");
+  }
+
+  const on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";    
+  this.db_obj.command({elemId:ids, lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree");
+}
+
 
 function uc_browsing_main_select_parent(parent_id)
 {
+  if (this.state === c_BS_LOADING) {
+    this.error("Invalid state: Cannot load something because we are already loading something other.");
+  }
+
                                     // redraw Main Tree + create new selection
   if (this.panel1_selected_items[0].isMultiPar)                                    
     this.db_obj.command([{elem_id:this.panel1_selected_items[0].elem_id, parent_id:parent_id}], "set_default_parents");   
-  var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-  this.db_obj.command({elemId:[this.panel1_selected_items[0].elem_id], lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree"); 
+
+  this.load([this.panel1_selected_items[0].elem_id]);
 }
   
   
@@ -188,6 +248,7 @@ function uc_browsing_main_select_parent(parent_id)
 
 
 
+// @CONSTR Only allow this if BROWSING.
 function uc_browsing_main_keyb_proc(my_key, my_extra_keys, e)
 {
 
@@ -201,6 +262,18 @@ function uc_browsing_main_keyb_proc(my_key, my_extra_keys, e)
 
 
 
+/*
+ * Load some part of the application.
+ *
+ * - If the sender is "menubar", then redirect the call to the menubar.
+ * - If it is "panel1":
+ *   - If the submodule is "tree_select" or "explorer_select", select an item in the tree.
+ *   - If the submodule is "load_all", then everything will be loaded (tree, content, info panel, feature panel).
+ *   - If the submodule is "show_tree", select an item based on the value of panel1_selected_items_afterop (if not empty) and load it.
+ *   - (and some more)
+ *
+ * Can only be called when the state is not LOADING.
+ */
 function uc_browsing_main_clicked_at(sender, submodule, item, mode)
 {
   this.dbg_log.add_entry({module:"uc_browsing_disp_clicked_at", sender:sender, submodule:submodule, item:item, mode:mode});
@@ -238,7 +311,11 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
               this.features_panel.load_favorites(curr_tree_data.fav);
               document.getElementById('favorite' + this.curr_sel_favorite_id + '_div').style.backgroundColor = '#C0C0F0';
             }
+
+            // @CONSTRUCTION Correct?
+            this.state = c_BS_LOADING;
           case "show_tree" :
+            this.state = c_BS_BROWSING;
             if (this.panel1_selected_items_afterop.length != 0)
             {
               this.select_by_id(this.panel1_selected_items_afterop[0].elem_id);  
@@ -590,6 +667,9 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
 
 function uc_browsing_main_switch_display(selection)
 {
+  if (this.state !== c_BS_BROWSING) {
+    this.error("Invalid state: You must be browsing to invoke this function.");
+  }
   this.curr_tree_part = this.db_obj.command({}, "get_tree");
   this.tree_panel.print_tree(this.curr_tree_part, this.panel1_selected_items[0].elem_id);  
 }
@@ -676,8 +756,7 @@ function uc_browsing_main_launch()
   this.menubar = new uc_browsing_menubar( 'div_menubar', this, 'menubar', c_LANG_UC_BROWSING_MENUBAR); 
   this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.cb_clicked_at_str);     
                                     // load content from database and show it
-  var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'load_all\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-  this.db_obj.command({elemId:[this.setup.tree_last_selected], lock_id:this.setup.tree_locked_item, favIds:this.setup.favorites, tickerIds:[this.setup.info_ticker1_item_id, this.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"load_all"}, "req_tree");
+  this.load([this.setup.tree_last_selected]);
                                     // set up Keyboard Control
   this.keyb = new uc_browsing_keyb(this);  
 }
