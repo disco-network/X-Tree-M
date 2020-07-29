@@ -306,17 +306,7 @@ function lib_tree_print_tree(tree_obj, sel_elem_id)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // look up data in node array
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-  var k=0;
-                                    // find selected item among Tree Nodes
-  while (k<tree_obj.tree_nodes.length)
-  {
-//    if (JSON.stringify(tree_obj.tree_nodes[k].elem_id) === JSON.stringify(sel_elem_id(0))) 
-    if (tree_obj.tree_nodes[k].elem_id == sel_elem_id) 
-      break;
-    else
-      k++;
-  }
-  var selected_item_in_tree = tree_obj.tree_nodes[k];
+  var selected_item_in_tree = find_node_by_id(tree_obj, sel_elem_id);
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // execute print function for selected display type
@@ -330,6 +320,16 @@ function lib_tree_print_tree(tree_obj, sel_elem_id)
   return retval;
 }
 
+function find_node_by_id(tree_obj, id) {
+  for (let i = 0; i < tree_obj.tree_nodes.length; ++i) {
+    if (tree_obj.tree_nodes[i].elem_id === id) {
+      return tree_obj.tree_nodes[i];
+    }
+  }
+  
+  alert("The selected item is not present in the tree.");
+  throw new Error("The selected item is not present in the tree.");
+}
 
 function lib_tree_get_type_no(typeInternalStr)
 {
