@@ -166,7 +166,6 @@ function global_main_change_panel_focus_aux(selected_panel)
  */
 function global_main_change_panel_focus(selected_panel)
 {
-  console.log("global_main.change_panel_focus");
   setTimeout(function() {global_main_change_panel_focus_aux(selected_panel);},500); 
   currently_selected_panel = selected_panel;
 }
