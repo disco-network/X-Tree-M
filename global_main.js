@@ -342,10 +342,3 @@ function global_main_init()
 
 }
 
-
-
-
-
-
-
-
