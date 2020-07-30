@@ -523,6 +523,9 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   {
 
                     // beginning of supposed subroutine: create_tree_node(raw_node, id, gui_id)
+                    //  - create and store the node
+                    //  - determine its parent elem_id and gui_id
+                    //  - collect children in child_elem_ids
                     var raw_node = data.nodes[k];
                     var node = {
                       elem_id: this.req_elem_ids[k],
@@ -560,6 +563,8 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                       node.parent_elem_id = this.parent_elem_id_arr[k];
                     }
                     node.eval = c_EMPTY_EVAL_STRUCT;
+
+                    // collect children, track their deletion state and parents
                     child_elem_ids  = child_elem_ids.concat(raw_node.children);
                     local_is_deleted_arr = local_is_deleted_arr.concat(new Array(raw_node.children.length).fill(0));  
                     local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(raw_node.children.length).fill(node.gui_id));
@@ -572,7 +577,9 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                       local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(raw_node.del_children.length).fill(node.elem_id)); 
                     }
                     this.rts_ret_struct.tree_nodes.push(node);
-                  }           
+                  }
+
+                  // recurse
                   child_elem_ids = f_IntArr2StrArr(child_elem_ids);
                   this.req_elem_ids = jQuery.extend(true, [], child_elem_ids);
                   this.is_deleted_arr = jQuery.extend(true, [], local_is_deleted_arr);
