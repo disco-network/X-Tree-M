@@ -65,7 +65,6 @@ function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, glo
   this.parent_gui_id_arr = [ null ];
   this.parent_elem_id_arr = [ null ];
   this.req_tree_state = "rts_idle";  
-  this.new_item_offs = 0;
   this.level_ct = 0;
   this.del_item_state = "di_idle";
   this.rts_ret_struct = {}; // The cached tree structure from the last successfull req_tree execution
@@ -240,8 +239,8 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   iparams_cp.tickerIds.splice(0, i);
 
   // reset variables
-  this.new_item_offs = 0; 
   this.level_ct = 0;
+  this.new_item_offs = 0; // @CONSTRUCTION remove
   var is_multi = false;
 
   // set state
@@ -302,324 +301,321 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   {
     f_append_to_pad('div_panel4_pad','Start#'+String(id));
 
-    if (this.req_elem_ids != undefined)
+    if (this.req_elem_ids === undefined)
     {
-      switch (this.req_tree_state)
-      {
-        // ### part 1 : Explorer Path
-      
-        // # get tree part from DB for Explorer path
-        case "rts_get_explorer_path" :
-          this.req_tree_state = "wait_post_processing";
-          f_append_to_pad('div_panel4_pad','rts_get_explorer_path');
-          if (this.req_elem_ids.length > 0)
-          {
-            // generate id param list for post
-            var id_params = "";
-            for (k=0; k<this.req_elem_ids.length; k++)
-            {
-              id_params = id_params + "ids[]=" + this.req_elem_ids[k];
-              if (k<this.req_elem_ids.length-1)
-              {
-                id_params = id_params + "&";
-              } 
-            }
-            if (uc_browsing_change_permission == 1)
-            {
-              id_params = id_params + "&showDeleted=1";
-            }
-            f_append_to_pad('div_panel4_pad','rts_get_explorer_path_before_post');
-            // send post and handle responses
-            $.post(this.data_src_path+"get?"+id_params, { })
-              .done(function(data) {
-                f_append_to_pad('div_panel4_pad','rts_get_explorer_path_after_post');
-                if (data != undefined)
-                {
-                  f_append_to_pad('div_panel4_pad','rts_get_explorer_path_rxdata_good');
-                  if (data.nodes.length > 0) {
-// ###  #################################################################################################################################
-                    // # local inits
-                    var elem_id = this.req_elem_ids[0];
-                    var my_parent_ids = f_IntArr2StrArr(data.nodes[0].parents);  
-                    var is_multi = false;
-      
-                    var parent_exists = false;
-      
-                    // Any parents further up ?
-                    if (my_parent_ids != undefined)
-                    {
-                      if (my_parent_ids.length > 0)
-                      { 
-                        parent_exists = true;                                                  
-                      }
-     
-                      // multiple parents ? -> choose one depending on Cookie
-                      if (my_parent_ids.length > 1)
-                      {
-                                      // read from Cookie which parent item applies here
-                        my_parent_ids = this.get_multi_parents(elem_id, my_parent_ids);  
-                        is_multi = true;   
-                      }
-                    }
-
-                    // currently processing selected item -> fill in T0
-                    if (iparams_cp.elemId[0] == this.req_elem_ids[0])
-                    {
-                      this.rts_ret_struct.tree_nodes[0] = {};                                         
-                      this.rts_ret_struct.tree_nodes[0].elem_id = this.req_elem_ids[0];
-                      this.rts_ret_struct.tree_nodes[0].gui_id = "T0";      
-                      this.rts_ret_struct.tree_nodes[0].name = data.nodes[0].name;
-                      if (data.nodes[0].parents.length > 0)
-                      {
-                        this.rts_ret_struct.tree_nodes[0].parent_elem_id = my_parent_ids;
-                        this.rts_ret_struct.tree_nodes[0].parent_gui_id = "E0";
-                      }
-                      else
-                      {
-                        this.rts_ret_struct.tree_nodes[0].parent_elem_id = null;
-                        this.rts_ret_struct.tree_nodes[0].parent_gui_id = null;
-                      }
-                      if (data.nodes[0].parents.length > 1)
-                        this.rts_ret_struct.tree_nodes[0].isMultiPar = true;             
-                      else                                                               
-                        this.rts_ret_struct.tree_nodes[0].isMultiPar = false;
-                      this.rts_ret_struct.tree_nodes[0].description = data.nodes[0].content;
-                      this.rts_ret_struct.tree_nodes[0].type = get_xtype("1", data.nodes[0].type);  
-                      this.rts_ret_struct.tree_nodes[0].eval = c_EMPTY_EVAL_STRUCT;
-                      this.rts_ret_struct.tree_nodes[0].children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
-                    }
-                    // fill in E[n]
-                    else
-                    {
-                      // # create current item
-                      this.rts_ret_struct.explorer_path[this.new_item_offs] = {};                                         
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].elem_id = this.req_elem_ids[0];
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].gui_id = "E" + this.new_item_offs;      
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].name = data.nodes[0].name; 
-                      if (my_parent_ids[0] == undefined)
-                      {
-                        this.rts_ret_struct.explorer_path[this.new_item_offs].parent_elem_id = null;
-                        this.rts_ret_struct.explorer_path[this.new_item_offs].parent_gui_id = null;      
-                      }
-                      else
-                      {
-                        this.rts_ret_struct.explorer_path[this.new_item_offs].parent_elem_id = my_parent_ids[0];
-                        this.rts_ret_struct.explorer_path[this.new_item_offs].parent_gui_id = "E" + (this.new_item_offs+1);     
-                      }
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].parent_gui_id = null; 
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].isMultiPar = is_multi;
-                      this.rts_ret_struct.explorer_path[this.new_item_offs].eval = c_EMPTY_EVAL_STRUCT;  
-                      this.new_item_offs += 1;                         
-                    }
-                                 
-                    // More parents above and no LockID in sight ? -> Go on with Explorer Path
-                    if ((parent_exists == true) && (this.req_elem_ids[0] != iparams_cp.lock_id))
-                    {
-                      this.level_ct++;
-                      this.req_elem_ids = [my_parent_ids[0]];
-                      this.req_tree_state = "rts_get_explorer_path";  
-                      do_get_tree(id+1);
-                    }
-                    // no more parent items further up
-                    else
-                    {
-                      this.level_ct = 0;
-                      this.new_item_offs = 1;    
-                      this.req_elem_ids = this.rts_ret_struct.tree_nodes[0].children_elem_id;   
-
-                      if (this.req_elem_ids == undefined)
-                      {
-                        this.req_tree_state = "rts_idle";  
-                        f_append_to_pad('div_panel4_pad','Callback after 1st item');    
-                        eval(iparams_cp.cb_fct_call);                    
-                      } 
-                      else
-                      {
-                        if (this.req_elem_ids.length > 0)
-                        {
-                          this.req_tree_state = "rts_get_tree_items";
-                          this.is_deleted_arr = new Array(this.req_elem_ids.length).fill(0);
-                          if (this.rts_ret_struct.explorer_path.length >0 )
-                          {
-                            this.parent_gui_id_arr = [ this.rts_ret_struct.explorer_path[0].parent_gui_id ];
-                            this.parent_elem_id_arr = [ this.rts_ret_struct.explorer_path[0].parent_elem_id ];
-                          }
-                          f_append_to_pad('div_panel4_pad','Go on with tree nodes');
-                          do_get_tree(id+1);                                                                  
-                        }
-                        else 
-                        {
-                          this.req_tree_state = "rts_idle";  
-                          f_append_to_pad('div_panel4_pad','Callback after 1st item');    
-                          eval(iparams_cp.cb_fct_call);                                 
-                        }
-                      }
-                    }
-      
-// ###  ##################################################################################################################################
-                    f_append_to_pad('div_panel4_pad','rts_get_explorer_path_call_do_get_tree');
-                  }
-                }
-                else
-                {
-                  f_append_to_pad('div_panel4_pad','rts_get_explorer_path_rxdata_bad');                      
-                  alert("Get Tree Part (rts_get_explorer_path) : Data undefined");
-                  this.req_elem_ids = [];               
-                  this.req_tree_state = "rts_idle"; 
-                }
-              }.bind(this))
-              .fail(function() 
-              {
-                f_append_to_pad('div_panel4_pad','rts_get_explorer_path_failed');                                        
-                alert("Get Tree Part (rts_get_explorer_path) : failed !");
-                this.req_elem_ids = [];                 
-                this.req_tree_state = "rts_idle";  
-              }
-            );
-          }
-          break;
-      
-        // ### part 2 : Tree Nodes
-      
-        // # get tree part from DB for Tree Display
-        case "rts_get_tree_items" :
-          this.req_tree_state = "wait_post_processing";          
-          f_append_to_pad('div_panel4_pad','rts_get_tree_items');      
-          if (this.req_elem_ids.length > 0)
-          {
-            // generate id param list for post
-            var id_params = "";
-            var id_params = this.req_elem_ids
-              .map(function(id) { return "ids[]=" + id })
-              .join("&");
-
-            if (uc_browsing_change_permission == 1)
-            {
-              id_params = id_params + "&showDeleted=1";
-            }
-            f_append_to_pad('div_panel4_pad','rts_get_tree_items_before_post');                    
-            // send post and handle responses
-            $.post(this.data_src_path+"get?"+id_params, { })
-              .done(function(data) {
-                f_append_to_pad('div_panel4_pad','rts_get_tree_items_after_post');                                      
-                // check if returned data is valid  
-                if (data != undefined)
-                {
-                  f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_good');                                      
-
-                  // check if there's at least one element
-                  if (data.nodes.length > 0) {
-
-                    // # local inits
-                    // var my_item_ids_int = Object.keys(data);
-                    var child_elem_ids = []; // to be filled with new child nodes
-                    var local_is_deleted_arr = []; 
-                    var local_parent_gui_id_arr = [];
-                    var local_parent_elem_id_arr = [];
-                    var is_multi = false;
-                    // # traverse all loaded items
-                    for (var k=0; k<this.req_elem_ids.length; k++)
-                    {
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs] = {};                                         
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id = this.req_elem_ids[k];
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id = "T" + this.new_item_offs;      
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].name = data.nodes[k].name; 
-                      if (data.nodes[k].parents.length > 0)
-                      {
-                        data.nodes[k].parents = f_IntArr2StrArr(data.nodes[k].parents);
-                        // $$$ HIER MUSS ETWAS GEMACHT WERDEN !!! $$$
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].parents[0];
-                      }
-                      else
-                      if (data.nodes[k].del_parents != undefined)
-                      {
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].del_parents[0];
-                      }
-                      if (this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id == undefined)
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = null;
-                      var m=0;
-                      while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != data.nodes[k].parents[0])) {m++;}
-                      if (m<this.rts_ret_struct.tree_nodes.length)
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
-                      else
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = null;
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].isMultiPar = false;             
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].description = data.nodes[k].content;     
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].type = get_xtype("1", data.nodes[k].type);  
-                      if (this.is_deleted_arr[k] == 1)
-                      {
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].is_deleted = 1;
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.parent_gui_id_arr[k];
-                        this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = this.parent_elem_id_arr[k];
-                      }
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].eval = c_EMPTY_EVAL_STRUCT;
-                      child_elem_ids  = child_elem_ids.concat(data.nodes[k].children);
-                      local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].children.length).fill(0));  
-                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
-                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
-                      if (data.nodes[k].del_children != undefined)
-                      {
-                        child_elem_ids  = child_elem_ids.concat(data.nodes[k].del_children);
-                        local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].del_children.length).fill(1));
-                        local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
-                        local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
-                      }
-                      this.new_item_offs++;
-                    }           
-                    child_elem_ids = f_IntArr2StrArr(child_elem_ids);
-                    this.req_elem_ids = jQuery.extend(true, [], child_elem_ids);
-                    this.is_deleted_arr = jQuery.extend(true, [], local_is_deleted_arr);
-                    this.parent_gui_id_arr = jQuery.extend(true, [], local_parent_gui_id_arr);
-                    this.parent_elem_id_arr = jQuery.extend(true, [], local_parent_elem_id_arr);
-                    if (this.req_elem_ids.length != 0)
-                    {
-                                                            // ... and start next step
-                      this.req_tree_state = "rts_get_tree_items";
-                      do_get_tree(id+1);                      
-                    }
-                    else
-                    {
-                      this.req_tree_state = "rts_idle";  
-                      f_append_to_pad('div_panel4_pad','Callback');    
-                      eval(iparams_cp.cb_fct_call);                    
-                    } 
-                  }
-                }
-                else
-                {
-                  f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_bad');                                                          
-                  alert("Get Tree Part (rts_get_tree_items) : Data undefined");
-                  this.req_elem_ids = [];               
-                  this.req_tree_state = "rts_idle";  
-                }
-              }.bind(this))
-              .fail(function() {
-                f_append_to_pad('div_panel4_pad','rts_get_tree_items_failed');                                                                            
-                alert("Get Tree Part (rts_get_tree_items) : failed !");
-                this.req_elem_ids = [];
-                this.req_tree_state = "rts_idle";  
-              }
-            );
-          }    
-          break;
-
-        case "rts_idle" :              
-            break;
-            
-        default :
-            f_append_to_pad('div_panel4_pad','Unknown case entry');                                                                    
-            this.req_elem_ids = [];               
-            this.req_tree_state = "rts_idle";   
-            break;  
-      } // switch (this.req_tree_state)
-    }
-    else
-    {
+      // I think this can never happen! Except if eval does strange things... -- Paul
       this.req_tree_state = "rts_idle";  
       f_append_to_pad('div_panel4_pad','Callback after empty list');    
       eval(iparams_cp.cb_fct_call);        
+      return;
     }
+    
+    switch (this.req_tree_state)
+    {
+      // ### part 1 : Explorer Path
+    
+      // # get tree part from DB for Explorer path
+      case "rts_get_explorer_path" :
+        this.req_tree_state = "wait_post_processing";
+        f_append_to_pad('div_panel4_pad','rts_get_explorer_path');
+        if (this.req_elem_ids.length > 0)
+        {
+          // generate id param list for post
+          var id_params = this.req_elem_ids
+            .map(function(id) { return "ids[]=" + id })
+            .join("&");
+
+          if (uc_browsing_change_permission == 1)
+          {
+            id_params = id_params + "&showDeleted=1";
+          }
+          f_append_to_pad('div_panel4_pad','rts_get_explorer_path_before_post');
+          // send post and handle responses (why not get? -- Paul)
+          $.post(this.data_src_path+"get?"+id_params, { })
+            .done(function(data) {
+              f_append_to_pad('div_panel4_pad','rts_get_explorer_path_after_post');
+              if (data != undefined)
+              {
+                f_append_to_pad('div_panel4_pad','rts_get_explorer_path_rxdata_good');
+                if (data.nodes.length > 0) {
+// #  #################################################################################################################################
+                  // # local inits
+                  var elem_id = this.req_elem_ids[0];
+                  var my_parent_ids = f_IntArr2StrArr(data.nodes[0].parents);  
+                  var is_multi = false;
+                  var parent_exists = false;
+    
+                  // Any parents further up ?
+                  if (my_parent_ids.length > 0)
+                  { 
+                    parent_exists = true;                                                  
+                  }
+  
+                  // multiple parents ? -> choose one depending on Cookie
+                  if (my_parent_ids.length > 1)
+                  {
+                    // read from Cookie which parent item applies here
+                    my_parent_ids = this.get_multi_parents(elem_id, my_parent_ids);  
+                    is_multi = true;   
+                  }
+
+                  // currently processing selected item -> fill in T0
+                  if (iparams_cp.elemId[0] == this.req_elem_ids[0])
+                  {
+                    var node = {
+                      elem_id: this.req_elem_ids[0],
+                      gui_id: "T0",
+                      name: data.nodes[0].name
+                    };
+                    if (data.nodes[0].parents.length > 0)
+                    {
+                      node.parent_elem_id = my_parent_ids;
+                      node.parent_gui_id = "E0";
+                    }
+                    else
+                    {
+                      node.parent_elem_id = null;
+                      node.parent_gui_id = null;
+                    }
+                    if (data.nodes[0].parents.length > 1)
+                      node.isMultiPar = true;             
+                    else                                                               
+                      node.isMultiPar = false;
+                    node.description = data.nodes[0].content;
+                    node.type = get_xtype("1", data.nodes[0].type);  
+                    node.eval = c_EMPTY_EVAL_STRUCT;
+                    node.children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
+                    this.rts_ret_struct.tree_nodes.push(node);
+                  }
+                  // fill in E[n]
+                  else
+                  {
+                    // # create current item
+                    var item = {
+                      elem_id: this.req_elem_ids[0],
+                      gui_id: "E" + this.rts_ret_struct.explorer_path.length,
+                      name: data.nodes[0].name
+                    };
+
+                    if (my_parent_ids[0] == undefined)
+                    {
+                      item.parent_elem_id = null;
+                      item.parent_gui_id = null;      
+                    }
+                    else
+                    {
+                      item.parent_elem_id = my_parent_ids[0];
+                      item.parent_gui_id = "E" + (this.new_item_offs+1);     
+                    }
+                    item.children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
+                    item.parent_gui_id = null; 
+                    item.isMultiPar = is_multi;
+                    item.eval = c_EMPTY_EVAL_STRUCT;  
+                    this.rts_ret_struct.explorer_path.push(item);
+                  }
+                               
+                  // More parents above and no LockID in sight ? -> Go on with Explorer Path
+                  if ((parent_exists == true) && (this.req_elem_ids[0] != iparams_cp.lock_id))
+                  {
+                    this.level_ct++;
+                    this.req_elem_ids = [my_parent_ids[0]];
+                    this.req_tree_state = "rts_get_explorer_path";  
+                    do_get_tree(id+1);
+                  }
+                  // no more parent items further up
+                  else
+                  {
+                    // proceed recursively with children of selected item
+                    this.level_ct = 0;
+                    this.new_item_offs = 1;    
+                    this.req_elem_ids = this.rts_ret_struct.tree_nodes[0].children_elem_id;   
+
+                    if (this.req_elem_ids == undefined)
+                    {
+                      this.req_tree_state = "rts_idle";  
+                      f_append_to_pad('div_panel4_pad','Callback after 1st item');    
+                      eval(iparams_cp.cb_fct_call);                    
+                    } 
+                    else
+                    {
+                      if (this.req_elem_ids.length > 0)
+                      {
+                        this.req_tree_state = "rts_get_tree_items";
+                        this.is_deleted_arr = new Array(this.req_elem_ids.length).fill(0);
+                        if (this.rts_ret_struct.explorer_path.length >0 )
+                        {
+                          this.parent_gui_id_arr = [ this.rts_ret_struct.explorer_path[0].parent_gui_id ];
+                          this.parent_elem_id_arr = [ this.rts_ret_struct.explorer_path[0].parent_elem_id ];
+                        }
+                        f_append_to_pad('div_panel4_pad','Go on with tree nodes');
+                        do_get_tree(id+1);                                                                  
+                      }
+                      else 
+                      {
+                        this.req_tree_state = "rts_idle";  
+                        f_append_to_pad('div_panel4_pad','Callback after 1st item');    
+                        eval(iparams_cp.cb_fct_call);                                 
+                      }
+                    }
+                  }
+    
+// #  ##################################################################################################################################
+                  f_append_to_pad('div_panel4_pad','rts_get_explorer_path_call_do_get_tree');
+                }
+              }
+              else
+              {
+                f_append_to_pad('div_panel4_pad','rts_get_explorer_path_rxdata_bad');                      
+                alert("Get Tree Part (rts_get_explorer_path) : Data undefined");
+                this.req_elem_ids = [];               
+                this.req_tree_state = "rts_idle"; 
+              }
+            }.bind(this))
+            .fail(function() 
+            {
+              f_append_to_pad('div_panel4_pad','rts_get_explorer_path_failed');                                        
+              alert("Get Tree Part (rts_get_explorer_path) : failed !");
+              this.req_elem_ids = [];                 
+              this.req_tree_state = "rts_idle";  
+            }
+          );
+        }
+        break;
+    
+      // ### part 2 : Tree Nodes
+    
+      // # get tree part from DB for Tree Display
+      case "rts_get_tree_items" :
+        this.req_tree_state = "wait_post_processing";          
+        f_append_to_pad('div_panel4_pad','rts_get_tree_items');      
+        if (this.req_elem_ids.length > 0)
+        {
+          // generate id param list for post
+          var id_params = "";
+          var id_params = this.req_elem_ids
+            .map(function(id) { return "ids[]=" + id })
+            .join("&");
+
+          if (uc_browsing_change_permission == 1)
+          {
+            id_params = id_params + "&showDeleted=1";
+          }
+          f_append_to_pad('div_panel4_pad','rts_get_tree_items_before_post');                    
+          // send post and handle responses
+          $.post(this.data_src_path+"get?"+id_params, { })
+            .done(function(data) {
+              f_append_to_pad('div_panel4_pad','rts_get_tree_items_after_post');                                      
+              // check if returned data is valid  
+              if (data != undefined)
+              {
+                f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_good');                                      
+
+                // check if there's at least one element
+                if (data.nodes.length > 0) {
+
+                  // # local inits
+                  // var my_item_ids_int = Object.keys(data);
+                  var child_elem_ids = []; // to be filled with new child nodes
+                  var local_is_deleted_arr = []; 
+                  var local_parent_gui_id_arr = [];
+                  var local_parent_elem_id_arr = [];
+                  var is_multi = false;
+                  // # traverse all loaded items
+                  for (var k=0; k<this.req_elem_ids.length; k++)
+                  {
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs] = {};                                         
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id = this.req_elem_ids[k];
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id = "T" + this.new_item_offs;      
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].name = data.nodes[k].name; 
+                    if (data.nodes[k].parents.length > 0)
+                    {
+                      data.nodes[k].parents = f_IntArr2StrArr(data.nodes[k].parents);
+                      // $$$ HIER MUSS ETWAS GEMACHT WERDEN !!! $$$
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].parents[0];
+                    }
+                    else
+                    if (data.nodes[k].del_parents != undefined)
+                    {
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].del_parents[0];
+                    }
+                    if (this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id == undefined)
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = null;
+                    var m=0;
+                    while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != data.nodes[k].parents[0])) {m++;}
+                    if (m<this.rts_ret_struct.tree_nodes.length)
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
+                    else
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = null;
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].isMultiPar = false;             
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].description = data.nodes[k].content;     
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].type = get_xtype("1", data.nodes[k].type);  
+                    if (this.is_deleted_arr[k] == 1)
+                    {
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].is_deleted = 1;
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.parent_gui_id_arr[k];
+                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = this.parent_elem_id_arr[k];
+                    }
+                    this.rts_ret_struct.tree_nodes[this.new_item_offs].eval = c_EMPTY_EVAL_STRUCT;
+                    child_elem_ids  = child_elem_ids.concat(data.nodes[k].children);
+                    local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].children.length).fill(0));  
+                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
+                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
+                    if (data.nodes[k].del_children != undefined)
+                    {
+                      child_elem_ids  = child_elem_ids.concat(data.nodes[k].del_children);
+                      local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].del_children.length).fill(1));
+                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
+                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
+                    }
+                    this.new_item_offs++;
+                  }           
+                  child_elem_ids = f_IntArr2StrArr(child_elem_ids);
+                  this.req_elem_ids = jQuery.extend(true, [], child_elem_ids);
+                  this.is_deleted_arr = jQuery.extend(true, [], local_is_deleted_arr);
+                  this.parent_gui_id_arr = jQuery.extend(true, [], local_parent_gui_id_arr);
+                  this.parent_elem_id_arr = jQuery.extend(true, [], local_parent_elem_id_arr);
+                  if (this.req_elem_ids.length != 0)
+                  {
+                                                          // ... and start next step
+                    this.req_tree_state = "rts_get_tree_items";
+                    do_get_tree(id+1);                      
+                  }
+                  else
+                  {
+                    this.req_tree_state = "rts_idle";  
+                    f_append_to_pad('div_panel4_pad','Callback');    
+                    eval(iparams_cp.cb_fct_call);                    
+                  } 
+                }
+              }
+              else
+              {
+                f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_bad');                                                          
+                alert("Get Tree Part (rts_get_tree_items) : Data undefined");
+                this.req_elem_ids = [];               
+                this.req_tree_state = "rts_idle";  
+              }
+            }.bind(this))
+            .fail(function() {
+              f_append_to_pad('div_panel4_pad','rts_get_tree_items_failed');                                                                            
+              alert("Get Tree Part (rts_get_tree_items) : failed !");
+              this.req_elem_ids = [];
+              this.req_tree_state = "rts_idle";  
+            }
+          );
+        }    
+        break;
+
+      case "rts_idle" :              
+          break;
+          
+      default :
+          f_append_to_pad('div_panel4_pad','Unknown case entry');                                                                    
+          this.req_elem_ids = [];               
+          this.req_tree_state = "rts_idle";   
+          break;  
+    } // switch (this.req_tree_state)
+    
     f_append_to_pad('div_panel4_pad','Stop#'+String(id));
   }.bind(this)   // var do_get_tree = function() 
 
