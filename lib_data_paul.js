@@ -165,6 +165,9 @@ function lib_data_paul_write_tree(iparams)
 } 
 
 
+/*
+ * Precondition: elemId is a non-empty array of IDs.
+ */
 function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds, tickerIds, cb_fct_call, mode}
 //
 // possible values for "mode" :
@@ -190,10 +193,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   // ###################################################################################################################
 
   // ### first inits before any sub-function call
-  //this.rts_ret_struct.explorer_path = [];
-  //this.rts_ret_struct.tree_nodes = [];
-  //this.rts_ret_struct.fav = [];
-  //this.rts_ret_struct.ticker = [];
   this.rts_ret_struct = {
     explorer_path: [],
     tree_nodes: [],
@@ -229,27 +228,23 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
     });
   }      
 
-  var ticker_len = 0;
-                                  // kill invalid ticker ids
-  if (iparams_cp.tickerIds.length > 0)
-  {
-                // kill invalid ticker ids
-    while (iparams_cp.tickerIds[0] == null)
-    {
-      this.rts_ret_struct.ticker[ticker_len] = {};      
-      this.rts_ret_struct.ticker[ticker_len].elem_id = null;
-      this.rts_ret_struct.ticker[ticker_len].name = null;
-      this.rts_ret_struct.ticker[ticker_len++].text = null;
-      iparams_cp.tickerIds.splice(0,1);
-      if (iparams_cp.tickerIds.length == 0)
-        break;
-    }   
-  }      
+  // handle and remove invalid ticker ids
+  var i;
+  for (i = 0; i < iparams_cp.tickerIds.length && iparams_cp.tickerIds[0] == null; ++i) {
+    this.rts_ret_struct.ticker.push({
+      elem_id: null,
+      name: null,
+      text: null
+    });
+  }
+  iparams_cp.tickerIds.splice(0, i);
 
+  // reset variables
   this.new_item_offs = 0; 
   this.level_ct = 0;
   var is_multi = false;
 
+  // set state
   if (((iparams_cp.elemId[0] == iparams_cp.lock_id) && ((iparams_cp.mode == "tree_only") || ((iparams_cp.mode == "load_all") && (iparams_cp.favIds.length == 0)))) || (iparams_cp.mode == "ticker_only"))
   {
     this.req_tree_state = "rts_get_tree_items";      
@@ -260,20 +255,23 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   }
 
   
-  // assign request elements depending on mode
+  // Assign requested elements depending on mode
   this.req_elem_ids = [];
   switch (iparams_cp.mode)
   {
     case "load_all"    :
+      // If there are favorites, load the first one, otherwise the first selected item.
       if (iparams_cp.favIds.length == 0)
         this.req_elem_ids[0] = iparams_cp.elemId[0];
       else
-        this.req_elem_ids[0] = iparams_cp.favIds[0];     
+        this.req_elem_ids[0] = iparams_cp.favIds[0]; // this might be null, right?
     break;
     case "tree_only"   :
+      // Load the first selected item.
       this.req_elem_ids[0] = iparams_cp.elemId[0];
     break;
     case "fav_only"    :
+      // Do nothing if no favorite is given, otherwise pivot the first such.
       if (iparams_cp.favIds.length == 0)
       {
         this.req_tree_state = "rts_idle";
@@ -283,13 +281,14 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
         this.req_elem_ids[0] = iparams_cp.favIds[0];     
     break;
     case "ticker_only" :
+      // Do nothing if no ticker element is given, otherwise pivot the first such.
       if (iparams_cp.tickerIds.length == 0)
       {
         this.req_tree_state = "rts_idle";
         eval(iparams_cp.cb_fct_call);
       }
       else
-        this.req_elem_ids = iparams_cp.tickerIds[0];
+        this.req_elem_ids[0] = iparams_cp.tickerIds[0];
     break;
     default :
       alert("wrong mode for function \'req_tree\'");
