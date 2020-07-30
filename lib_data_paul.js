@@ -36,6 +36,7 @@ function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, glo
   // tree functions
   this.write_tree = lib_data_paul_write_tree.bind(this);
   this.req_tree = lib_data_paul_req_tree.bind(this);
+  this.req_tree_items = lib_data_paul_req_tree_items.bind(this);
   this.get_tree = lib_data_paul_get_tree.bind(this);  
 
   // item functions
@@ -164,6 +165,61 @@ function lib_data_paul_write_tree(iparams)
 } 
 
 
+// requests: array of { elem_id, parent_elem_id, parent_qui_id, is_deleted }
+// result: a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
+function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success, cb_failure) {
+  if (requests.length === 0 || recursion_countdown === 0 ) {
+    cb_success();
+    return;
+  }
+
+  var url = this.data_src_path + "get?" + requests.map(function(req) { return "ids[]=" + req.elem_id }).join("&");
+  if (uc_browsing_change_permission === 1) {
+    url += "&showDeleted=1";
+  }
+  var self = this;
+  $.get(url)
+    .done(function(data) {
+      var newRequests = [];
+      requests.forEach(function(request, i) {
+        var raw_node = data.nodes[i];
+        var node = {
+          elem_id: request.elem_id,
+          gui_id: "T" + self.rts_ret_struct.tree_nodes.length,
+          name: raw_node.name,
+          parent_elem_id: request.parent_elem_id,
+          parent_gui_id: request.parent_gui_id,
+          is_deleted: request.is_deleted,
+          isMultiPar: false,
+          description: raw_node.content,
+          type: get_xtype("1", raw_node.type),
+          eval: c_EMPTY_EVAL_STRUCT
+        };
+        self.rts_ret_struct.tree_nodes.push(node);
+
+        newRequests = newRequests.concat(raw_node.children.map(function(cid) {
+          return {
+            elem_id: cid,
+            parent_elem_id: node.elem_id,
+            parent_gui_id: node.gui_id,
+            is_deleted: 0
+          };
+        }));
+        newRequests = newRequests.concat((raw_node.del_children || []).map(function(cid) {
+          return {
+            elem_id: cid,
+            parent_elem_id: node.elem_id,
+            parent_gui_id: node.gui_id,
+            is_deleted: 1
+          }
+        }));
+      });
+
+      self.req_tree_items(newRequests, recursion_countdown - 1, cb_success, cb_failure);
+    })
+  .fail(cb_failure);
+}
+
 /*
  * Precondition: elemId is a non-empty array of IDs.
  */
@@ -243,7 +299,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   var is_multi = false;
 
   // set state
-  if (((iparams_cp.elemId[0] == iparams_cp.lock_id) && ((iparams_cp.mode == "tree_only") || ((iparams_cp.mode == "load_all") && (iparams_cp.favIds.length == 0)))) || (iparams_cp.mode == "ticker_only"))
+  if ((iparams_cp.elemId[0] == iparams_cp.lock_id && (iparams_cp.mode == "tree_only" || (iparams_cp.mode == "load_all" && iparams_cp.favIds.length == 0))) || iparams_cp.mode == "ticker_only")
   {
     this.req_tree_state = "rts_get_tree_items";      
   }
@@ -368,6 +424,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                     };
                     if (data.nodes[0].parents.length > 0)
                     {
+                      // @CONSTRUCTION: Where do we get the current path from?
                       node.parent_elem_id = my_parent_ids;
                       node.parent_gui_id = "E0";
                     }
@@ -484,137 +541,32 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
     
       // # get tree part from DB for Tree Display
       case "rts_get_tree_items" :
-        this.req_tree_state = "wait_post_processing";          
         f_append_to_pad('div_panel4_pad','rts_get_tree_items');      
-        if (this.req_elem_ids.length > 0)
-        {
-          // generate id param list for post
-          var id_params = "";
-          var id_params = this.req_elem_ids
-            .map(function(id) { return "ids[]=" + id })
-            .join("&");
 
-          if (uc_browsing_change_permission == 1)
-          {
-            id_params = id_params + "&showDeleted=1";
-          }
-          f_append_to_pad('div_panel4_pad','rts_get_tree_items_before_post');                    
-          // send post and handle responses
-          $.post(this.data_src_path+"get?"+id_params, { })
-            .done(function(data) {
-              f_append_to_pad('div_panel4_pad','rts_get_tree_items_after_post');                                      
-              // check if returned data is valid  
-              if (data != undefined)
-              {
-                f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_good');                                      
+        var self = this;
+        var requests = this.req_elem_ids.map(function(elem_id, i) {
+          return {
+            elem_id: elem_id,
+            parent_elem_id: self.parent_elem_id_arr[i],
+            parent_gui_id: self.parent_gui_id_arr[i],
+            is_deleted: self.is_deleted_arr[i]
+          };
+        });
 
-                // check if there's at least one element
-                if (data.nodes.length > 0) {
+        var cb_success = function() {
+          self.req_tree_state = "rts_idle";
+          f_append_to_pad('div_panel4_pad','callback');                                                                            
+          eval(iparams_cp.cb_fct_call);
+        };
 
-                  // # local inits
-                  // var my_item_ids_int = Object.keys(data);
-                  var child_elem_ids = []; // to be filled with new child nodes
-                  var local_is_deleted_arr = []; 
-                  var local_parent_gui_id_arr = [];
-                  var local_parent_elem_id_arr = [];
-                  var is_multi = false;
-                  // # traverse all loaded items
-                  for (var k=0; k<this.req_elem_ids.length; k++)
-                  {
+        var cb_failure = function() {
+          f_append_to_pad('div_panel4_pad','rts_get_tree_items_failed');                                                                            
+          alert("Get Tree Part (rts_get_tree_items) : failed !");
+          self.req_elem_ids = [];
+          self.req_tree_state = "rts_idle";  
+        }
 
-                    // beginning of supposed subroutine: create_tree_node(raw_node, id, gui_id)
-                    //  - create and store the node
-                    //  - determine its parent elem_id and gui_id
-                    //  - collect children in child_elem_ids
-                    var raw_node = data.nodes[k];
-                    var node = {
-                      elem_id: this.req_elem_ids[k],
-                      gui_id: "T" + this.rts_ret_struct.tree_nodes.length,
-                      name: raw_node.name
-                    };
-                    if (raw_node.parents.length > 0)
-                    {
-                      raw_node.parents = f_IntArr2StrArr(raw_node.parents);
-                      // $$$ HIER MUSS ETWAS GEMACHT WERDEN !!! $$$
-                      node.parent_elem_id = raw_node.parents[0];
-                    }
-                    // we expect that del_parents is undefined or non-empty
-                    else if (raw_node.del_parents != undefined)
-                    {
-                      node.parent_elem_id = raw_node.del_parents[0];
-                    }
-                    if (node.parent_elem_id == undefined)
-                      node.parent_elem_id = null;
-                    var m=0;
-                    // Find the index m of a parent in the rts_ret_struct
-                    while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != raw_node.parents[0])) {m++;}
-                    if (m<this.rts_ret_struct.tree_nodes.length)
-                      node.parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
-                    else
-                      node.parent_gui_id = null;
-                    // Could it happen that parent_gui_id and parent_elem_id refer to different parents? -- Paul
-                    node.isMultiPar = false;             
-                    node.description = raw_node.content;     
-                    node.type = get_xtype("1", raw_node.type);  
-                    if (this.is_deleted_arr[k] == 1)
-                    {
-                      node.is_deleted = 1;
-                      node.parent_gui_id = this.parent_gui_id_arr[k];
-                      node.parent_elem_id = this.parent_elem_id_arr[k];
-                    }
-                    node.eval = c_EMPTY_EVAL_STRUCT;
-
-                    // collect children, track their deletion state and parents
-                    child_elem_ids  = child_elem_ids.concat(raw_node.children);
-                    local_is_deleted_arr = local_is_deleted_arr.concat(new Array(raw_node.children.length).fill(0));  
-                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(raw_node.children.length).fill(node.gui_id));
-                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(raw_node.children.length).fill(node.elem_id)); 
-                    if (raw_node.del_children != undefined)
-                    {
-                      child_elem_ids  = child_elem_ids.concat(raw_node.del_children);
-                      local_is_deleted_arr = local_is_deleted_arr.concat(new Array(raw_node.del_children.length).fill(1));
-                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(raw_node.del_children.length).fill(node.gui_id));
-                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(raw_node.del_children.length).fill(node.elem_id)); 
-                    }
-                    this.rts_ret_struct.tree_nodes.push(node);
-                  }
-
-                  // recurse
-                  child_elem_ids = f_IntArr2StrArr(child_elem_ids);
-                  this.req_elem_ids = jQuery.extend(true, [], child_elem_ids);
-                  this.is_deleted_arr = jQuery.extend(true, [], local_is_deleted_arr);
-                  this.parent_gui_id_arr = jQuery.extend(true, [], local_parent_gui_id_arr);
-                  this.parent_elem_id_arr = jQuery.extend(true, [], local_parent_elem_id_arr);
-                  if (this.req_elem_ids.length != 0)
-                  {
-                                                          // ... and start next step
-                    this.req_tree_state = "rts_get_tree_items";
-                    do_get_tree(id+1);                      
-                  }
-                  else
-                  {
-                    this.req_tree_state = "rts_idle";  
-                    f_append_to_pad('div_panel4_pad','Callback');    
-                    eval(iparams_cp.cb_fct_call);                    
-                  } 
-                }
-              }
-              else
-              {
-                f_append_to_pad('div_panel4_pad','rts_get_tree_items_rxdata_bad');                                                          
-                alert("Get Tree Part (rts_get_tree_items) : Data undefined");
-                this.req_elem_ids = [];               
-                this.req_tree_state = "rts_idle";  
-              }
-            }.bind(this))
-            .fail(function() {
-              f_append_to_pad('div_panel4_pad','rts_get_tree_items_failed');                                                                            
-              alert("Get Tree Part (rts_get_tree_items) : failed !");
-              this.req_elem_ids = [];
-              this.req_tree_state = "rts_idle";  
-            }
-          );
-        }    
+        this.req_tree_items(requests, 10, cb_success, cb_failure);
         break;
 
       case "rts_idle" :              
@@ -631,6 +583,9 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   }.bind(this)   // var do_get_tree = function() 
 
   // actual sub-function call (first time without blocking wait for result)
+  this.parent_elem_id_arr = [];
+  this.parent_gui_id_arr = [];
+  this.is_deleted_arr = [];
   do_get_tree(0);
 }
 

@@ -499,7 +499,7 @@ function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_
   var deleted_item = 0;
       if (item_gui_id != "N0")
       {
-        if (this.get_item_data(item_gui_id).is_deleted != undefined)
+        if (this.get_item_data(item_gui_id).is_deleted === 1)
           deleted_item = 1;
       }
       if (deleted_item == 1)
