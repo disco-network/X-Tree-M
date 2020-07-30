@@ -521,33 +521,38 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   // # traverse all loaded items
                   for (var k=0; k<this.req_elem_ids.length; k++)
                   {
+
+                    // beginning of supposed subroutine: create_tree_node(raw_node, id, gui_id)
+                    var raw_node = data.nodes[k];
                     var node = {
                       elem_id: this.req_elem_ids[k],
                       gui_id: "T" + this.rts_ret_struct.tree_nodes.length,
-                      name: data.nodes[k].name
+                      name: raw_node.name
                     };
-                    if (data.nodes[k].parents.length > 0)
+                    if (raw_node.parents.length > 0)
                     {
-                      data.nodes[k].parents = f_IntArr2StrArr(data.nodes[k].parents);
+                      raw_node.parents = f_IntArr2StrArr(raw_node.parents);
                       // $$$ HIER MUSS ETWAS GEMACHT WERDEN !!! $$$
-                      node.parent_elem_id = data.nodes[k].parents[0];
+                      node.parent_elem_id = raw_node.parents[0];
                     }
                     // we expect that del_parents is undefined or non-empty
-                    else if (data.nodes[k].del_parents != undefined)
+                    else if (raw_node.del_parents != undefined)
                     {
-                      node.parent_elem_id = data.nodes[k].del_parents[0];
+                      node.parent_elem_id = raw_node.del_parents[0];
                     }
                     if (node.parent_elem_id == undefined)
                       node.parent_elem_id = null;
                     var m=0;
-                    while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != data.nodes[k].parents[0])) {m++;}
+                    // Find the index m of a parent in the rts_ret_struct
+                    while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != raw_node.parents[0])) {m++;}
                     if (m<this.rts_ret_struct.tree_nodes.length)
                       node.parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
                     else
                       node.parent_gui_id = null;
+                    // Could it happen that parent_gui_id and parent_elem_id refer to different parents? -- Paul
                     node.isMultiPar = false;             
-                    node.description = data.nodes[k].content;     
-                    node.type = get_xtype("1", data.nodes[k].type);  
+                    node.description = raw_node.content;     
+                    node.type = get_xtype("1", raw_node.type);  
                     if (this.is_deleted_arr[k] == 1)
                     {
                       node.is_deleted = 1;
@@ -555,16 +560,16 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                       node.parent_elem_id = this.parent_elem_id_arr[k];
                     }
                     node.eval = c_EMPTY_EVAL_STRUCT;
-                    child_elem_ids  = child_elem_ids.concat(data.nodes[k].children);
-                    local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].children.length).fill(0));  
-                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].children.length).fill(node.gui_id));
-                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].children.length).fill(node.elem_id)); 
-                    if (data.nodes[k].del_children != undefined)
+                    child_elem_ids  = child_elem_ids.concat(raw_node.children);
+                    local_is_deleted_arr = local_is_deleted_arr.concat(new Array(raw_node.children.length).fill(0));  
+                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(raw_node.children.length).fill(node.gui_id));
+                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(raw_node.children.length).fill(node.elem_id)); 
+                    if (raw_node.del_children != undefined)
                     {
-                      child_elem_ids  = child_elem_ids.concat(data.nodes[k].del_children);
-                      local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].del_children.length).fill(1));
-                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(node.gui_id));
-                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(node.elem_id)); 
+                      child_elem_ids  = child_elem_ids.concat(raw_node.del_children);
+                      local_is_deleted_arr = local_is_deleted_arr.concat(new Array(raw_node.del_children.length).fill(1));
+                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(raw_node.del_children.length).fill(node.gui_id));
+                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(raw_node.del_children.length).fill(node.elem_id)); 
                     }
                     this.rts_ret_struct.tree_nodes.push(node);
                   }           
