@@ -226,7 +226,7 @@ function print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree)
                                     // print stub elements
   var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
   var start_idx = 0;
-  for (start_idx = 0; tree_obj.tree_nodes[start_idx].parent_gui_id === tree_obj.tree_nodes[0].parent_gui_id && start_idx < tree_obj.tree_nodes.length; ++start_idx) {
+  for (start_idx = 0; start_idx < tree_obj.tree_nodes.length && tree_obj.tree_nodes[start_idx].parent_gui_id === tree_obj.tree_nodes[0].parent_gui_id; ++start_idx) {
 
 //    if (JSON.stringify(tree_obj.tree_nodes[start_idx].elem_id) === JSON.stringify(sel_elem_id))
     if (tree_obj.tree_nodes[start_idx].elem_id == sel_elem_id)
