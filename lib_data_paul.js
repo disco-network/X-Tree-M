@@ -180,6 +180,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   if (this.req_tree_state !== "rts_idle")
   {
     f_append_to_pad('div_panel4_pad','Get Tree already running - leaving !');        
+    return;
   }
 
   f_append_to_pad('div_panel4_pad','rts_idle');
