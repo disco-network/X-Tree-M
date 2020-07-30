@@ -189,6 +189,10 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   // ###################################################################################################################
 
   // ### first inits before any sub-function call
+  //this.rts_ret_struct.explorer_path = [];
+  //this.rts_ret_struct.tree_nodes = [];
+  //this.rts_ret_struct.fav = [];
+  //this.rts_ret_struct.ticker = [];
   this.rts_ret_struct = {
     explorer_path: [],
     tree_nodes: [],
@@ -199,13 +203,10 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                                   // kill invalid Favorite ids
   if ((iparams_cp.favIds.length > 0) && ( (iparams_cp.mode == "load_all") || (iparams_cp.mode == "fav_only") ))
   {
-    for (var i=0; i<iparams_cp.favIds.length; i++)
-    {
-      var fav_id = iparams_cp.favIds[i];
-      var favorite;
+    this.rts_ret_struct.fav = iparams_cp.favIds.map(function(fav_id) {
       if (fav_id == null)
       {
-        favorite = {
+        return {
           elem_id: null,
           name: null,
           text: null,
@@ -214,7 +215,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
       }
       else
       { 
-        favorite = this.get_explorer_path({elem_id: fav_id, lock_id: this.data_root_id});
+        var favorite = this.get_explorer_path({elem_id: fav_id, lock_id: this.data_root_id});
         var myself_elem = {
           elem_id: fav_id,
           name: this.get_tree_item_field(fav_id, "name"),
@@ -222,9 +223,9 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
           eval: this.get_tree_item_field(fav_id, "eval")
         };
         favorite.unshift(myself_elem);
+        return favorite;
       }      
-      this.rts_ret_struct.fav.push(favorite);
-    }
+    });
   }      
 
   var ticker_len = 0;
