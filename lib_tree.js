@@ -115,7 +115,7 @@ function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hie
 	                                  // Element Name	  
   var newDivItem = document.createElement("div");
     newDivItem.id = curr_node.gui_id+'_div';
-    if (curr_node.is_deleted != undefined)
+    if (curr_node.is_deleted === 1)
       newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
     else
       newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
@@ -719,7 +719,7 @@ function lib_tree_mark_items_as_cut(cut_items, is_marked)
           {
             if ((this.get_item_data(my_gui_id[j]).subtree % 2) == 1)
               document.getElementById(my_gui_id[j] + '_a').style.color = '#C03030';                          
-            else if (this.get_item_data(my_gui_id[j]).is_deleted != undefined)
+            else if (this.get_item_data(my_gui_id[j]).is_deleted === 1)
               document.getElementById(my_gui_id[j] + '_a').style.color = '#FFFFB0'; 
             else
               document.getElementById(my_gui_id[j] + '_a').style.color = '#3030C0';            

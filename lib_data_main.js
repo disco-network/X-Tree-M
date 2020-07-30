@@ -58,6 +58,7 @@ function lib_data_main_command(iparams, cmd_name)
   switch (cmd_name)
   {
     case "req_tree"                     : this.db_obj.req_tree(iparams); break;
+    case "req_tree_only"                : this.db_obj.req_tree_only(iparams); break;
     case "get_tree"                     : ovalues = this.db_obj.get_tree(iparams); break;
     case "write_tree"                   : this.db_obj.write_tree(iparams); break;
     case "delete_item"                  : this.db_obj.delete_tree_item(iparams); break;

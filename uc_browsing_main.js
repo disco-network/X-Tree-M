@@ -202,7 +202,7 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
                                     // otherwise : request tree data from database  
         else
         {
-          this.load([new_item.elem_id]);
+          this.load(path_to(this, gui_id));
         }
 
     break;
@@ -213,17 +213,33 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
   }
 }
 
+function path_to(browsing_main, gui_id) {
+  var id = gui_id;
+  var path = [];
+
+  while (id != null) {
+    var item = browsing_main.tree_panel.get_item_data(id);
+    path.unshift(item.elem_id);
+    id = item.parent_gui_id;
+  }
+  
+  return path;
+}
+
 /*
  * Load the tree in a way such that the item with the given id is selected.
  * Must not be called in the state LOADING.
  */
-function uc_browsing_main_load(ids) {
+function uc_browsing_main_load(path) {
   if (this.state === c_BS_LOADING) {
     this.error("Invalid state: Cannot load something because we are already loading something other.");
   }
 
-  const on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";    
-  this.db_obj.command({elemId:ids, lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree");
+  const self = this;
+  const cb_success = function () {
+    window[self.cb_clicked_at_str]("uc_browsing", "panel1", "show_tree", "T0_a", c_KEYB_MODE_NONE);
+  }
+  this.db_obj.command({path, cb_success}, "req_tree_only");
 }
 
 

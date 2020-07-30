@@ -36,6 +36,7 @@ function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, glo
   // tree functions
   this.write_tree = lib_data_paul_write_tree.bind(this);
   this.req_tree = lib_data_paul_req_tree.bind(this);
+  this.req_tree_only = lib_data_paul_req_tree_only.bind(this);
   this.req_tree_items = lib_data_paul_req_tree_items.bind(this);
   this.get_tree = lib_data_paul_get_tree.bind(this);  
 
@@ -66,7 +67,6 @@ function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, glo
   this.parent_gui_id_arr = [ null ];
   this.parent_elem_id_arr = [ null ];
   this.req_tree_state = "rts_idle";  
-  this.level_ct = 0;
   this.del_item_state = "di_idle";
   this.rts_ret_struct = {}; // The cached tree structure from the last successfull req_tree execution
   this.curr_item_parents = [];
@@ -166,7 +166,7 @@ function lib_data_paul_write_tree(iparams)
 
 
 // requests: array of { elem_id, parent_elem_id, parent_qui_id, is_deleted }
-// result: a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
+// result: concatenates this.rts_ret_struct with a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
 function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success, cb_failure) {
   if (requests.length === 0 || recursion_countdown === 0 ) {
     cb_success();
@@ -199,7 +199,7 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
 
         newRequests = newRequests.concat(raw_node.children.map(function(cid) {
           return {
-            elem_id: cid,
+            elem_id: cid.toString(),
             parent_elem_id: node.elem_id,
             parent_gui_id: node.gui_id,
             is_deleted: 0
@@ -207,7 +207,7 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
         }));
         newRequests = newRequests.concat((raw_node.del_children || []).map(function(cid) {
           return {
-            elem_id: cid,
+            elem_id: cid.toString(),
             parent_elem_id: node.elem_id,
             parent_gui_id: node.gui_id,
             is_deleted: 1
@@ -218,6 +218,99 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
       self.req_tree_items(newRequests, recursion_countdown - 1, cb_success, cb_failure);
     })
   .fail(cb_failure);
+}
+
+/*
+ * Request a subtree.
+ * Parameters:
+ *  - path: array of elem_id's (as strings), starting from the "locked" root item down to the selected item
+ *  - cb_success: the callback that is invoked in case of success
+ */
+function lib_data_paul_req_tree_only(iparams) {
+  f_append_to_pad('div_panel4_pad','req_tree_only');        
+
+  if (this.req_tree_state !== "rts_idle")
+  {
+    f_append_to_pad('div_panel4_pad','Some tree request already running - leaving!');        
+    return;
+  }
+
+  if (iparams.path == undefined || iparams.path.length === 0) {
+    f_append_to_pad('div_panel4_pad', 'Parameter "path" is malformed - leaving!');
+    return;
+  }
+  
+  this.req_tree_state = "rts_req_tree_only";
+
+  this.rts_ret_struct = {
+    explorer_path: [],
+    tree_nodes: [],
+  };
+
+  path = iparams.path;
+  cb_success = iparams.cb_success;
+  
+  // path to selected item (explorer path)
+
+  var self = this;
+  send_get_nodes(this, path, uc_browsing_change_permission === 1)
+    .done(function (data) {
+      var raw_ancestor_nodes = data.nodes.slice(0, -1); // all nodes = [...ancestor nodes, selected node]
+      var raw_selected_node = data.nodes.slice(-1)[0];
+      
+      self.rts_ret_struct.explorer_path = raw_ancestor_nodes.reverse().map(function (raw_ancestor, i) {
+        var has_parent = i < raw_ancestor_nodes.length - 1;
+        var parent_path_index = i + 1;
+        var ancestor = {
+          gui_id: "E" + i,
+          elem_id: raw_ancestor.id.toString(),
+          name: raw_ancestor.name,
+          parent_elem_id: !has_parent ? null : raw_ancestor_nodes[i + 1].id.toString(),
+          parent_gui_id: !has_parent ? null : "E" + (i + 1),
+          isMultiPar: raw_ancestor.parents.length > 1,
+          eval: c_EMPTY_EVAL_STRUCT
+        };
+        return ancestor;
+      })
+
+      var selected_node_id = raw_selected_node.id.toString();
+      var parent = self.rts_ret_struct.explorer_path[0];
+      var selected_node_request = {
+        // gui_id: "T0",
+        elem_id: selected_node_id,
+        // name: raw_selected_node.name,
+        parent_elem_id: parent === undefined ? null : parent.elem_id,
+        parent_gui_id: parent === undefined ? null : parent.gui_id,
+        is_deleted: 0,
+        // isMultiPar: raw_selected_node.parents.length > 1,
+        // description: raw_selected_node.content,
+        // type: get_xtype("1", raw_selected_node.type),
+        // eval: c_EMPTY_EVAL_STRUCT
+      };
+
+      var cb_success2 = function() {
+        self.req_tree_state = "rts_idle";
+        cb_success();
+      };
+
+      var cb_failure = function() {
+        alert("req_tree_items: failed!");
+        self.req_tree_state = "rts_idle";  
+      }
+
+      self.rts_ret_struct.tree_nodes = [];
+      self.req_tree_items([selected_node_request], 10, cb_success2, cb_failure);
+    });
+}
+
+function send_get_nodes(lib_paul, ids, showDeleted) {
+  var options = ids.map(function(id) { return "ids[]=" + id });
+  if (showDeleted) {
+    options.push("showDeleted=1");
+  }
+
+  var url = lib_paul.data_src_path + "get?" + options.join("&");
+  return $.get(url);
 }
 
 /*
@@ -295,7 +388,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
   iparams_cp.tickerIds.splice(0, i);
 
   // reset variables
-  this.level_ct = 0;
   var is_multi = false;
 
   // set state
@@ -473,7 +565,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   // More parents above and no LockID in sight ? -> Go on with Explorer Path
                   if ((parent_exists == true) && (this.req_elem_ids[0] != iparams_cp.lock_id))
                   {
-                    this.level_ct++;
                     this.req_elem_ids = [my_parent_ids[0]];
                     this.req_tree_state = "rts_get_explorer_path";  
                     do_get_tree(id+1);
@@ -482,7 +573,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   else
                   {
                     // proceed recursively with children of selected item
-                    this.level_ct = 0;
                     this.req_elem_ids = this.rts_ret_struct.tree_nodes[0].children_elem_id;   
 
                     if (this.req_elem_ids == undefined)
