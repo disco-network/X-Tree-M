@@ -665,11 +665,13 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
 }
 
 
+// Seems like this method does not really switch anything? -- Paul
 function uc_browsing_main_switch_display(selection)
 {
   if (this.state !== c_BS_BROWSING) {
     this.error("Invalid state: You must be browsing to invoke this function.");
   }
+
   this.curr_tree_part = this.db_obj.command({}, "get_tree");
   this.tree_panel.print_tree(this.curr_tree_part, this.panel1_selected_items[0].elem_id);  
 }
