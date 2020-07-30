@@ -240,7 +240,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
 
   // reset variables
   this.level_ct = 0;
-  this.new_item_offs = 0; // @CONSTRUCTION remove
   var is_multi = false;
 
   // set state
@@ -405,7 +404,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                     else
                     {
                       item.parent_elem_id = my_parent_ids[0];
-                      item.parent_gui_id = "E" + (this.new_item_offs+1);     
+                      item.parent_gui_id = "E" + this.rts_ret_struct.explorer_path.length + 1;
                     }
                     item.children_elem_id = f_IntArr2StrArr(data.nodes[0].children); 
                     item.parent_gui_id = null; 
@@ -427,7 +426,6 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   {
                     // proceed recursively with children of selected item
                     this.level_ct = 0;
-                    this.new_item_offs = 1;    
                     this.req_elem_ids = this.rts_ret_struct.tree_nodes[0].children_elem_id;   
 
                     if (this.req_elem_ids == undefined)
@@ -523,51 +521,52 @@ function lib_data_paul_req_tree(iparams)   // iparams = {elemId, lock_id, favIds
                   // # traverse all loaded items
                   for (var k=0; k<this.req_elem_ids.length; k++)
                   {
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs] = {};                                         
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id = this.req_elem_ids[k];
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id = "T" + this.new_item_offs;      
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].name = data.nodes[k].name; 
+                    var node = {
+                      elem_id: this.req_elem_ids[k],
+                      gui_id: "T" + this.rts_ret_struct.tree_nodes.length,
+                      name: data.nodes[k].name
+                    };
                     if (data.nodes[k].parents.length > 0)
                     {
                       data.nodes[k].parents = f_IntArr2StrArr(data.nodes[k].parents);
                       // $$$ HIER MUSS ETWAS GEMACHT WERDEN !!! $$$
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].parents[0];
+                      node.parent_elem_id = data.nodes[k].parents[0];
                     }
-                    else
-                    if (data.nodes[k].del_parents != undefined)
+                    // we expect that del_parents is undefined or non-empty
+                    else if (data.nodes[k].del_parents != undefined)
                     {
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = data.nodes[k].del_parents[0];
+                      node.parent_elem_id = data.nodes[k].del_parents[0];
                     }
-                    if (this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id == undefined)
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = null;
+                    if (node.parent_elem_id == undefined)
+                      node.parent_elem_id = null;
                     var m=0;
                     while ((m<this.rts_ret_struct.tree_nodes.length) && (this.rts_ret_struct.tree_nodes[m].elem_id != data.nodes[k].parents[0])) {m++;}
                     if (m<this.rts_ret_struct.tree_nodes.length)
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
+                      node.parent_gui_id = this.rts_ret_struct.tree_nodes[m].gui_id; 
                     else
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = null;
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].isMultiPar = false;             
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].description = data.nodes[k].content;     
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].type = get_xtype("1", data.nodes[k].type);  
+                      node.parent_gui_id = null;
+                    node.isMultiPar = false;             
+                    node.description = data.nodes[k].content;     
+                    node.type = get_xtype("1", data.nodes[k].type);  
                     if (this.is_deleted_arr[k] == 1)
                     {
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].is_deleted = 1;
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_gui_id = this.parent_gui_id_arr[k];
-                      this.rts_ret_struct.tree_nodes[this.new_item_offs].parent_elem_id = this.parent_elem_id_arr[k];
+                      node.is_deleted = 1;
+                      node.parent_gui_id = this.parent_gui_id_arr[k];
+                      node.parent_elem_id = this.parent_elem_id_arr[k];
                     }
-                    this.rts_ret_struct.tree_nodes[this.new_item_offs].eval = c_EMPTY_EVAL_STRUCT;
+                    node.eval = c_EMPTY_EVAL_STRUCT;
                     child_elem_ids  = child_elem_ids.concat(data.nodes[k].children);
                     local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].children.length).fill(0));  
-                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
-                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
+                    local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].children.length).fill(node.gui_id));
+                    local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].children.length).fill(node.elem_id)); 
                     if (data.nodes[k].del_children != undefined)
                     {
                       child_elem_ids  = child_elem_ids.concat(data.nodes[k].del_children);
                       local_is_deleted_arr = local_is_deleted_arr.concat(new Array(data.nodes[k].del_children.length).fill(1));
-                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].gui_id));
-                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(this.rts_ret_struct.tree_nodes[this.new_item_offs].elem_id)); 
+                      local_parent_gui_id_arr = local_parent_gui_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(node.gui_id));
+                      local_parent_elem_id_arr = local_parent_elem_id_arr.concat(new Array(data.nodes[k].del_children.length).fill(node.elem_id)); 
                     }
-                    this.new_item_offs++;
+                    this.rts_ret_struct.tree_nodes.push(node);
                   }           
                   child_elem_ids = f_IntArr2StrArr(child_elem_ids);
                   this.req_elem_ids = jQuery.extend(true, [], child_elem_ids);
