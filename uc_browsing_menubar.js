@@ -40,27 +40,29 @@ function uc_browsing_main_process_elem_menu(item)
   switch (item)
   {
     case "input_item" :
-        this.main.text_focus = 1;  
-        this.main.panel1_input_too_long_occured = false;                                    
-        // input new item
-        if (this.main.panel1_selected_items.length==1)
-        {
-          this.main.panel1_new_tree_item_input = true;
-          this.main.tree_panel.input_item(true, this.main.panel1_selected_items[0].gui_id, this.main.panel1_selected_items[0].type);
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);
+//        this.main.text_focus = 1;  
+//        this.main.panel1_input_too_long_occured = false;                                    
+//        // input new item
+//        if (this.main.panel1_selected_items.length==1)
+//        {
+//          this.main.panel1_new_tree_item_input = true;
+//          this.main.tree_panel.input_item(true, this.main.panel1_selected_items[0].gui_id, this.main.panel1_selected_items[0].type);
+//        }
+//        else
+//          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);
+        this.main.model.begin_creating();
         break;          
     case "change_item" :
-        this.main.text_focus = 1;    
-        this.main.panel1_input_too_long_occured = false;        
-        if (this.main.panel1_selected_items.length==1)
-        {
-          this.main.panel1_saved_rename_item = this.main.panel1_selected_items[0];
-          this.main.tree_panel.input_item(false, this.main.panel1_selected_items[0].gui_id, this.main.panel1_selected_items[0].type);
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);
+//        this.main.text_focus = 1;    
+//        this.main.panel1_input_too_long_occured = false;        
+//        if (this.main.panel1_selected_items.length==1)
+//        {
+//          this.main.panel1_saved_rename_item = this.main.panel1_selected_items[0];
+//          this.main.tree_panel.input_item(false, this.main.panel1_selected_items[0].gui_id, this.main.panel1_selected_items[0].type);
+//        }
+//        else
+//          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);
+        this.main.model.begin_renaming();
         break;          
     case "delete_item" :
         if (this.main.panel1_selected_items.length!=0) 

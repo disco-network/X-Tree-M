@@ -767,7 +767,13 @@ function uc_browsing_main_init_model() {
   var dispatcher = {
     tree_panel_changed: function(tree_obj, selected_id) {
       self.tree_panel.print_tree(tree_obj, selected_id);
-    }
+    },
+    renaming_started: function(renamed_node) {
+      self.tree_panel.input_item(false, renamed_node.gui_id, renamed_node.type);
+    },
+    creating_started: function(parent_node) {
+      self.tree_panel.input_item(true, parent_node.gui_id, parent_node.type);
+    },
   };
 
   var logger = function(msg) {

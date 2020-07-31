@@ -60,60 +60,62 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // ENTER
           case 13 :
             //alert("Enter");
-            if ((this.main.panel1_new_tree_item_input == true) || (this.main.panel1_saved_rename_item != null))
-            {
-              this.main.text_focus = 0;
-
-              if (this.main.panel1_new_tree_item_input == true)
-              {
-                                          // get new name from lib_tree and limit number of letters
-                var item_name = htmlEntities(document.getElementById("N0_input").value);
-                item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
-                                          // clear flag
-                this.main.panel1_new_tree_item_input = false;
-                                          // create item in database
-                var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-                this.main.db_obj.command({parent_elem_id:this.main.panel1_selected_items[0].elem_id, name:item_name, type:c_LANG_LIB_TREE_ELEMTYPE[this.main.panel1_elem_type+1][0], lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "create_item");
-              }
-              if (this.main.panel1_saved_rename_item != null)
-              {
-                                          // get new name from lib_tree and limit number of letters
-                var item_name = htmlEntities(document.getElementById(this.main.panel1_saved_rename_item.gui_id + "_input").value);
-                item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
-                                          // clear flag
-                this.main.panel1_saved_rename_item = null;
-                                          // option : history logging in comment area
-                if (uc_browsing_setup.history_logging)
-                {
-                                          // get date
-                  var now = new Date();
-                  var myDate = now.getFullYear()+ '/' + (now.getMonth()+1 < 10 ? '0'+(now.getMonth()+1) : now.getMonth()+1) + '/' + (now.getDate()<10 ? '0'+now.getDate() : now.getDate());          
-                                          // create String reflecting Evaluation before renaming
-                  var myEvalStr = "";                                    
-                  var anyNonZeroEval = 0;
-                  for (var i=1; i<c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length; i++)
-                  {
-                    if (this.main.panel1_selected_items[0].eval[i-1].num > 0)
-                    {
-                      if (anyNonZeroEval != 0)
-                        myEvalStr = myEvalStr + ', ';
-                      myEvalStr = myEvalStr + c_LANG_UC_BROWSING_PANEL2_EVAL_CATS[i][0] + ':' + this.main.panel1_selected_items[0].eval[i-1].avg;
-                      anyNonZeroEval = 1;
-                    }
-                  }
-                                          // insert old name and evaluation results in comment field (w.o. reloading)
-                  this.main.panel1_selected_items[0].comment = this.main.panel1_selected_items[0].comment + '<br><br>### OP:Renaming, DATE:' + myDate + ', OLD NAME:' + this.main.panel1_selected_items[0].name + ', EVAL:\{' + myEvalStr + '\} ###<br><br><br>';
-                  this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"comment", content:this.main.panel1_selected_items[0].comment, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:""}, "change_item_field");          
-                }
-                                          // change item name in database (w.o. reloading)
-                var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";                      
-                this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"name", content:item_name, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
-                                          // clear evaluation (with reloading)
+//            if ((this.main.panel1_new_tree_item_input == true) || (this.main.panel1_saved_rename_item != null))
+//            {
+//              this.main.text_focus = 0;
+//
+//              if (this.main.panel1_new_tree_item_input == true)
+//              {
+//                                          // get new name from lib_tree and limit number of letters
+//                var item_name = htmlEntities(document.getElementById("N0_input").value);
+//                item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
+//                                          // clear flag
+//                this.main.panel1_new_tree_item_input = false;
+//                                          // create item in database
+//                var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+//                this.main.db_obj.command({parent_elem_id:this.main.panel1_selected_items[0].elem_id, name:item_name, type:c_LANG_LIB_TREE_ELEMTYPE[this.main.panel1_elem_type+1][0], lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "create_item");
+//              }
+//              if (this.main.panel1_saved_rename_item != null)
+//              {
+//                                          // get new name from lib_tree and limit number of letters
+//                var item_name = htmlEntities(document.getElementById(this.main.panel1_saved_rename_item.gui_id + "_input").value);
+//                item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
+//                                          // clear flag
+//                this.main.panel1_saved_rename_item = null;
+//                                          // option : history logging in comment area
+//                if (uc_browsing_setup.history_logging)
+//                {
+//                                          // get date
+//                  var now = new Date();
+//                  var myDate = now.getFullYear()+ '/' + (now.getMonth()+1 < 10 ? '0'+(now.getMonth()+1) : now.getMonth()+1) + '/' + (now.getDate()<10 ? '0'+now.getDate() : now.getDate());          
+//                                          // create String reflecting Evaluation before renaming
+//                  var myEvalStr = "";                                    
+//                  var anyNonZeroEval = 0;
+//                  for (var i=1; i<c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length; i++)
+//                  {
+//                    if (this.main.panel1_selected_items[0].eval[i-1].num > 0)
+//                    {
+//                      if (anyNonZeroEval != 0)
+//                        myEvalStr = myEvalStr + ', ';
+//                      myEvalStr = myEvalStr + c_LANG_UC_BROWSING_PANEL2_EVAL_CATS[i][0] + ':' + this.main.panel1_selected_items[0].eval[i-1].avg;
+//                      anyNonZeroEval = 1;
+//                    }
+//                  }
+//                                          // insert old name and evaluation results in comment field (w.o. reloading)
+//                  this.main.panel1_selected_items[0].comment = this.main.panel1_selected_items[0].comment + '<br><br>### OP:Renaming, DATE:' + myDate + ', OLD NAME:' + this.main.panel1_selected_items[0].name + ', EVAL:\{' + myEvalStr + '\} ###<br><br><br>';
+//                  this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"comment", content:this.main.panel1_selected_items[0].comment, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:""}, "change_item_field");          
+//                }
+//                                          // change item name in database (w.o. reloading)
+//                var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";                      
+//                this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"name", content:item_name, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
+//                                          // clear evaluation (with reloading)
 //                  this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"eval", content:c_EMPTY_EVAL_STRUCT, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                    
-              }
+//              }
+//            }
+                var item_name = htmlEntities(document.getElementById("name_input").value);
+                item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
 
-
-            }
+                this.main.model.apply_name_input(item_name);
           break;
   
           // ESC

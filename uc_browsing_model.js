@@ -4,12 +4,17 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   // public
   self.load_path = load_path;
   self.load_by_gui_id = load_by_gui_id;
+  self.begin_renaming = begin_renaming;
+  self.begin_creating = begin_creating;
+  self.apply_name_input = apply_name_input;
 
   // private
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
   self.logger = logger;
   self.is_busy = false;
+  self.is_name_input_active = false;
+  self.is_renaming_not_creating = null;
   self.path_to_selected = [uc_browsing_setup.tree_path_to_selected];
   self.tree = null;
 
@@ -30,6 +35,70 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function load_by_gui_id(gui_id) {
     self.load_path(path_to(gui_id));
+  }
+
+  function begin_creating() {
+    ensure(are_browsing_operations_available(), "Browsing operations are not available.");
+
+    const selected_node = self.tree.tree_nodes[0]; // ugly
+
+    self.is_name_input_active = true;
+    self.is_renaming_not_creating = false;
+
+    dispatcher.creating_started(selected_node);
+  }
+
+  function begin_renaming() {
+    ensure(are_browsing_operations_available(), "Browsing operations are not available.");
+
+    const selected_node = self.tree.tree_nodes[0]; // ugly
+
+    self.is_name_input_active = true;
+    self.is_renaming_not_creating = true;
+
+    dispatcher.renaming_started(selected_node);
+  }
+
+  function apply_name_input(name) {
+    ensure(self.is_name_input_active, "");
+    ensure(!self.is_busy, "");
+
+    const selected_node = self.tree.tree_nodes[0]; // ugly
+
+    if (self.is_renaming_not_creating) {
+      self.is_busy = true;
+      self.lib_data.command({
+        elem_id: get_selected_id(),
+        field_id: "name",
+        content: name,
+        cb_success: after_renaming,
+      }, "change_item_field");
+  
+      function after_renaming() {
+        self.is_busy = false;
+        self.load_path(self.path_to_selected);
+      }
+    } else {
+      self.is_busy = true;
+      self.lib_data.command({
+        parent_elem_id: get_selected_id(),
+        name: name,
+        type: c_LANG_LIB_TREE_ELEMTYPE[1][0],
+        cb_success: after_creating,
+      }, "create_item");
+
+      function after_creating() {
+        self.is_busy = false;
+        self.load_path(self.path_to_selected);
+      }
+    }
+
+    self.is_name_input_active = false;
+    self.is_renaming_not_creating = null;
+  }
+
+  function are_browsing_operations_available() {
+    return !self.is_busy && !self.is_name_input_active;
   }
 
   function path_to(gui_id) {

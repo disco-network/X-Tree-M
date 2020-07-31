@@ -696,42 +696,23 @@ function lib_data_paul_item_exists(itemId)
 }
   
 // create new tree item
-function lib_data_paul_create_tree_item( iparams )  // iparams = {path_to_parent, name, type, cb_fctn_str}
+function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id, name, type, cb_success}
 {
 
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
-  var newId = null;
 
   //  URL example : .../create?parentnodeid=1&name=blau&type=general&authorid=1
-  if (iparams_cp.parent_elem_id != undefined)
-  {
-    var post_params = "parentnodeid=" + iparams_cp.path_to_parent.slice(-1)[0];
-    post_params = post_params + "&" + "name=" + encodeURIComponent(iparams_cp.name);
-    post_params = post_params + "&" + "type=" + iparams_cp.type;  // general";    
-    post_params = post_params + "&" + "authorid=1";
+  var post_params = "parentnodeid=" + iparams_cp.parent_elem_id;
+  post_params = post_params + "&" + "name=" + encodeURIComponent(iparams_cp.name);
+  post_params = post_params + "&" + "type=" + iparams_cp.type;  // general";    
+  post_params = post_params + "&" + "authorid=1";
 
-    $.post(this.data_src_path+"create?"+post_params, { })
-      .done(function(data) {
-        newId = data.id.toString();
-        eval(iparams_cp.cb_fctn_str);
-        this.req_tree_items({path: path_to_parent, cb_success});      
-      }.bind(this))
-      .fail(function() 
-      {
-        f_append_to_pad('div_panel4_pad','create_item failed');                                        
-//        alert("create_item : failed !");
-        this.req_elem_ids = [];                 
-        this.req_tree_state = "rts_idle";  // Is this necessary? req_tree_items should do that for us. -- Paul
-      });
-    
-  }
-  else
-  {
-    alert("Unknown Parameter parent_elem_id");
-  }
-
-  return newId;
+  $.post(this.data_src_path+"create?"+post_params, { })
+    .done(function(data) {
+      newId = data.id.toString();
+      iparams_cp.cb_success(newId);
+    }.bind(this))
 }  
   
   
@@ -885,31 +866,24 @@ function lib_data_paul_create_tree_item_field(itemId, fieldId, content)
   
 
 // change fields of tree item                             
-function lib_data_paul_change_tree_item_field(iparams) //  iparams = {items, field_id, content, lock_id, cb_fctn_str}
+function lib_data_paul_change_tree_item_field(iparams) //  iparams = {elem_id, field_id, content, cb_success}
 {  
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
 
   //  URL example : .../update?id=7&name=yellow
-  if (iparams_cp.items[0].elem_id != undefined)
+  if (iparams_cp.elem_id != undefined)
   {
-    var post_params = "id=" + iparams_cp.items[0].elem_id + "&" + iparams_cp.field_id + "=" + encodeURIComponent(iparams_cp.content);
+    var post_params = "id=" + iparams_cp.elem_id + "&" + iparams_cp.field_id + "=" + encodeURIComponent(iparams_cp.content);
     
     $.post(this.data_src_path+"update?"+post_params, { }, null, "text")
       .done(function(data) {
-        this.req_tree({elemId:[iparams_cp.items[0].elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});        
-      }.bind(this))
-      .fail(function() 
-      {
-        f_append_to_pad('div_panel4_pad','update_item failed');                                        
-        this.req_elem_ids = [];                 
-        this.req_tree_state = "rts_idle";  
-      }
-    );
+        iparams_cp.cb_success();
+      }.bind(this));
   }
   else
   {
-    alert("Unknown Parameter items");
+    alert("Unknown Parameter elem_id");
   }
 }
 

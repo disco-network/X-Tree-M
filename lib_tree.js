@@ -577,15 +577,15 @@ function lib_tree_input_item(is_new, gui_id, item_type)
   }
                                     // create new input item            
   var newInputItem = document.createElement("input");     
-  	newInputItem.id = my_gui_id + "_input";
+  	newInputItem.id = "name_input";
   	newInputItem.name = my_gui_id + "_name";
   	newInputItem.type = "text";
   	newInputItem.value = new_content;
                                     // replace <A> item by <INPUT> item
   a_item.parentNode.replaceChild(newInputItem, a_item);             
                                     // put a focus on input item and select default text
-  document.getElementById(my_gui_id + "_input").focus();
-  document.getElementById(my_gui_id + "_input").select();
+  document.getElementById("name_input").focus();
+  document.getElementById("name_input").select();
 }      
 
 
