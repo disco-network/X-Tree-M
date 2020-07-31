@@ -166,8 +166,8 @@ function lib_data_paul_write_tree(iparams)
 
 
 // requests: array of { elem_id, parent_elem_id, parent_qui_id, is_deleted }
-// result: concatenates this.rts_ret_struct with a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
-function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success, cb_failure) {
+// result: concatenates tree.tree_nodes with a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
+function lib_data_paul_req_tree_items(requests, tree, recursion_countdown, cb_success, cb_failure) {
   if (requests.length === 0 || recursion_countdown === 0 ) {
     cb_success();
     return;
@@ -185,7 +185,7 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
         var raw_node = data.nodes[i];
         var node = {
           elem_id: request.elem_id,
-          gui_id: "T" + self.rts_ret_struct.tree_nodes.length,
+          gui_id: "T" + tree.tree_nodes.length,
           name: raw_node.name,
           parent_elem_id: request.parent_elem_id,
           parent_gui_id: request.parent_gui_id,
@@ -195,7 +195,7 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
           type: get_xtype("1", raw_node.type),
           eval: c_EMPTY_EVAL_STRUCT
         };
-        self.rts_ret_struct.tree_nodes.push(node);
+        tree.tree_nodes.push(node);
 
         newRequests = newRequests.concat(raw_node.children.map(function(cid) {
           return {
@@ -215,7 +215,7 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
         }));
       });
 
-      self.req_tree_items(newRequests, recursion_countdown - 1, cb_success, cb_failure);
+      self.req_tree_items(newRequests, tree, recursion_countdown - 1, cb_success, cb_failure);
     })
   .fail(cb_failure);
 }
@@ -229,20 +229,12 @@ function lib_data_paul_req_tree_items(requests, recursion_countdown, cb_success,
 function lib_data_paul_req_tree_only(iparams) {
   f_append_to_pad('div_panel4_pad','req_tree_only');        
 
-  if (this.req_tree_state !== "rts_idle")
-  {
-    f_append_to_pad('div_panel4_pad','Some tree request already running - leaving!');        
-    return;
-  }
-
   if (iparams.path == undefined || iparams.path.length === 0) {
     f_append_to_pad('div_panel4_pad', 'Parameter "path" is malformed - leaving!');
     return;
   }
   
-  this.req_tree_state = "rts_req_tree_only";
-
-  this.rts_ret_struct = {
+  var tree = {
     explorer_path: [],
     tree_nodes: [],
   };
@@ -258,7 +250,7 @@ function lib_data_paul_req_tree_only(iparams) {
       var raw_ancestor_nodes = data.nodes.slice(0, -1); // all nodes = [...ancestor nodes, selected node]
       var raw_selected_node = data.nodes.slice(-1)[0];
       
-      self.rts_ret_struct.explorer_path = raw_ancestor_nodes.reverse().map(function (raw_ancestor, i) {
+      tree.explorer_path = raw_ancestor_nodes.reverse().map(function (raw_ancestor, i) {
         var has_parent = i < raw_ancestor_nodes.length - 1;
         var parent_path_index = i + 1;
         var ancestor = {
@@ -274,7 +266,7 @@ function lib_data_paul_req_tree_only(iparams) {
       })
 
       var selected_node_id = raw_selected_node.id.toString();
-      var parent = self.rts_ret_struct.explorer_path[0];
+      var parent = tree.explorer_path[0];
       var selected_node_request = {
         // gui_id: "T0",
         elem_id: selected_node_id,
@@ -290,7 +282,7 @@ function lib_data_paul_req_tree_only(iparams) {
 
       var cb_success2 = function() {
         self.req_tree_state = "rts_idle";
-        cb_success();
+        cb_success(tree);
       };
 
       var cb_failure = function() {
@@ -298,8 +290,7 @@ function lib_data_paul_req_tree_only(iparams) {
         self.req_tree_state = "rts_idle";  
       }
 
-      self.rts_ret_struct.tree_nodes = [];
-      self.req_tree_items([selected_node_request], 10, cb_success2, cb_failure);
+      self.req_tree_items([selected_node_request], tree, 10, cb_success2, cb_failure);
     });
 }
 
@@ -705,7 +696,7 @@ function lib_data_paul_item_exists(itemId)
 }
   
 // create new tree item
-function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id, name, type, lock_id, cb_fctn_str}
+function lib_data_paul_create_tree_item( iparams )  // iparams = {path_to_parent, name, type, cb_fctn_str}
 {
 
   // create local copy of params
@@ -715,7 +706,7 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
   //  URL example : .../create?parentnodeid=1&name=blau&type=general&authorid=1
   if (iparams_cp.parent_elem_id != undefined)
   {
-    var post_params = "parentnodeid=" + iparams_cp.parent_elem_id;
+    var post_params = "parentnodeid=" + iparams_cp.path_to_parent.slice(-1)[0];
     post_params = post_params + "&" + "name=" + encodeURIComponent(iparams_cp.name);
     post_params = post_params + "&" + "type=" + iparams_cp.type;  // general";    
     post_params = post_params + "&" + "authorid=1";
@@ -724,14 +715,14 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
       .done(function(data) {
         newId = data.id.toString();
         eval(iparams_cp.cb_fctn_str);
-        this.req_tree({elemId:[iparams_cp.parent_elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});      
+        this.req_tree_items({path: path_to_parent, cb_success});      
       }.bind(this))
       .fail(function() 
       {
         f_append_to_pad('div_panel4_pad','create_item failed');                                        
 //        alert("create_item : failed !");
         this.req_elem_ids = [];                 
-        this.req_tree_state = "rts_idle";  
+        this.req_tree_state = "rts_idle";  // Is this necessary? req_tree_items should do that for us. -- Paul
       });
     
   }

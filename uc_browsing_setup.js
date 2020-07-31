@@ -8,12 +8,12 @@ c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_path = "http://xtreem.datokrat.sirius.
                                                 // "local";       // "local" is always used when Database is located at same location
                                                                 // as the rest of the code; otherwise use the following style : 
                                                                 // "www.google.de" (no "http://" and no "/" at the end !!!)
+                                                                // Is this hint out of date? -- Paul
 c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params = {};
 c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.db_name = "uc_browsing_tree_db.xml";
 c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.php_name = "uc_browsing_upload.php";
 c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.root_item = "1"; //"575" // "root"; //
-c_DEFAULT_UC_BROWSING_SETUP.tree_last_selected = c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.root_item; 
-c_DEFAULT_UC_BROWSING_SETUP.tree_locked_item = c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.root_item; 
+c_DEFAULT_UC_BROWSING_SETUP.tree_path_to_selected = [c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_params.root_item];
 c_DEFAULT_UC_BROWSING_SETUP.info_ticker1_item_id = null;
 c_DEFAULT_UC_BROWSING_SETUP.info_ticker2_item_id = null;
 c_DEFAULT_UC_BROWSING_SETUP.info_timer = 600000;                // every 10 minutes

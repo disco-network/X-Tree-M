@@ -107,7 +107,11 @@ function uc_browsing_main_process_elem_menu(item)
             {
                                     // move items in database
               var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({src_elem:this.main.cut_items, dst_elem:this.main.panel1_selected_items[0], old_parent_id:this.main.cut_items[0].parent_elem_id ,lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "move_item"); 
+              this.main.db_obj.command({
+                source_items: this.main.cut_items,
+                destination_path:this.main.setup.path_to_selected,
+                cb_fctn_str:on_click_str},
+              "move_item"); 
                                     // any further paste operations are only copy operations
                                     // because the source items cannot be removed any more
               this.main.copied_items = this.main.cut_items;
@@ -122,7 +126,11 @@ function uc_browsing_main_process_elem_menu(item)
             {
                                     // copy items in database and reload tree
               var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({src_elem:this.main.copied_items, dst_elem:this.main.panel1_selected_items[0], lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "copy_item"); 
+              this.main.db_obj.command({
+                source_items: this.main.copied_items,
+                destination_path:this.main.setup.path_to_selected,
+                cb_fctn_str:on_click_str},
+              "copy_item"); 
             }
             else
               alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
@@ -133,7 +141,11 @@ function uc_browsing_main_process_elem_menu(item)
             {
                                     // clone items in database and reload tree
               var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({src_elem:this.main.cloned_items, dst_elem:this.main.panel1_selected_items[0], lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "clone_item"); 
+              this.main.db_obj.command({
+                source_items: this.main.cloned_items,
+                destination_path:this.main.setup.path_to_selected,
+                cb_fctn_str:on_click_str},
+              "clone_item"); 
             }
             else
               alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
@@ -163,6 +175,7 @@ function uc_browsing_main_process_elem_menu(item)
         break;
         
     case "lock_topic"  :
+        throw new Error("Locking is not implemented");
         if (this.main.panel1_selected_items.length==1) 
         {
                                     // unlock topic if it is locked for the second time
@@ -343,8 +356,7 @@ function uc_browsing_menubar_clicked_at(submodule, item, mode)
             break;
         }
                                   // save new setup
-        this.main.setup.tree_locked_item = this.main.setup.tree_data_src_params.root_item;
-        this.main.setup.tree_last_selected = this.main.setup.tree_data_src_params.root_item;
+        this.main.setup.tree_path_to_selected = [this.main.setup.tree_data_src_params.root_item];
         this.main.setup.favorites = [];
         this.main.setup.info_ticker1_item_id = null;
         this.main.setup.info_ticker2_item_id = null;

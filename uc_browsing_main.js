@@ -42,6 +42,8 @@ function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_set
   this.def_parent_storage;
   this.dbg_log;
 
+  this.model;
+
                                     // GUI Objects
   this.menubar;
   this.toolbar;
@@ -129,10 +131,6 @@ function uc_browsing_main_select_by_id(elem_id)
  */
 function uc_browsing_main_select_item(submodule, gui_id, mode)
 {
-  if (this.state !== c_BS_BROWSING) {
-    error("Invalid state: You can only select items if you are browsing.");
-  }
-
   switch (mode)
   {
     case c_KEYB_MODE_CTRL_ONLY : 
@@ -169,41 +167,42 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
     break;
     
     case c_KEYB_MODE_NONE :
-                                    // get item object
-        var new_item = this.tree_panel.get_item_data(gui_id); 
-                                    // if multiple parents -> save default
-        if (new_item.isMultiPar)
-          this.db_obj.command(this.tree_panel.get_defpar_pairs(gui_id), "set_default_parents");                                      
-                                    // renew selection
-        var selected_items_old = jQuery.extend(true, [], this.panel1_selected_items);
-        this.panel1_selected_items = [];
-        this.panel1_selected_items[0] = jQuery.extend(true, {}, new_item);
-                                    // save setup
-        this.setup.tree_last_selected = new_item.elem_id;
-        this.save_setup();
-                                    // Siblings ? -> recycle tree data
-        var use_loaded_data = 0;
-        if ((new_item.elem_id != this.setup.tree_locked_item) && (selected_items_old[0].elem_id != this.setup.tree_locked_item))
-        {
-          if ((new_item.parent_gui_id == selected_items_old[0].parent_gui_id) && (this.global_setup.display_type == 0))
-          {
-            use_loaded_data = 1;
-          }
-        }
-        if (use_loaded_data == 1)
-        {
-          for (var i=0; i<selected_items_old.length; i++)
-          {  
-            this.tree_panel.markup_items(selected_items_old[i].gui_id, false);
-          }
-          this.tree_panel.markup_items(new_item.gui_id, true);          
-          this.content_panel.load_item_content(new_item);                                              
-        }
-                                    // otherwise : request tree data from database  
-        else
-        {
-          this.load(path_to(this, gui_id));
-        }
+      this.model.load_by_gui_id(gui_id);
+//                                    // get item object
+//        var new_item = this.tree_panel.get_item_data(gui_id); 
+//                                    // if multiple parents -> save default
+//        if (new_item.isMultiPar)
+//          this.db_obj.command(this.tree_panel.get_defpar_pairs(gui_id), "set_default_parents");                                      
+//                                    // renew selection
+//        var selected_items_old = jQuery.extend(true, [], this.panel1_selected_items);
+//        this.panel1_selected_items = [];
+//        this.panel1_selected_items[0] = jQuery.extend(true, {}, new_item);
+//                                    // save setup
+//        this.setup.tree_last_selected = new_item.elem_id;
+//        this.save_setup();
+//                                    // Siblings ? -> recycle tree data
+//        var use_loaded_data = 0;
+//        if ((new_item.elem_id != this.setup.tree_locked_item) && (selected_items_old[0].elem_id != this.setup.tree_locked_item))
+//        {
+//          if ((new_item.parent_gui_id == selected_items_old[0].parent_gui_id) && (this.global_setup.display_type == 0))
+//          {
+//            use_loaded_data = 1;
+//          }
+//        }
+//        if (use_loaded_data == 1)
+//        {
+//          for (var i=0; i<selected_items_old.length; i++)
+//          {  
+//            this.tree_panel.markup_items(selected_items_old[i].gui_id, false);
+//          }
+//          this.tree_panel.markup_items(new_item.gui_id, true);          
+//          this.content_panel.load_item_content(new_item);                                              
+//        }
+//                                    // otherwise : request tree data from database  
+//        else
+//        {
+//          this.load(path_to(this, gui_id));
+//        }
 
     break;
     
@@ -763,6 +762,21 @@ function uc_browsing_main_init()
   this.db_obj = new lib_data_main(this.def_parent_storage, this.setup, this.save_setup, this.global_setup, this.global_main_save_setup); 
 }
 
+function uc_browsing_main_init_model() {
+  var self = this;
+  var dispatcher = {
+    tree_panel_changed: function(tree_obj, selected_id) {
+      self.tree_panel.print_tree(tree_obj, selected_id);
+    }
+  };
+
+  var logger = function(msg) {
+    console.log(msg);
+  }
+
+  this.model = new uc_browsing_model(dispatcher, this.db_obj, logger);
+}
+
 
 function uc_browsing_main_launch()
 {
@@ -773,8 +787,13 @@ function uc_browsing_main_launch()
                                     // create Menu and ToolBar just below MenuBar                                                  
   this.menubar = new uc_browsing_menubar( 'div_menubar', this, 'menubar', c_LANG_UC_BROWSING_MENUBAR); 
   this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.cb_clicked_at_str);     
+
+  uc_browsing_main_init_model.call(this);
+
                                     // load content from database and show it
-  this.load([this.setup.tree_last_selected]);
+  //this.load([this.setup.tree_last_selected]);
+  this.model.load_path(this.setup.tree_path_to_selected);
+
                                     // set up Keyboard Control
   this.keyb = new uc_browsing_keyb(this);  
 }
