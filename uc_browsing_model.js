@@ -4,6 +4,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   // public
   self.load_path = load_path;
   self.load_by_gui_id = load_by_gui_id;
+  self.delete_selected = delete_selected;
   self.begin_renaming = begin_renaming;
   self.begin_creating = begin_creating;
   self.apply_name_input = apply_name_input;
@@ -35,6 +36,30 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function load_by_gui_id(gui_id) {
     self.load_path(path_to(gui_id));
+  }
+
+  function delete_selected() {
+    ensure(!self.is_busy, "");
+    ensure(!self.is_name_input_active, "");
+
+    const selected = self.path_to_selected.slice(-1)[0];
+    const parent = self.path_to_selected.slice(-2)[0];
+
+    if (parent === undefined) {
+      return;
+    }
+
+    self.is_busy = true;
+    self.lib_data.command({
+      elem_id: selected,
+      parent_elem_id: parent,
+      cb_success: after_deletion,
+    }, "delete_item");
+
+    function after_deletion() {
+      self.is_busy = false;
+      self.load_path(self.path_to_selected.slice(0, -1));
+    }
   }
 
   function begin_creating() {

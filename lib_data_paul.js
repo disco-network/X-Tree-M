@@ -717,33 +717,19 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
   
   
 // delete item and all of its children
-function lib_data_paul_delete_tree_item(iparams)          //  iparams = {parentId, itemId, lock_id, cb_fctn_str}
+function lib_data_paul_delete_tree_item(iparams)          //  iparams = {parent_elem_id, elem_id, cb_success}
 {  
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
 
   //  old URL example : .../delete?id=10
   //  new URL example : .../deleteLink?id=5&parentid=1
-  if (iparams_cp.itemId != undefined)
-  {
-    var post_params = "id=" + iparams_cp.itemId + "&parentid=" + iparams_cp.parentId;
-    
-    $.post(this.data_src_path+"deleteLink?"+post_params, { })
-      .done(function(data) {
-        this.req_tree({elemId:[iparams_cp.parentId], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});        
-      }.bind(this))
-      .fail(function() 
-      {
-        f_append_to_pad('div_panel4_pad','delete_item failed');                                        
-        this.req_elem_ids = [];                 
-        this.req_tree_state = "rts_idle";  
-      }
-    );
-  }
-  else
-  {
-    alert("Unknown Parameter itemId");
-  }
+  var post_params = "id=" + iparams_cp.elem_id + "&parentid=" + iparams_cp.parent_elem_id;
+  
+  $.get(this.data_src_path+"deleteLink?"+post_params)
+    .done(function(data) {
+      iparams_cp.cb_success();
+    });
 }
 
  

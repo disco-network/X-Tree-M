@@ -154,8 +154,9 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // DEL
           case 46 :
             //alert("DEL");
-            if (this.main.text_focus == 0)
-              this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "delete_item", c_KEYB_MODE_NONE);
+            // if (this.main.text_focus == 0)
+            //   this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "delete_item", c_KEYB_MODE_NONE);
+            this.main.model.delete_selected();
           break;
           
           // arrow left
