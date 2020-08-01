@@ -753,28 +753,17 @@ function lib_data_paul_copy_items(iparams)
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
 
-  //  URL example : .../addLink?id[Kind-ID]&targetparentid=[...]
-  if ((iparams_cp.src_elem[0].elem_id != undefined) && (iparams_cp.dst_elem.elem_id != undefined))
-  {
-    var post_params = "id=" + iparams_cp.src_elem[0].elem_id;
-    post_params = post_params + "&targetparentid=" + iparams_cp.dst_elem.elem_id;
-    
-    $.post(this.data_src_path+"addLink?"+post_params, { })
-      .done(function(data) {
-        this.req_tree({elemId:[iparams_cp.dst_elem.elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});
-      }.bind(this))
-      .fail(function() 
-      {
-        f_append_to_pad('div_panel4_pad','copy_item failed');                                        
-        this.req_elem_ids = [];                 
-        this.req_tree_state = "rts_idle";  
-      }
-    );
-  }
-  else
-  {
-    alert("copy_items : Incomplete Parameters");
-  }
+  //  URL example : .../addLink?ids[]=[...1]&pids[]=[...1]&ids[]=[...2]&pids[]=[...2]&...
+  var args = iparams_cp.src_elem.map(function (copy_id) {
+    return "ids[]=" + copy_id + "&pids[]=" + iparams_cp.dst_elem;
+  }).join("&");
+  var url = this.data_src_path + "addLinks?" + args;
+  
+  $.get(url)
+    .done(function(data) {
+      iparams_cp.cb_success();
+      //this.req_tree({elemId:[iparams_cp.dst_elem.elem_id], lock_id:iparams_cp.lock_id, favIds:[], tickerIds:[], cb_fct_call:iparams_cp.cb_fctn_str, mode:"tree_only"});
+    });
 }
 
 

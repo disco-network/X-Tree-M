@@ -22,30 +22,79 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   self.is_renaming_not_creating = null;
   self.path_to_root = null;
   self.selected_gui_ids = null;
+  self.action_in_clipboard = null;
 
   self.tree = null;
   self.expanded_node_gui_ids = null;
 
   function handle_key_press(key_chord) {
 
-    if (!are_single_selection_operations_available()) {
+    if (are_single_selection_operations_available()) {
+      switch (key_chord) {
+        case "right":
+          expand_children();
+          return;
+        case "left":
+          collapse_children();
+          return;
+        case "up":
+          move_selection_up();
+          return;
+        case "down":
+          move_selection_down();
+          return;
+      }
+    }
+
+    if (are_browsing_operations_available()) {
+      switch (key_chord) {
+        case "Ctrl+L":
+        case "Ctrl+C":
+          copy_by_reference();
+          return;
+        case "Ctrl+V":
+          if (self.action_in_clipboard !== null) {
+            self.action_in_clipboard();
+          }
+          return;
+      }
+    }
+  }
+
+  function copy_by_reference() {
+
+    if (!are_browsing_operations_available()) {
       return;
     }
 
-    switch (key_chord) {
-      case "right":
-        expand_children();
-        break;
-      case "left":
-        collapse_children();
-        break;
-      case "up":
-        move_selection_up();
-        break;
-      case "down":
-        move_selection_down();
-        break;
-    }
+    const copied_gui_ids = self.selected_gui_ids;
+    const copied_elem_ids = copied_gui_ids.map(function (gui_id) {
+      const pos = self.tree.locate(gui_id);
+      if (pos === null) {
+        console.log("ignored invalid gui_id");
+        return null;
+      }
+
+      return pos.get_node().elem_id;
+    }).filter(function (x) { return x !== null });
+
+    self.action_in_clipboard = function() {
+      if (!are_single_selection_operations_available()) {
+        return;
+      }
+
+      const selected = locate_single_selected_node().get_node();
+
+      self.is_busy = true;
+      self.lib_data.command({
+        src_elem: copied_elem_ids,
+        dst_elem: selected.elem_id,
+        cb_success: function () {
+          self.is_busy = false;
+          self.select_and_zoom_to(selected.gui_id);
+        }
+      }, "copy_item");
+    };
   }
 
   function expand_children() {

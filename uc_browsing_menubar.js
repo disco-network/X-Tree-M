@@ -90,73 +90,77 @@ function uc_browsing_main_process_elem_menu(item)
           alert(c_LANG_WARNING_NOTHING_SELECTED[this.main.global_setup.curr_lang]);
         break;
     case "clone_item" :
-        this.main.cloned_items = jQuery.extend(true, [], this.main.panel1_selected_items);
+        // this.main.cloned_items = jQuery.extend(true, [], this.main.panel1_selected_items);
+        this.main.model.handle_key_press("Ctrl+C");
         break;
     case "copy_item"   :
-        this.main.copied_items = jQuery.extend(true, [], this.main.panel1_selected_items);
+        // this.main.copied_items = jQuery.extend(true, [], this.main.panel1_selected_items);
+        this.main.model.handle_key_press("Ctrl+L");
         break;
     case "cut_item"    :
-        this.main.cut_items = jQuery.extend(true, [], this.main.panel1_selected_items);
-        this.main.tree_panel.mark_items_as_cut(this.main.panel1_selected_items, true);
+        // this.main.cut_items = jQuery.extend(true, [], this.main.panel1_selected_items);
+        // this.main.tree_panel.mark_items_as_cut(this.main.panel1_selected_items, true);
+        this.main.model.handle_key_press("Ctrl+X");
         break;
     case "paste_item"  :
                                     // number of destination nodes which are selected == 1
-        if (this.main.panel1_selected_items.length==1) 
-        {
-          if (this.main.cut_items.length != 0) 
-          {
-            if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.cut_items)) 
-            {
-                                    // move items in database
-              var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({
-                source_items: this.main.cut_items,
-                destination_path:this.main.setup.path_to_selected,
-                cb_fctn_str:on_click_str},
-              "move_item"); 
-                                    // any further paste operations are only copy operations
-                                    // because the source items cannot be removed any more
-              this.main.copied_items = this.main.cut_items;
-              this.main.cut_items = [];             
-            }
-            else
-              alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
-          }
-          else if (this.main.copied_items.length != 0)
-          {
-            if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.copied_items)) 
-            {
-                                    // copy items in database and reload tree
-              var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({
-                source_items: this.main.copied_items,
-                destination_path:this.main.setup.path_to_selected,
-                cb_fctn_str:on_click_str},
-              "copy_item"); 
-            }
-            else
-              alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
-          }
-          else if (this.main.cloned_items.length != 0)
-          {
-            if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.cloned_items)) 
-            {
-                                    // clone items in database and reload tree
-              var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.main.db_obj.command({
-                source_items: this.main.cloned_items,
-                destination_path:this.main.setup.path_to_selected,
-                cb_fctn_str:on_click_str},
-              "clone_item"); 
-            }
-            else
-              alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
-          }
-          else
-            alert(c_LANG_WARNING_NOTHING_IN_MEMORY[this.main.global_setup.curr_lang]); 
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);        
+        // if (this.main.panel1_selected_items.length==1) 
+        // {
+        //   if (this.main.cut_items.length != 0) 
+        //   {
+        //     if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.cut_items)) 
+        //     {
+        //                             // move items in database
+        //       var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+        //       this.main.db_obj.command({
+        //         source_items: this.main.cut_items,
+        //         destination_path:this.main.setup.path_to_selected,
+        //         cb_fctn_str:on_click_str},
+        //       "move_item"); 
+        //                             // any further paste operations are only copy operations
+        //                             // because the source items cannot be removed any more
+        //       this.main.copied_items = this.main.cut_items;
+        //       this.main.cut_items = [];             
+        //     }
+        //     else
+        //       alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
+        //   }
+        //   else if (this.main.copied_items.length != 0)
+        //   {
+        //     if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.copied_items)) 
+        //     {
+        //                             // copy items in database and reload tree
+        //       var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+        //       this.main.db_obj.command({
+        //         source_items: this.main.copied_items,
+        //         destination_path:this.main.setup.path_to_selected,
+        //         cb_fctn_str:on_click_str},
+        //       "copy_item"); 
+        //     }
+        //     else
+        //       alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
+        //   }
+        //   else if (this.main.cloned_items.length != 0)
+        //   {
+        //     if (!uc_browsing_is_loop(this.main.curr_tree_part, this.main.panel1_selected_items[0], this.main.cloned_items)) 
+        //     {
+        //                             // clone items in database and reload tree
+        //       var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+        //       this.main.db_obj.command({
+        //         source_items: this.main.cloned_items,
+        //         destination_path:this.main.setup.path_to_selected,
+        //         cb_fctn_str:on_click_str},
+        //       "clone_item"); 
+        //     }
+        //     else
+        //       alert(c_LANG_WARNING_CYCLE_DETECTED[this.main.global_setup.curr_lang]);
+        //   }
+        //   else
+        //     alert(c_LANG_WARNING_NOTHING_IN_MEMORY[this.main.global_setup.curr_lang]); 
+        // }
+        // else
+        //   alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);        
+        this.main.model.handle_key_press("Ctrl+V");
         break;
         
     case "export_item" :

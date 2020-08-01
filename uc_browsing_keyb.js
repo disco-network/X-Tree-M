@@ -261,19 +261,22 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // CTRL + C
           case 67 : 
             //alert("CTRL-C");
-            this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "clone_item", c_KEYB_MODE_CTRL_ONLY);
+            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "clone_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+C");
           break; 
           
           // CTRL + L
           case 76 :
             //alert("CTRL-L");
-            this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "copy_item", c_KEYB_MODE_CTRL_ONLY);
+            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "copy_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+L");
           break;
   
           // CTRL + V
           case 86 :
             //alert("CTRL-V");
-            this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "paste_item", c_KEYB_MODE_CTRL_ONLY);
+            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "paste_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+V");
           break;
           
           // CTRL + X
