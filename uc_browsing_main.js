@@ -407,6 +407,14 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
             this.global_main_setup_save();               
             this.switch_display(this.global_setup.display_type);
           break; 
+
+          case "expand_children":
+            this.model.expand_children_of(item);
+          break;
+
+          case "collapse_children":
+            this.model.collapse_children_of(item);
+          break;
             
           default :
             alert(c_LANG_UC_BROWSING_MSG_UNKNOWN_SUBMODULE[this.global_setup.curr_lang] + submodule);

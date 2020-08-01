@@ -281,12 +281,16 @@ function print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree)
                                     // hide all UL lists on init which have the classname ".hide_ul"
   $('#' + this.gui_tree_context).find('ul.hide_ul').hide(0); 
                                     // ... unfold them on first mouseover of according icon image
+  const self = this;
   $('#' + this.gui_tree_context).find('img').mouseenter(
     function () {
-      if ($(this).siblings('ul').css("display") == "none")
-        $(this).siblings('ul').show(100);
+      const ul = $(this).siblings('ul');
+      const gui_id = ul.attr("id").slice(0, -3);
+      if (ul.css("display") == "none") {
+        window[self.cb_clicked_at_str](self.current_usecase, self.current_panel, "expand_children", gui_id);
+      }
       else
-        $(this).siblings('ul').hide(100);        
+        window[self.cb_clicked_at_str](self.current_usecase, self.current_panel, "collapse_children", gui_id);
     }
   ); 
   

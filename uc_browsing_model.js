@@ -9,6 +9,8 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   self.begin_renaming = begin_renaming;
   self.begin_creating = begin_creating;
   self.apply_name_input = apply_name_input;
+  self.expand_children_of = expand_children_of;
+  self.collapse_children_of = collapse_children_of;
 
   // private
   self.dispatcher = dispatcher;
@@ -42,17 +44,34 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function expand_children() {
-    ensure(are_single_selection_operations_available(), "");
+    if (!are_single_selection_operations_available()) {
+      return;
+    }
 
-    const gui_id = locate_single_selected_node().get_node().gui_id;
+    self.expand_children_of(locate_single_selected_node().get_node().gui_id);
+  }
+
+  function expand_children_of(gui_id) {
+    if (!are_single_selection_operations_available()) {
+      return;
+    }
+
     self.expanded_node_gui_ids[gui_id] = true;
     self.dispatcher.expand_children_by_gui_id(gui_id);
   }
 
   function collapse_children() {
+    if (!are_single_selection_operations_available()) {
+      return;
+    }
+
+    self.collapse_children_of(locate_single_selected_node().get_node().gui_id);
+  }
+
+
+  function collapse_children_of(gui_id) {
     ensure(are_single_selection_operations_available(), "");
 
-    const gui_id = locate_single_selected_node().get_node().gui_id;
     delete self.expanded_node_gui_ids[gui_id];
     self.dispatcher.collapse_children_by_gui_id(gui_id);
   }
@@ -71,9 +90,13 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     }
   }
 
-  function locate_node_after(position) {
+  function locate_node_after(position, include_children) {
+    if (include_children === undefined) {
+      include_children = true;
+    }
+
     const gui_id = position.get_node().gui_id;
-    if (self.expanded_node_gui_ids[gui_id]) {
+    if (include_children && self.expanded_node_gui_ids[gui_id]) {
       const children = position.locate_children();
       if (children.length > 0) {
         return children[0];
@@ -87,8 +110,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
     const parent = position.locate_parent_in_tree();
     if (parent !== null) {
-      const next_parent_sibling = parent.locate_next_sibling();
-      return next_sibling;
+      return locate_node_after(parent, false);
     }
 
     return null;
