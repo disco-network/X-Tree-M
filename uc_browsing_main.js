@@ -134,32 +134,33 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
   switch (mode)
   {
     case c_KEYB_MODE_CTRL_ONLY : 
-        var add_item = true;        // false : 
-        var loop_num = this.panel1_selected_items.length;
-        var i=0;
-        do 
-        {
-                                    // found selected item
-          if (this.panel1_selected_items[i].gui_id == gui_id)
-          {
-            add_item = false;
-            {
-                                    // deselect and remove from selected list
-              this.tree_panel.markup_items(this.panel1_selected_items[i].gui_id, false);
-              this.panel1_selected_items.splice(i, 1);
-              loop_num--;
-            }
-          }   
-          else    
-            i++;
-        } while ( i<loop_num);
-        this.panel1_select_idx = this.panel1_selected_items.length;
-        if (add_item == true)                                              
-        {
-          this.panel1_selected_items[this.panel1_select_idx]=this.tree_panel.get_item_data(gui_id);
-          this.tree_panel.markup_items(gui_id, true);      
-          this.panel1_select_idx++;
-        }
+        // var add_item = true;        // false : 
+        // var loop_num = this.panel1_selected_items.length;
+        // var i=0;
+        // do 
+        // {
+        //                             // found selected item
+        //   if (this.panel1_selected_items[i].gui_id == gui_id)
+        //   {
+        //     add_item = false;
+        //     {
+        //                             // deselect and remove from selected list
+        //       this.tree_panel.markup_items(this.panel1_selected_items[i].gui_id, false);
+        //       this.panel1_selected_items.splice(i, 1);
+        //       loop_num--;
+        //     }
+        //   }   
+        //   else    
+        //     i++;
+        // } while ( i<loop_num);
+        // this.panel1_select_idx = this.panel1_selected_items.length;
+        // if (add_item == true)                                              
+        // {
+        //   this.panel1_selected_items[this.panel1_select_idx]=this.tree_panel.get_item_data(gui_id);
+        //   this.tree_panel.markup_items(gui_id, true);      
+        //   this.panel1_select_idx++;
+        // }
+        this.model.toggle_in_multiselection(gui_id);
     break;
 
     case c_KEYB_MODE_SHIFT_ONLY :

@@ -5,6 +5,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   self.handle_key_press = handle_key_press;
   self.select_and_zoom = select_and_zoom;
   self.select_and_zoom_to = select_and_zoom_to;
+  self.toggle_in_multiselection = toggle_in_multiselection;
   self.delete_selected = delete_selected;
   self.begin_renaming = begin_renaming;
   self.begin_creating = begin_creating;
@@ -27,7 +28,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function handle_key_press(key_chord) {
 
-    if (!are_browsing_operations_available()) {
+    if (!are_single_selection_operations_available()) {
       return;
     }
 
@@ -207,6 +208,24 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function select_and_zoom_to(gui_id) {
     self.select_and_zoom(path_to(gui_id));
+  }
+
+  function toggle_in_multiselection(gui_id) {
+    if (!are_browsing_operations_available()) {
+      return;
+    }
+
+    const old_selection = self.selected_gui_ids;
+    const selection_with_deselected_element = self.selected_gui_ids.filter(function (id) { return gui_id !== id });
+    const was_present_in_old_selection = old_selection.length > selection_with_deselected_element.length;
+
+    if (was_present_in_old_selection) {
+      self.selected_gui_ids = selection_with_deselected_element;
+    } else {
+      self.selected_gui_ids = [ gui_id ].concat(old_selection);
+    }
+
+    self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
   }
 
   function delete_selected() {
