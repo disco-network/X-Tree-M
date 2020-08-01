@@ -84,13 +84,15 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_single_selection_operations_available(), "");
 
     const position = locate_single_selected_node();
-    const next_pos = locate_node_before(position);
+    const prev_pos = locate_node_before(position);
 
-    if (next_pos !== null) {
+    if (prev_pos !== null && prev_pos.is_in_tree()) {
       const old_selection = self.selected_gui_ids;
-      self.selected_gui_ids = [ next_pos.get_node().gui_id ];
+      self.selected_gui_ids = [ prev_pos.get_node().gui_id ];
 
       self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
+    } else if (prev_pos !== null) {
+      self.select_and_zoom_to(prev_pos.get_node().gui_id);
     }
   }
 
@@ -100,7 +102,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     const position = locate_single_selected_node();
     const next_pos = locate_node_after(position);
 
-    if (next_pos !== null) {
+    if (next_pos !== null && next_pos.is_in_tree()) {
       const old_selection = self.selected_gui_ids;
       self.selected_gui_ids = [ next_pos.get_node().gui_id ];
 
@@ -114,7 +116,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
       return locate_last_grandchild(prev_sibling);
     }
 
-    const parent = position.locate_parent_in_tree();
+    const parent = position.locate_parent();
     if (parent !== null) {
       return parent;
     }
@@ -148,7 +150,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
       return next_sibling;
     }
 
-    const parent = position.locate_parent_in_tree();
+    const parent = position.locate_parent();
     if (parent !== null) {
       return locate_node_after(parent, false);
     }
@@ -159,7 +161,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   function locate_visible_children(position) {
     const gui_id = position.get_node().gui_id;
 
-    if (self.expanded_node_gui_ids[gui_id]) {
+    if (!position.is_in_tree() || self.expanded_node_gui_ids[gui_id]) {
       return position.locate_children();
     }
 
@@ -256,12 +258,13 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(!self.is_busy, "");
     ensure(is_single_selection(), "");
 
+    const was_renaming_not_creating = self.is_renaming_not_creating;
     self.is_name_input_active = false;
     self.is_renaming_not_creating = null;
 
     const selected = locate_single_selected_node().get_node();
 
-    if (self.is_renaming_not_creating) {
+    if (was_renaming_not_creating) {
       self.is_busy = true;
       self.lib_data.command({
         elem_id: selected.elem_id,

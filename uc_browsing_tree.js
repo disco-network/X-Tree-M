@@ -59,7 +59,7 @@ function uc_browsing_tree(explorer_path, tree_nodes) {
     const this_node = pos.get_node();
     const predicate = function (node) { return node.parent_gui_id === this_node.parent_gui_id };
     
-    return self.tree_nodes.filter(predicate);
+    return self.explorer_path.filter(predicate).concat(self.tree_nodes.filter(predicate));
   }
 }
 
@@ -74,6 +74,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   self.get_downward_path = get_downward_path;
   self.get_node = get_node;
   self.is_in_tree = is_in_tree;
+  self.locate_parent = locate_parent;
   self.locate_parent_in_tree = locate_parent_in_tree;
   self.locate_children = locate_children;
   self.locate_siblings = locate_siblings;
@@ -162,9 +163,7 @@ function uc_browsing_tree_position(tree, downward_path) {
     return next_sibling !== undefined ? next_sibling : null;
   }
 
-  function locate_siblings(gui_id) {
-    const node = get_node(gui_id);
-
+  function locate_siblings() {
     const siblings = tree.find_siblings_of(self);
 
     return siblings.map(function (sibling) {
