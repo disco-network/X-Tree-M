@@ -167,7 +167,7 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
     break;
     
     case c_KEYB_MODE_NONE :
-      this.model.load_by_gui_id(gui_id);
+      this.model.select_and_zoom_to(gui_id);
 //                                    // get item object
 //        var new_item = this.tree_panel.get_item_data(gui_id); 
 //                                    // if multiple parents -> save default
@@ -774,6 +774,23 @@ function uc_browsing_main_init_model() {
     creating_started: function(parent_node) {
       self.tree_panel.input_item(true, parent_node.gui_id, parent_node.type);
     },
+    expand_children_by_gui_id(gui_id) {
+      var curr_ul = document.getElementById(gui_id + '_ul');
+      curr_ul.style.display="block";
+    },
+    collapse_children_by_gui_id(gui_id) {
+      var curr_ul = document.getElementById(gui_id + '_ul');
+      curr_ul.style.display="none";
+    },
+    selection_changed(old_sel, new_sel) {
+      old_sel.forEach(function (gui_id) {
+        self.tree_panel.markup_items(gui_id, false);
+      });
+
+      new_sel.forEach(function (gui_id) {
+        self.tree_panel.markup_items(gui_id, true);
+      });
+    },
   };
 
   var logger = function(msg) {
@@ -798,7 +815,7 @@ function uc_browsing_main_launch()
 
                                     // load content from database and show it
   //this.load([this.setup.tree_last_selected]);
-  this.model.load_path(this.setup.tree_path_to_selected);
+  this.model.select_and_zoom(this.setup.tree_path_to_selected);
 
                                     // set up Keyboard Control
   this.keyb = new uc_browsing_keyb(this);  

@@ -161,84 +161,88 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           
           // arrow left
           case 37 :
-            if (this.main.text_focus == 0)
-            {
-              e.preventDefault();
-              var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
-              curr_ul.style.display="none";
-            }
+            // if (this.main.text_focus == 0)
+            // {
+            //   e.preventDefault();
+            //   var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
+            //   curr_ul.style.display="none";
+            // }
+            this.main.model.handle_key_press("left");
           break;
   
           // arrow up
           case 38 : 
-            if (this.main.text_focus == 0)
-            {
-              e.preventDefault();
-                                    // unmark all selected items
-              var new_selected_gui_id = this.main.tree_panel.get_next_visible_up(this.main.panel1_selected_items[0].gui_id);  
-              if (new_selected_gui_id != null)
-              {
-                for (var i=0; i<this.main.panel1_selected_items.length; i++)
-                  this.main.tree_panel.markup_items(this.main.panel1_selected_items[i].gui_id, false);
+            // if (this.main.text_focus == 0)
+            // {
+            //   e.preventDefault();
+            //                         // unmark all selected items
+            //   var new_selected_gui_id = this.main.tree_panel.get_next_visible_up(this.main.panel1_selected_items[0].gui_id);  
+            //   if (new_selected_gui_id != null)
+            //   {
+            //     for (var i=0; i<this.main.panel1_selected_items.length; i++)
+            //       this.main.tree_panel.markup_items(this.main.panel1_selected_items[i].gui_id, false);
   
-                this.main.panel1_selected_items = [];
-                                    // renew selection
-                this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data(new_selected_gui_id);
-                this.main.tree_panel.markup_items(this.main.panel1_selected_items[0].gui_id, true);                                                             
-                                    // save setup
-                uc_browsing_setup.tree_last_selected = this.main.panel1_selected_items[0].elem_id;
-                this.main.save_setup();                
-                                    // scroll into view
-                document.getElementById(this.main.panel1_selected_items[0].gui_id + '_div').scrollIntoView();  // $$$
-                                    // load content
-                this.main.content_panel.load_item_content(this.main.tree_panel.get_item_data(this.main.tree_panel.get_gui_id(uc_browsing_setup.tree_last_selected)[0]));                                    
-              }
-              else
-              {
-                this.main.select_item("tree_select", "E0", c_KEYB_MODE_NONE)
-                document.getElementById('div_panel1_content').scrollTop = 0;
-              }
-              window.scrollTo(0, 0);              
-            }
+            //     this.main.panel1_selected_items = [];
+            //                         // renew selection
+            //     this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data(new_selected_gui_id);
+            //     this.main.tree_panel.markup_items(this.main.panel1_selected_items[0].gui_id, true);                                                             
+            //                         // save setup
+            //     uc_browsing_setup.tree_last_selected = this.main.panel1_selected_items[0].elem_id;
+            //     this.main.save_setup();                
+            //                         // scroll into view
+            //     document.getElementById(this.main.panel1_selected_items[0].gui_id + '_div').scrollIntoView();  // $$$
+            //                         // load content
+            //     this.main.content_panel.load_item_content(this.main.tree_panel.get_item_data(this.main.tree_panel.get_gui_id(uc_browsing_setup.tree_last_selected)[0]));                                    
+            //   }
+            //   else
+            //   {
+            //     this.main.select_item("tree_select", "E0", c_KEYB_MODE_NONE)
+            //     document.getElementById('div_panel1_content').scrollTop = 0;
+            //   }
+            //   window.scrollTo(0, 0);              
+            // }
+            this.main.model.handle_key_press("up");
           break;
            
           // arrow right
           case 39 :
-            if (this.main.text_focus == 0)
-            {
-              e.preventDefault();
-              var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
-              curr_ul.style.display="block";
-            }
+            // if (this.main.text_focus == 0)
+            // {
+            //   e.preventDefault();
+            //   var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
+            //   curr_ul.style.display="block";
+            // }
+            this.main.model.handle_key_press("right");
           break;
               
           // arrow down
           case 40 : 
-            if (this.main.text_focus == 0)
-            {
-              e.preventDefault();
+            // if (this.main.text_focus == 0)
+            // {
+            //   e.preventDefault();
   
-              var new_selected_gui_id = this.main.tree_panel.get_next_visible_dn(this.main.panel1_selected_items[0].gui_id);  
-              if (new_selected_gui_id != null)
-              {
-                                    // unmark all selected items
-                for (var i=0; i<this.main.panel1_selected_items.length; i++)
-                  this.main.tree_panel.markup_items(this.main.panel1_selected_items[i].gui_id, false);
-                
-                this.main.panel1_selected_items = [];
-                                    // renew selection
-                this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data(new_selected_gui_id);
-                this.main.tree_panel.markup_items(this.main.panel1_selected_items[0].gui_id, true);                                                             
-                                    // save setup
-                uc_browsing_setup.tree_last_selected = this.main.panel1_selected_items[0].elem_id;
-                this.main.save_setup();                
-                                    // scroll into view
-                document.getElementById(this.main.panel1_selected_items[0].gui_id + '_div').scrollIntoView();  // $$$              
-                                    // load content
-                this.main.content_panel.load_item_content(this.main.tree_panel.get_item_data(this.main.tree_panel.get_gui_id(uc_browsing_setup.tree_last_selected)[0]));
-              }
-              window.scrollTo(0, 0);
-            }
+            //   var new_selected_gui_id = this.main.tree_panel.get_next_visible_dn(this.main.panel1_selected_items[0].gui_id);  
+            //   if (new_selected_gui_id != null)
+            //   {
+            //                         // unmark all selected items
+            //     for (var i=0; i<this.main.panel1_selected_items.length; i++)
+            //       this.main.tree_panel.markup_items(this.main.panel1_selected_items[i].gui_id, false);
+            //     
+            //     this.main.panel1_selected_items = [];
+            //                         // renew selection
+            //     this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data(new_selected_gui_id);
+            //     this.main.tree_panel.markup_items(this.main.panel1_selected_items[0].gui_id, true);                                                             
+            //                         // save setup
+            //     uc_browsing_setup.tree_last_selected = this.main.panel1_selected_items[0].elem_id;
+            //     this.main.save_setup();                
+            //                         // scroll into view
+            //     document.getElementById(this.main.panel1_selected_items[0].gui_id + '_div').scrollIntoView();  // $$$              
+            //                         // load content
+            //     this.main.content_panel.load_item_content(this.main.tree_panel.get_item_data(this.main.tree_panel.get_gui_id(uc_browsing_setup.tree_last_selected)[0]));
+            //   }
+            //   window.scrollTo(0, 0);
+            // }
+            this.main.model.handle_key_press("down");
           break;
   
           
