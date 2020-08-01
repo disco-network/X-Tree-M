@@ -49,9 +49,11 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     if (are_browsing_operations_available()) {
       switch (key_chord) {
         case "Ctrl+L":
-        case "Ctrl+C":
           copy_by_reference();
           return;
+        case "Ctrl+X":
+          cut();
+          break;
         case "Ctrl+V":
           if (self.action_in_clipboard !== null) {
             self.action_in_clipboard();
@@ -67,8 +69,46 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
       return;
     }
 
-    const copied_gui_ids = self.selected_gui_ids;
-    const copied_elem_ids = copied_gui_ids.map(function (gui_id) {
+    const copied_elem_ids = get_selected_elem_ids();
+
+    self.action_in_clipboard = function() {
+      if (!are_single_selection_operations_available()) {
+        return;
+      }
+
+      const selected = locate_single_selected_node();
+
+      paste_by_ref(copied_elem_ids, selected, function () {
+        self.select_and_zoom_to(selected.get_node().gui_id);
+      });
+    };
+  }
+
+  function cut() {
+    if (!are_browsing_operations_available()) {
+      return;
+    }
+
+    const cut_ids = get_selected_elem_ids();
+    const cut_links = get_selected_links();
+
+    self.action_in_clipboard = function () {
+      if (!are_single_selection_operations_available()) {
+        return;
+      }
+
+      const selected = locate_single_selected_node();
+
+      delete_links(cut_links, function () {
+        paste_by_ref(cut_ids, selected, function () {
+          self.select_and_zoom_to(selected.get_node().gui_id);
+        });
+      });
+    };
+  }
+
+  function get_selected_elem_ids() {
+    return self.selected_gui_ids.map(function (gui_id) {
       const pos = self.tree.locate(gui_id);
       if (pos === null) {
         console.log("ignored invalid gui_id");
@@ -77,24 +117,51 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
       return pos.get_node().elem_id;
     }).filter(function (x) { return x !== null });
+  }
 
-    self.action_in_clipboard = function() {
-      if (!are_single_selection_operations_available()) {
-        return;
+  function get_selected_links() {
+    return self.selected_gui_ids.map(function (gui_id) {
+      const pos = self.tree.locate(gui_id);
+      if (pos === null) {
+        console.log("ignored invalid gui_id");
+        return null;
       }
 
-      const selected = locate_single_selected_node().get_node();
+      const parent_pos = pos.locate_parent();
+      if (parent_pos === null) {
+        console.log("ignored selected item without parent");
+        return null;
+      }
 
-      self.is_busy = true;
-      self.lib_data.command({
-        src_elem: copied_elem_ids,
-        dst_elem: selected.elem_id,
-        cb_success: function () {
-          self.is_busy = false;
-          self.select_and_zoom_to(selected.gui_id);
-        }
-      }, "copy_item");
-    };
+      return { id: pos.get_node().elem_id, parent_id: parent_pos.get_node().elem_id };
+    }).filter(function (x) { return x !== null });
+  }
+
+  function paste_by_ref(ids, parent_pos, cb_success) {
+    ensure(are_single_selection_operations_available());
+
+    self.is_busy = true;
+    self.lib_data.command({
+      src_elem: ids,
+      dst_elem: parent_pos.get_node().elem_id,
+      cb_success: function () {
+        self.is_busy = false;
+        cb_success();
+      }
+    }, "copy_item");
+  }
+
+  function delete_links(links, cb_success) {
+    ensure(are_browsing_operations_available());
+
+    self.is_busy = true;
+    self.lib_data.command({
+      links: links,
+      cb_success: function () {
+        self.is_busy = false;
+        cb_success();
+      }
+    }, "delete_item");
   }
 
   function expand_children() {

@@ -724,9 +724,13 @@ function lib_data_paul_delete_tree_item(iparams)          //  iparams = {parent_
 
   //  old URL example : .../delete?id=10
   //  new URL example : .../deleteLink?id=5&parentid=1
-  var post_params = "id=" + iparams_cp.elem_id + "&parentid=" + iparams_cp.parent_elem_id;
+  //  newer URL example: .../deleteLinks?ids[]=5&pids[]=1
+  var args = iparams_cp.links.map(function (link) {
+    return "ids[]=" + link.id + "&pids[]=" + link.parent_id;
+  }).join("&");
+  var url = this.data_src_path + "deleteLinks?" + args;
   
-  $.get(this.data_src_path+"deleteLink?"+post_params)
+  $.get(url)
     .done(function(data) {
       iparams_cp.cb_success();
     });

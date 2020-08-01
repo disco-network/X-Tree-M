@@ -282,7 +282,8 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // CTRL + X
           case 88 :
             //alert("CTRL-X");
-            this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "cut_item", c_KEYB_MODE_CTRL_ONLY);
+            // this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "cut_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+X");
           break;
   
           default : break;
