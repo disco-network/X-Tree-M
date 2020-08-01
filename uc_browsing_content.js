@@ -1,7 +1,8 @@
 // Class 'uc_browsing_content' -> Panel2
-function uc_browsing_content(gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, cb_clicked_at_str, db_obj, global_setup, global_main_save_setup)
+function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, cb_clicked_at_str, db_obj, global_setup, global_main_save_setup)
 {
   // save params to object
+  this.main = main;
   this.gui_headline_context = gui_headline_context;
   this.lang_headline = lang_headline;
   this.gui_content_context = gui_content_context;
@@ -55,10 +56,13 @@ function uc_browsing_content_clicked_at(submodule, item, mode)
               {
                 this.text_focus = 0;
                                     // save text content to database
-                var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
 // URL-Ersetzung : -> Problem : Text-Box nicht HTML-f�hig !!!
+                var self = this;
+                var cb_success = function() {
+                  self.main.model.reload();
+                }
                 if (submodule == "content")
-                  this.db_obj.command({items:[this.item_content], field_id:"content", content:URLlinks(getInnerHTML(document.getElementById("panel2_content_fulltext"))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
+                  this.db_obj.command({elem_id:[this.item_content.elem_id], field_id:"content", content:URLlinks(getInnerHTML(document.getElementById("panel2_content_fulltext"))), cb_success: cb_success}, "change_item_field");
 //                this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:URLlinks(nl2br(getInnerHTML(document.getElementById("panel2_content_fulltext")))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
 //                this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:getInnerHTML(document.getElementById("panel2_content_fulltext")), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
                 else

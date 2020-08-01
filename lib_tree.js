@@ -161,7 +161,7 @@ function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hie
   rootUl.appendChild(newLiItem);
 }
 
-function print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree)
+function print_disptype_tree(tree_obj)
 {
                                     // initialize for Explorer Bar
   var exp_bar_html = "";
@@ -185,13 +185,13 @@ function print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree)
                                     // first multi-parent item above tree      
       if (i==0)
       {
-        predecessor = selected_item_in_tree;
-        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + selected_item_in_tree.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
+        predecessor = tree_obj.tree_nodes[0];
+        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
       }
       else
       {
         predecessor = tree_obj.explorer_path[i-1];
-        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + tree_obj.explorer_path[i-1].gui_id + "_a\', c_KEYB_MODE_NONE, event);";          
+        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor.gui_id + "_a\', c_KEYB_MODE_NONE, event);";          
       }
 
                                     // multi-parent item
@@ -228,8 +228,7 @@ function print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree)
   var start_idx = 0;
   for (start_idx = 0; start_idx < tree_obj.tree_nodes.length && tree_obj.tree_nodes[start_idx].parent_gui_id === tree_obj.tree_nodes[0].parent_gui_id; ++start_idx) {
 
-//    if (JSON.stringify(tree_obj.tree_nodes[start_idx].elem_id) === JSON.stringify(sel_elem_id))
-    if (tree_obj.tree_nodes[start_idx].elem_id == sel_elem_id)
+    if (start_idx === 0)
     {
       if (tree_obj.tree_nodes[start_idx].stree_hier != undefined)
         this.create_stub(treeRootUl, tree_obj.tree_nodes[start_idx], on_click_str, false, tree_obj.tree_nodes[start_idx].stree_hier);
@@ -307,18 +306,18 @@ function lib_tree_print_tree(tree_obj, sel_elem_id)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // look up data in node array
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-  var selected_item_in_tree = find_node_by_id(tree_obj, sel_elem_id);
+  // var selected_item_in_tree = find_node_by_id(tree_obj, sel_elem_id);
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // execute print function for selected display type
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   var retval;
   if (global_setup.display_type == 0)
-    retval = this.print_disptype_tree(tree_obj, sel_elem_id, selected_item_in_tree);
+    retval = this.print_disptype_tree(tree_obj, sel_elem_id);
   else
     retval = this.print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree);
   
-  return retval;
+  //return retval;
 }
 
 function find_node_by_id(tree_obj, id) {

@@ -820,7 +820,7 @@ function uc_browsing_main_launch()
                                     // create Panel 1
   this.tree_panel = new lib_tree("div_panel1_headline", c_LANG_UC_BROWSING_MENUBAR[3][3][1], "div_panel1_pad", "uc_browsing", "panel1", this.cb_clicked_at_str);
                                     // create Panel 2
-  this.content_panel = new uc_browsing_content("div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsi", "panel2", this.cb_clicked_at_str, this.db_obj, this.global_setup, this.global_main_save_setup); 
+  this.content_panel = new uc_browsing_content(this, "div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsi", "panel2", this.cb_clicked_at_str, this.db_obj, this.global_setup, this.global_main_save_setup); 
                                     // create Menu and ToolBar just below MenuBar                                                  
   this.menubar = new uc_browsing_menubar( 'div_menubar', this, 'menubar', c_LANG_UC_BROWSING_MENUBAR); 
   this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.cb_clicked_at_str);     

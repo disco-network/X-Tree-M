@@ -3,6 +3,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   // public
   self.handle_key_press = handle_key_press;
+  self.reload = reload;
   self.select_and_zoom = select_and_zoom;
   self.select_and_zoom_to = select_and_zoom_to;
   self.toggle_in_multiselection = toggle_in_multiselection;
@@ -51,6 +52,8 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
         case "Ctrl+L":
           copy_by_reference();
           return;
+        case "Ctrl+C":
+          alert("Cloning is a bad idea, so this was not implemented!");
         case "Ctrl+X":
           cut();
           break;
@@ -296,6 +299,10 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     return self.tree.locate(gui_id);
   }
 
+  function reload() {
+    select_and_zoom(self.path_to_root);
+  }
+
   function select_and_zoom(path) {
     ensure(!self.is_busy, "Cannot reload the tree because it is busy.");
 
@@ -355,8 +362,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
     self.is_busy = true;
     self.lib_data.command({
-      elem_id: selected.elem_id,
-      parent_elem_id: selected.parent_elem_id,
+      links: [{id: selected.elem_id, parent_id: selected.parent_elem_id}],
       cb_success: after_deletion,
     }, "delete_item");
 
