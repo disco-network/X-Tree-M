@@ -78,6 +78,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   self.locate_children = locate_children;
   self.locate_siblings = locate_siblings;
   self.locate_next_sibling = locate_next_sibling;
+  self.locate_prev_sibling = locate_prev_sibling;
 
   self.tree = tree;
   self.downward_path = downward_path;
@@ -135,6 +136,18 @@ function uc_browsing_tree_position(tree, downward_path) {
     return children.map(function (child) {
       return new uc_browsing_tree_position(tree, self.downward_path.concat([ child ]));
     });
+  }
+
+  function locate_prev_sibling() {
+    const siblings = locate_siblings();
+    const my_index = siblings.findIndex(function (pos) { return self.equals_to(pos) });
+    
+    if (my_index === -1) {
+      throw new Error("Tree position is invalid: Node is not its own sibling.");
+    }
+
+    const prev_sibling = siblings[my_index - 1];
+    return prev_sibling !== undefined ? prev_sibling : null;
   }
 
   function locate_next_sibling() {

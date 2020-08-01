@@ -38,8 +38,12 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
       case "left":
         collapse_children();
         break;
+      case "up":
+        move_selection_up();
+        break;
       case "down":
         move_selection_down();
+        break;
     }
   }
 
@@ -76,6 +80,20 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     self.dispatcher.collapse_children_by_gui_id(gui_id);
   }
 
+  function move_selection_up() {
+    ensure(are_single_selection_operations_available(), "");
+
+    const position = locate_single_selected_node();
+    const next_pos = locate_node_before(position);
+
+    if (next_pos !== null) {
+      const old_selection = self.selected_gui_ids;
+      self.selected_gui_ids = [ next_pos.get_node().gui_id ];
+
+      self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
+    }
+  }
+
   function move_selection_down() {
     ensure(are_single_selection_operations_available(), "");
 
@@ -90,14 +108,36 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     }
   }
 
+  function locate_node_before(position) {
+    const prev_sibling = position.locate_prev_sibling();
+    if (prev_sibling !== null) {
+      return locate_last_grandchild(prev_sibling);
+    }
+
+    const parent = position.locate_parent_in_tree();
+    if (parent !== null) {
+      return parent;
+    }
+
+    return null;
+  }
+
+  function locate_last_grandchild(position) {
+    const visible_children = locate_visible_children(position);
+    if (visible_children.length > 0) {
+      return locate_last_grandchild(visible_children.slice(-1)[0]);
+    } else {
+      return position;
+    }
+  }
+
   function locate_node_after(position, include_children) {
     if (include_children === undefined) {
       include_children = true;
     }
 
-    const gui_id = position.get_node().gui_id;
-    if (include_children && self.expanded_node_gui_ids[gui_id]) {
-      const children = position.locate_children();
+    if (include_children) {
+      const children = locate_visible_children(position);
       if (children.length > 0) {
         return children[0];
       }
@@ -114,6 +154,16 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
     }
 
     return null;
+  }
+
+  function locate_visible_children(position) {
+    const gui_id = position.get_node().gui_id;
+
+    if (self.expanded_node_gui_ids[gui_id]) {
+      return position.locate_children();
+    }
+
+    return [];
   }
 
   function is_single_selection() {
