@@ -798,6 +798,11 @@ function uc_browsing_main_init_model() {
       new_sel.forEach(function (gui_id) {
         self.tree_panel.markup_items(gui_id, true);
       });
+
+      if (new_sel.length === 1) {
+        const gui_id = new_sel[0];
+        self.content_panel.load_item_content(self.tree_panel.get_item_data(gui_id));
+      }
     },
   };
 

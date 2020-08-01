@@ -200,6 +200,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
           explorer_path: tree.explorer_path,
           tree_nodes: tree.tree_nodes
         }, locate_single_selected_node().get_node().elem_id);
+        dispatcher.selection_changed([], self.selected_gui_ids);
       }
     }, "req_tree_only");
   }
