@@ -17,6 +17,7 @@ function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current
     this.print_disptype_bubbles = print_disptype_bubbles.bind(this);
   this.print_tree = lib_tree_print_tree.bind(this);
   this.print_item = lib_tree_print_item.bind(this);
+  this.print_item_rec = lib_tree_print_item_rec.bind(this);
   this.print_multi_parent_menu = lib_tree_print_multi_parent_menu.bind(this);
   this.get_defpar_pairs = lib_tree_get_defpar_pairs.bind(this);
   this.markup_items = lib_tree_markup_items.bind(this); 
@@ -86,6 +87,93 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
+function lib_tree_print_item_rec(root_ul, pos, hide_ul) {
+  var self = this;
+  var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
+  this.print_item(root_ul, pos.get_node(), on_click_str, hide_ul);
+
+  var gui_id = pos.get_node().gui_id;
+  var ul = document.getElementById(gui_id + "_ul");    
+
+  pos.locate_children().forEach(function (child_pos) {
+    self.print_item_rec(ul, child_pos, true);
+  });
+}
+
+function lib_tree_print_item(root_ul, node, on_click_str, hide_ul) {
+  // HTML-Code :
+  // <LI>
+  //   <IMG ... /IMG>  
+  //   <DIV ...>
+  //     <span><A .../A></span>
+  //   </DIV>
+  //   <UL .../UL>
+  // </LI>
+
+  var gui_id = node.gui_id + '_a';    
+                                    // LI container for single Item  
+  var newLiItem = document.createElement("li");
+    newLiItem.id = node.gui_id+"_li";
+    newLiItem.style.cssText = 'list-style: none; margin: 0; padding: 0;';    
+                                    // Symbol displaying the Element Type
+  var newTypeImgItem = document.createElement("img");
+  if (node.type != "none")
+  {
+    newTypeImgItem.id = node.gui_id+"_sym";
+    newTypeImgItem.src = lib_tree_get_symb(node.type);
+    newTypeImgItem.align = "left";
+    newTypeImgItem.width = 20;  
+    newTypeImgItem.height = 20;    
+  }    
+	                                  // Element Name	  
+  var newDivItem = document.createElement("div");
+    newDivItem.id = node.gui_id+'_div';
+    if (node.is_deleted === 1)
+      newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
+    else
+      newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
+    setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" onclick=\"' + on_click_str + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
+                                    // Prepare container for Child Elements (UL)
+  var newUlItem = document.createElement("ul");
+    newUlItem.id = node.gui_id+"_ul";
+    newUlItem.style.cssText = 'margin: 0; padding-left: 1.5em';
+    if (hide_ul)
+      newUlItem.className = "hide_ul";
+                                    // connect items
+                                    // 1.) insert Type Symbol as first child into Container
+  newLiItem.appendChild(newTypeImgItem);     
+                                    // 2.) insert Hierarchy Config Symbol (if avail) as second child
+  if (node.tree_hier != undefined)
+  {
+    var newHierImgItem = document.createElement("img");
+    newHierImgItem.id = node.gui_id+"_hiercfg_sym";
+    newHierImgItem.src = "symbol_cfg.gif";
+    newHierImgItem.align = "left";
+    newHierImgItem.width = 22;  
+	  newHierImgItem.height = 22;
+    newLiItem.appendChild(newHierImgItem);  
+  }           
+                                    // generate Evaluation Bar and fit it together with name field
+  var eval_value = 0.0;
+  if (node.eval != undefined) 
+  {
+    for (var i=0; i<this.eval_cat_num; i++)
+    { 
+      if (node.eval[i] != undefined)
+        eval_value = eval_value + node.eval[i].avg;
+    }
+  }
+  eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
+  my_eval_bar = f_eval_bar(newDivItem, eval_value);      
+  my_eval_bar.style.marginLeft = "2.8em";    
+                                    // 3.) insert Name field with Eval Bar as third child
+  newLiItem.appendChild(newDivItem);
+                                    // 4.) insert Child List as fourth child  
+  newLiItem.appendChild(newUlItem);
+                                    // insert current Item into parent's UL element
+  root_ul.appendChild(newLiItem);
+}
+
 // create stub of a tree
 function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hier)
 {
@@ -97,119 +185,54 @@ function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hie
   //   </DIV>
   //   <UL .../UL>
   // </LI>
-  var gui_id = curr_node.gui_id + '_a';    
-                                    // LI container for single Item  
-  var newLiItem = document.createElement("li");
-    newLiItem.id = curr_node.gui_id+"_li";
-    newLiItem.style.cssText = 'list-style: none; margin: 0; padding: 0;';    
-                                    // Symbol displaying the Element Type
-  var newTypeImgItem = document.createElement("img");
-    if (curr_node.type != "none")
-    {
-      newTypeImgItem.id = curr_node.gui_id+"_sym";
-      newTypeImgItem.src = lib_tree_get_symb(curr_node.type);
-      newTypeImgItem.align = "left";
-      newTypeImgItem.width = 20;  
-	    newTypeImgItem.height = 20;    
-	  }    
-	                                  // Element Name	  
-  var newDivItem = document.createElement("div");
-    newDivItem.id = curr_node.gui_id+'_div';
-    if (curr_node.is_deleted === 1)
-      newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
-    else
-      newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
-    setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" onclick=\"' + onclickStr + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + curr_node.name + '</a></span>');  
-                                    // Prepare container for Child Elements (UL)
-  var newUlItem = document.createElement("ul");
-    newUlItem.id = curr_node.gui_id+"_ul";
-    newUlItem.style.cssText = 'margin: 0;';
-    if (ul_hidden)
-      newUlItem.className = "hide_ul";
-                                    // connect items
-                                    // 1.) insert Type Symbol as first child into Container
-  newLiItem.appendChild(newTypeImgItem);     
-                                    // 2.) insert Hierarchy Config Symbol (if avail) as second child
-  if (tree_hier != undefined)
-  {
-    var newHierImgItem = document.createElement("img");
-    newHierImgItem.id = curr_node.gui_id+"_hiercfg_sym";
-    newHierImgItem.src = "symbol_cfg.gif";
-    newHierImgItem.align = "left";
-    newHierImgItem.width = 22;  
-	  newHierImgItem.height = 22;
-    newLiItem.appendChild(newHierImgItem);  
-  }           
-                                    // generate Evaluation Bar and fit it together with name field
-  var eval_value = 0.0;
-  if (curr_node.eval != undefined) 
-  {
-    for (var i=0; i<this.eval_cat_num; i++)
-    { 
-      if (curr_node.eval[i] != undefined)
-        eval_value = eval_value + curr_node.eval[i].avg;
-    }
-  }
-  eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
-  my_eval_bar = f_eval_bar(newDivItem, eval_value);      
-  my_eval_bar.style.marginLeft = "2.8em";    
-                                    // 3.) insert Name field with Eval Bar as third child
-  newLiItem.appendChild(newDivItem);
-                                    // 4.) insert Child List as fourth child  
-  newLiItem.appendChild(newUlItem);
-                                    // insert current Item into parent's UL element
-  rootUl.appendChild(newLiItem);
+
+  this.print_item(rootUl, curr_node, onclickStr, ul_hidden, tree_hier, undefined);
 }
 
-function print_disptype_tree(tree_obj)
+function print_disptype_tree(tree)
 {
                                     // initialize for Explorer Bar
   var exp_bar_html = "";
 
   // part 1 : print Explorer Bar
-  for(var i=tree_obj.explorer_path.length-1; i>=0; i--)
-  {
+  for (var predecessor = tree.locate_pivot(); predecessor.locate_parent() !== null; predecessor = predecessor.locate_parent()) {
                                     // prepare variables
-    var gui_id = tree_obj.explorer_path[i].gui_id + "_a";
+    var position = predecessor.locate_parent();
+    var node = position.get_node();
+    var gui_id = node.gui_id;
+    var gui_id_a = gui_id + "_a";
+    var gui_id_mult = gui_id + "_pmenu_a";
+    var predecessor_node = predecessor.get_node();
+    var name = node.name;
+
     var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'explorer_select\', this.id, c_KEYB_MODE_NONE, event);";
     var on_click_str_multi = "";  
                                     // root element (selected element is used as Explorer Bar)
-    if (i == (tree_obj.explorer_path.length-1))
+    if (position.locate_parent() === null)
     {
-      exp_bar_html = '<span><a id=\"' + gui_id + '\" onclick=\"' + on_click_str + '\">[' + tree_obj.explorer_path[i].name + ']</a></span>' + exp_bar_html;
+      // This might lead to HTML injection! (at least check whether it could)
+      exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">[' + name + ']</a></span>' + exp_bar_html;
     }
     else  
     {
-      var gui_id_mult = tree_obj.explorer_path[i].gui_id + "_pmenu_a";      
-      var predecessor = {};
-                                    // first multi-parent item above tree      
-      if (i==0)
-      {
-        predecessor = tree_obj.tree_nodes[0];
-        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
-      }
-      else
-      {
-        predecessor = tree_obj.explorer_path[i-1];
-        on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor.gui_id + "_a\', c_KEYB_MODE_NONE, event);";          
-      }
+      on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor_node.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
 
                                     // multi-parent item
-      if (predecessor.isMultiPar == true)
+      if (predecessor_node.isMultiPar === true)
       {
-        exp_bar_html = '<span><a id=\"' + gui_id + '\" onclick=\"' + on_click_str + '\">' + tree_obj.explorer_path[i].name + '</a></span>&nbsp;<span><a id=\"' + gui_id_mult + '\" onclick=\"' + on_click_str_multi + '\">{...}</a></span> \\&nbsp;' + exp_bar_html;                      
+        exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + name + '</a></span>&nbsp;<span><a id=\"' + gui_id_mult + '\" onclick=\"' + on_click_str_multi + '\">{...}</a></span> \\&nbsp;' + exp_bar_html;                      
       }
       else
       {
                                     // normal items
-        exp_bar_html = '<span><a id=\"' + gui_id + '\" onclick=\"' + on_click_str + '\">' + tree_obj.explorer_path[i].name + '</a></span> \\&nbsp;' + exp_bar_html;
+        exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + name + '</a></span> \\&nbsp;' + exp_bar_html;
       }
     }
   }                        
   // add Explorer Path to GUI
   var gui_context = document.getElementById(this.gui_tree_context); 
    
-  if (tree_obj.explorer_path.length > 0)
+  if (tree.locate_pivot().locate_parent() !== null)
     setInnerHTML(gui_context, "&nbsp;" + exp_bar_html);
   else
     setInnerHTML(gui_context, "");
@@ -225,47 +248,25 @@ function print_disptype_tree(tree_obj)
 
                                     // print stub elements
   var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
-  var start_idx = 0;
-  for (start_idx = 0; start_idx < tree_obj.tree_nodes.length && tree_obj.tree_nodes[start_idx].parent_gui_id === tree_obj.tree_nodes[0].parent_gui_id; ++start_idx) {
+  var highlevel_siblings = tree.locate_pivot().locate_siblings();
+  for (var i = 0; i < highlevel_siblings.length; ++i) {
+    var sibling_pos = highlevel_siblings[i];
 
-    if (start_idx === 0)
+    if (sibling_pos.equals_to(tree.locate_pivot()))
     {
-      if (tree_obj.tree_nodes[start_idx].stree_hier != undefined)
-        this.create_stub(treeRootUl, tree_obj.tree_nodes[start_idx], on_click_str, false, tree_obj.tree_nodes[start_idx].stree_hier);
-      else
-        this.create_stub(treeRootUl, tree_obj.tree_nodes[start_idx], on_click_str, false, undefined);      
-      this.markup_items(tree_obj.tree_nodes[start_idx].gui_id, true);
-      retval = tree_obj.tree_nodes[start_idx];
-    }
-    else
-    {
-      if (tree_obj.tree_nodes[start_idx].stree_hier != undefined)
-        this.create_stub(treeRootUl, tree_obj.tree_nodes[start_idx], on_click_str, true, tree_obj.tree_nodes[start_idx].stree_hier);
-      else
-        this.create_stub(treeRootUl, tree_obj.tree_nodes[start_idx], on_click_str, true, undefined);      
+      retval = sibling_pos.get_node();
     }
 
+    this.print_item_rec(treeRootUl, sibling_pos, false);
   }
                                     // first tree object equals locked item
                                     // -> needs to be marked as locked by using []
-  if ((start_idx == 1) && (tree_obj.explorer_path.length == 0))
+  if (tree.locate_pivot().locate_parent() === null)
   {
-    var replace_item = document.getElementById(tree_obj.tree_nodes[start_idx-1].gui_id + '_a');
+    var replace_item = document.getElementById(tree.locate_pivot().get_node().gui_id + '_a');
     var old_item_text = getInnerHTML(replace_item);
     setInnerHTML(replace_item, '[' + old_item_text + ']');
   }
-                                    // attach child items
-  var parent_gui_id = ""; 
-  var item_gui_id = "";
-  for (var i=start_idx; i<tree_obj.tree_nodes.length; i++)
-  {
-    parent_gui_id = tree_obj.tree_nodes[i].parent_gui_id;
-    item_gui_id = tree_obj.tree_nodes[i].gui_id;       
-    if (tree_obj.tree_nodes[i].stree_hier != undefined)
-      this.print_item(parent_gui_id, item_gui_id, tree_obj.tree_nodes[i].name, tree_obj.tree_nodes[i].type, tree_obj.tree_nodes[i].eval, tree_obj.tree_nodes[i].stree_hier, tree_obj.tree_nodes[i].subtree);
-    else
-      this.print_item(parent_gui_id, item_gui_id, tree_obj.tree_nodes[i].name, tree_obj.tree_nodes[i].type, tree_obj.tree_nodes[i].eval, undefined, tree_obj.tree_nodes[i].subtree);      
-  }                            
                            
   // part 3 : register events
                                     // change Background on Mouseover
@@ -473,7 +474,7 @@ function lib_tree_get_children(gui_id)
   return retval;
 }
 
-function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_eval, tree_hier, subtree)
+function lib_tree_print_item_old(parent_gui_id, node, tree_hier, subtree)
 {
   // HTML-Code :
   // <LI ...>
@@ -483,36 +484,39 @@ function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_
   //   </DIV>
   //   <UL ... /UL>
   // </LI>  
+  
                                     // prepare input form GUI element for displaying
   var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);"; 
+
+  /*
                                     // LI container for single Item
   var newLiItem = document.createElement("li");
-      newLiItem.id = new String(item_gui_id+"_li");
+      newLiItem.id = new String(node.gui_id+"_li");
 	    newLiItem.style.cssText = 'display: block; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em; padding: 0;';
                                     // Symbol displaying the Element Type
   var newTypeImgItem = document.createElement("img");
-      newTypeImgItem.id = item_gui_id+"_sym";
-      newTypeImgItem.src = lib_tree_get_symb(itemType);
+      newTypeImgItem.id = node.gui_id+"_sym";
+      newTypeImgItem.src = lib_tree_get_symb(node.type);
       newTypeImgItem.align = "left";
       newTypeImgItem.width = 22;  
 	    newTypeImgItem.height = 22;
 	                                  // Element Name
   var newDivItem = document.createElement("div");
-      newDivItem.id = new String(item_gui_id+"_div");    
+      newDivItem.id = new String(node.gui_id+"_div");    
   var deleted_item = 0;
-      if (item_gui_id != "N0")
+      if (node.gui_id != "N0")
       {
-        if (this.get_item_data(item_gui_id).is_deleted === 1)
+        if (node.is_deleted === 1)
           deleted_item = 1;
       }
       if (deleted_item == 1)
-        setInnerHTML(newDivItem, '<span><a id=\"' + item_gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#FFFFB0; padding-top:0.2em; padding-left:1em;\">' + itemName + '</a></span>');
+        setInnerHTML(newDivItem, '<span><a id=\"' + node.gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#FFFFB0; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');
       else
-        setInnerHTML(newDivItem, '<span><a id=\"' + item_gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#3030C0; padding-top:0.2em; padding-left:1em;\">' + itemName + '</a></span>');
+        setInnerHTML(newDivItem, '<span><a id=\"' + node.gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#3030C0; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');
                                     // Prepare container for Child Elements (UL)
   var newUlItem = document.createElement("ul");
       newUlItem.className = "hide_ul";  
-      newUlItem.id = item_gui_id+"_ul";
+      newUlItem.id = node.gui_id+"_ul";
                                     // connect items
                                     // 1.) insert Type Symbol as first child into Container
   newLiItem.appendChild(newTypeImgItem);
@@ -520,7 +524,7 @@ function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_
   if (tree_hier != undefined)
   {
     var newHierImgItem = document.createElement("img");
-    newHierImgItem.id = item_gui_id+"_hiercfg_sym";
+    newHierImgItem.id = node.gui_id+"_hiercfg_sym";
     newHierImgItem.src = "symbol_cfg.gif";
     newHierImgItem.align = "left";
     newHierImgItem.width = 22;  
@@ -531,8 +535,8 @@ function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_
   var eval_value = 0.0;
   for (var i=0; i<this.eval_cat_num; i++)
   {
-    if (my_eval[i] != undefined)
-      eval_value = eval_value + my_eval[i].avg;
+    if (node.eval[i] != undefined)
+      eval_value = eval_value + node.eval[i].avg;
   }
   eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
   my_eval_bar = f_eval_bar(newDivItem, eval_value);      
@@ -540,11 +544,13 @@ function lib_tree_print_item(parent_gui_id, item_gui_id, itemName, itemType, my_
                                     // 3.) insert Name field with Eval Bar as third child
   newLiItem.appendChild(newDivItem);
                                     // 4.) insert Child List as fourth child
-  newLiItem.appendChild(newUlItem);
+  newLiItem.appendChild(newUlItem); */
                                     // insert current Item into parent's UL element
   var parentUlItem = document.getElementById(parent_gui_id+"_ul");    
   parentUlItem.style.cssText = 'display:block;';
-  parentUlItem.appendChild(newLiItem);
+  // parentUlItem.appendChild(newLiItem);
+
+  this.print_item(parentUlItem, node, on_click_str, true, tree_hier, subtree);
 }
 
 
@@ -566,8 +572,15 @@ function lib_tree_input_item(is_new, gui_id, item_type)
   {
     my_gui_id = "N0";
     var parent_gui_id = gui_id;
+    var parent_ul = document.getElementById(parent_gui_id + "_ul");
                                     // use "print_item" to create new item ...
-    this.print_item(parent_gui_id, my_gui_id, "", item_type, this.empty_eval_struct, undefined, this.subtree);
+    var node = {
+      gui_id: my_gui_id,
+      name: "",
+      type: item_type,
+      eval: this.empty_eval_struct
+    };
+    this.print_item(parent_ul, node);
   }
 
                                     // get a tag element for modification

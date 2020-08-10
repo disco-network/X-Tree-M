@@ -320,10 +320,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
         self.selected_gui_ids = [ gui_id ];
 
         // seems strange to use the elem_id here..?
-        dispatcher.tree_panel_changed({
-          explorer_path: tree.explorer_path,
-          tree_nodes: tree.tree_nodes
-        }, locate_single_selected_node().get_node().elem_id);
+        dispatcher.tree_panel_changed(self.tree, locate_single_selected_node().get_node().elem_id);
         dispatcher.selection_changed([], self.selected_gui_ids);
       }
     }, "req_tree_only");

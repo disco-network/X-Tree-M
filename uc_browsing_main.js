@@ -774,8 +774,8 @@ function uc_browsing_main_init()
 function uc_browsing_main_init_model() {
   var self = this;
   var dispatcher = {
-    tree_panel_changed: function(tree_obj, selected_id) {
-      self.tree_panel.print_tree(tree_obj, selected_id);
+    tree_panel_changed: function(tree, selected_id) {
+      self.tree_panel.print_tree(tree, selected_id);
     },
     renaming_started: function(renamed_node) {
       self.tree_panel.input_item(false, renamed_node.gui_id, renamed_node.type);
