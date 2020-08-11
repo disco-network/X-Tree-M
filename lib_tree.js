@@ -90,17 +90,14 @@ function lib_tree_print_title()
 function lib_tree_print_item_rec(root_ul, pos, hide_ul) {
   var self = this;
   var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
-  this.print_item(root_ul, pos.get_node(), on_click_str, hide_ul);
-
-  var gui_id = pos.get_node().gui_id;
-  var ul = document.getElementById(gui_id + "_ul");    
-
-  pos.locate_children().forEach(function (child_pos) {
-    self.print_item_rec(ul, child_pos, true);
+  this.print_item(root_ul, pos.get_node(), on_click_str, hide_ul, function (ul) {
+    pos.locate_children().forEach(function (child_pos) {
+      self.print_item_rec(ul, child_pos, true);
+    });
   });
 }
 
-function lib_tree_print_item(root_ul, node, on_click_str, hide_ul) {
+function lib_tree_print_item(root_ul, node, on_click_str, hide_ul, insert_children) {
   // HTML-Code :
   // <LI>
   //   <IMG ... /IMG>  
@@ -109,7 +106,7 @@ function lib_tree_print_item(root_ul, node, on_click_str, hide_ul) {
   //   </DIV>
   //   <UL .../UL>
   // </LI>
-
+  
   var gui_id = node.gui_id + '_a';    
                                     // LI container for single Item  
   var newLiItem = document.createElement("li");
@@ -138,7 +135,7 @@ function lib_tree_print_item(root_ul, node, on_click_str, hide_ul) {
     newUlItem.id = node.gui_id+"_ul";
     newUlItem.style.cssText = 'margin: 0; padding-left: 1.5em';
     if (hide_ul)
-      newUlItem.className = "hide_ul";
+      newUlItem.style.display = "none";
                                     // connect items
                                     // 1.) insert Type Symbol as first child into Container
   newLiItem.appendChild(newTypeImgItem);     
@@ -172,6 +169,8 @@ function lib_tree_print_item(root_ul, node, on_click_str, hide_ul) {
   newLiItem.appendChild(newUlItem);
                                     // insert current Item into parent's UL element
   root_ul.appendChild(newLiItem);
+
+  insert_children(newUlItem);
 }
 
 // create stub of a tree
@@ -191,6 +190,7 @@ function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hie
 
 function print_disptype_tree(tree)
 {
+  const start_time = new Date();
                                     // initialize for Explorer Bar
   var exp_bar_html = "";
 
@@ -243,8 +243,7 @@ function print_disptype_tree(tree)
   treeRootUl.id = this.current_panel + '_root_ul';
   var treeRootDiv = document.createElement("div");
   treeRootDiv.style.cssText = 'margin-left:-2.3em; margin-top:-0.9em;';
-  gui_context.appendChild(treeRootDiv);
-  treeRootDiv.appendChild(treeRootUl);
+  treeRootDiv.classList.add("tree");
 
                                     // print stub elements
   var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
@@ -257,8 +256,14 @@ function print_disptype_tree(tree)
       retval = sibling_pos.get_node();
     }
 
+    const rec_start_time = new Date();
     this.print_item_rec(treeRootUl, sibling_pos, false);
+    report_duration("print_item_rec", rec_start_time);
   }
+
+  gui_context.appendChild(treeRootDiv);
+  treeRootDiv.appendChild(treeRootUl);
+
                                     // first tree object equals locked item
                                     // -> needs to be marked as locked by using []
   if (tree.locate_pivot().locate_parent() === null)
@@ -269,17 +274,6 @@ function print_disptype_tree(tree)
   }
                            
   // part 3 : register events
-                                    // change Background on Mouseover
-  $('#' + this.gui_tree_context).find('a').hover(
-    function () {
-      $(this).css("background-color","gray");
-    },
-    function () {
-      $(this).css("background-color","transparent"); 
-    }  
-  ); 
-                                    // hide all UL lists on init which have the classname ".hide_ul"
-  $('#' + this.gui_tree_context).find('ul.hide_ul').hide(0); 
                                     // ... unfold them on first mouseover of according icon image
   const self = this;
   $('#' + this.gui_tree_context).find('img').mouseenter(
@@ -293,7 +287,7 @@ function print_disptype_tree(tree)
         window[self.cb_clicked_at_str](self.current_usecase, self.current_panel, "collapse_children", gui_id);
     }
   ); 
-  
+
   return retval;  
 }
 
@@ -301,6 +295,9 @@ function print_disptype_tree(tree)
 // print part of a tree in the respective GUI element
 function lib_tree_print_tree(tree_obj, sel_elem_id)
 {
+  // for performance analysis
+  const start_time = new Date();
+
                                     // save tree data object as local object variable
   this.curr_tree_obj = jQuery.extend(true, {}, tree_obj);  
   
@@ -317,6 +314,9 @@ function lib_tree_print_tree(tree_obj, sel_elem_id)
     retval = this.print_disptype_tree(tree_obj, sel_elem_id);
   else
     retval = this.print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree);
+
+  const end_time = new Date();
+  console.log("Tree printing took " + (end_time - start_time) + " milliseconds.");
   
   //return retval;
 }

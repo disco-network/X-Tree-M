@@ -165,10 +165,85 @@ function lib_data_paul_write_tree(iparams)
 } 
 
 
+function report_duration(name, start) {
+  console.log(name + " took " + ((new Date()) - start) + " milliseconds.");
+}
+
+function lib_data_paul_req_tree_items(requests, tree, childlevels, cb_success, cb_failure) {
+  if (requests.length === 0) {
+    report_duration("req_tree_only", this.debug_start_time);
+    cb_success();
+    return;
+  }
+
+  var url = this.data_src_path + "get?childlevels=" + childlevels + "&" + requests.map(function(req) { return "ids[]=" + req.elem_id }).join("&");
+  if (uc_browsing_change_permission === 1) {
+    url += "&showDeleted=1";
+  }
+
+  function process_response_rec(request, tree, response, depth) {
+    if (depth < 0) {
+      return;
+    }
+
+    var raw_node = response[request.elem_id];
+    var node = {
+      elem_id: request.elem_id,
+      gui_id: "T" + tree.tree_nodes.length,
+      name: raw_node.name,
+      parent_elem_id: request.parent_elem_id,
+      parent_gui_id: request.parent_gui_id,
+      is_deleted: request.is_deleted,
+      isMultiPar: false,
+      description: raw_node.content,
+      type: get_xtype("1", raw_node.type),
+      eval: c_EMPTY_EVAL_STRUCT
+    };
+
+    tree.tree_nodes.push(node);
+
+    var new_requests = raw_node.children.map(function (child_id) {
+          return {
+            elem_id: child_id.toString(),
+            parent_elem_id: node.elem_id,
+            parent_gui_id: node.gui_id,
+            is_deleted: 0
+          };
+    });
+    new_requests = new_requests.concat((raw_node.del_children || []).map(function(child_id) {
+      return {
+        elem_id: child_id.toString(),
+        parent_elem_id: node.elem_id,
+        parent_gui_id: node.gui_id,
+        is_deleted: 1
+      }
+    }));
+    
+    new_requests.forEach(function (new_request) {
+      process_response_rec(new_request, tree, response, depth - 1);
+    });
+  }
+
+  var self = this;
+  const start_time = new Date();
+  $.get(url)
+    .done(function(data) {
+      const request_end_time = new Date();
+      var newRequests = [];
+      requests.forEach(function(request, i) {
+        process_response_rec(request, tree, data.nodes, childlevels);
+        report_duration("req_tree_only", self.debug_start_time);
+        cb_success();
+      });
+    })
+  .fail(cb_failure);
+}
+
 // requests: array of { elem_id, parent_elem_id, parent_qui_id, is_deleted }
 // result: concatenates tree.tree_nodes with a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
-function lib_data_paul_req_tree_items(requests, tree, recursion_countdown, cb_success, cb_failure) {
+function lib_data_paul_req_tree_items_old(requests, tree, recursion_countdown, cb_success, cb_failure) {
   if (requests.length === 0 || recursion_countdown === 0 ) {
+    report_duration("req_tree_only", this.debug_start_time);
     cb_success();
     return;
   }
@@ -178,8 +253,11 @@ function lib_data_paul_req_tree_items(requests, tree, recursion_countdown, cb_su
     url += "&showDeleted=1";
   }
   var self = this;
+  const start_time = new Date();
   $.get(url)
     .done(function(data) {
+      report_duration("request", start_time);
+      const request_end_time = new Date();
       var newRequests = [];
       requests.forEach(function(request, i) {
         var raw_node = data.nodes[i];
@@ -215,6 +293,7 @@ function lib_data_paul_req_tree_items(requests, tree, recursion_countdown, cb_su
         }));
       });
 
+      report_duration("response processing", request_end_time);
       self.req_tree_items(newRequests, tree, recursion_countdown - 1, cb_success, cb_failure);
     })
   .fail(cb_failure);
@@ -228,6 +307,8 @@ function lib_data_paul_req_tree_items(requests, tree, recursion_countdown, cb_su
  */
 function lib_data_paul_req_tree_only(iparams) {
   f_append_to_pad('div_panel4_pad','req_tree_only');        
+
+  this.debug_start_time = new Date();
 
   if (iparams.path == undefined || iparams.path.length === 0) {
     f_append_to_pad('div_panel4_pad', 'Parameter "path" is malformed - leaving!');
@@ -247,12 +328,14 @@ function lib_data_paul_req_tree_only(iparams) {
   var self = this;
   send_get_nodes(this, path, uc_browsing_change_permission === 1)
     .done(function (data) {
-      var raw_ancestor_nodes = data.nodes.slice(0, -1); // all nodes = [...ancestor nodes, selected node]
-      var raw_selected_node = data.nodes.slice(-1)[0];
+      var raw_nodes = path.map(function (id) {
+        return data.nodes[id];
+      }).reverse();
+      var raw_ancestor_nodes = raw_nodes.slice(1);
+      var raw_selected_node = raw_nodes[0];
       
-      tree.explorer_path = raw_ancestor_nodes.reverse().map(function (raw_ancestor, i) {
+      tree.explorer_path = raw_ancestor_nodes.map(function (raw_ancestor, i) {
         var has_parent = i < raw_ancestor_nodes.length - 1;
-        var parent_path_index = i + 1;
         var ancestor = {
           gui_id: "E" + i,
           elem_id: raw_ancestor.id.toString(),

@@ -1,0 +1,8 @@
+.tree a {
+  background-color: transparent;
+}
+
+.tree a:hover {
+  background-color: gray;
+}
+
