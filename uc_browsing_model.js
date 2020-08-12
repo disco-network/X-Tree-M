@@ -313,7 +313,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
       path,
       cb_success: function(tree) {
         self.is_busy = false;
-        self.tree = new uc_browsing_tree(tree.explorer_path, tree.tree_nodes);
+        self.tree = tree;
 
         const gui_id = self.tree.locate_pivot().get_node().gui_id;
         self.expanded_node_gui_ids = { [gui_id]: true };

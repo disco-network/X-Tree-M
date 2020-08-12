@@ -251,13 +251,14 @@ function print_disptype_tree(tree)
   for (var i = 0; i < highlevel_siblings.length; ++i) {
     var sibling_pos = highlevel_siblings[i];
 
-    if (sibling_pos.equals_to(tree.locate_pivot()))
+    const is_pivot = sibling_pos.equals_to(tree.locate_pivot());
+    if (is_pivot)
     {
       retval = sibling_pos.get_node();
     }
 
     const rec_start_time = new Date();
-    this.print_item_rec(treeRootUl, sibling_pos, false);
+    this.print_item_rec(treeRootUl, sibling_pos, !is_pivot);
     report_duration("print_item_rec", rec_start_time);
   }
 

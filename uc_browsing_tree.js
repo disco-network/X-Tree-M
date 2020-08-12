@@ -1,7 +1,10 @@
 /**
- * explorer_path is an array of nodes from the root of the tree upwards, exluding the root
+ * explorer_path is an array of nodes from the pivot of the tree upwards, EXCLUDING the pivot
+ * The pivot is the root of the tree (the target of the explorer path, not its root;
+ * and not the selection of the tree).
+ * [pivot_gui_id, ...]
  */
-function uc_browsing_tree(explorer_path, tree_nodes) {
+function uc_browsing_tree(pivot_elem_id, explorer_path, tree_nodes) {
   var self = this;
 
   // public
@@ -11,11 +14,15 @@ function uc_browsing_tree(explorer_path, tree_nodes) {
   self.locate_pivot = locate_pivot;
 
   // private
-  self.explorer_path = explorer_path;
   self.tree_nodes = tree_nodes;
+  self.explorer_path = explorer_path.map(find_node_by_gui_id);
 
+  /*
+   * Determines the position (path from the explorer root) of the item with the given gui_id.
+   * Returns null if not found, neither in the explorer path nor the tree.
+   */
   function locate(gui_id) {
-    var node = find_node_in_tree_by_gui_id(gui_id) || find_node_in_explorer_path_by_gui_id(gui_id);
+    var node = find_node_by_gui_id(gui_id);
     if (node === null) {
       return null;
     }
@@ -24,24 +31,24 @@ function uc_browsing_tree(explorer_path, tree_nodes) {
 
     while (node !== null) {
       path.unshift(node);
-      node = find_node_in_tree_by_gui_id(node.parent_gui_id) || find_node_in_explorer_path_by_gui_id(node.parent_gui_id);
+      node = find_node_by_gui_id(node.parent_gui_id);
     }
 
     return new uc_browsing_tree_position(self, path);
   }
 
   function locate_pivot() {
-    return new uc_browsing_tree_position(self, self.explorer_path.concat([]).reverse().concat([ self.tree_nodes[0] ]));
+    if (self.explorer_path.length > 0) {
+      const downward_explorer_path = self.explorer_path.concat([]).reverse();
+      const parent_pos = new uc_browsing_tree_position(self, downward_explorer_path);
+      const children = parent_pos.locate_children();
+      return children.find(function (pos) { return pos.get_node().elem_id === pivot_elem_id }) || null;
+    } else {
+      return new uc_browsing_tree_position(self, [self.tree_nodes.find(function (node) { return node.elem_id === pivot_elem_id && node.parent_gui_id === null })]);
+    }
   }
 
-  function find_node_in_explorer_path_by_gui_id(gui_id) {
-    const predicate = function (node) { return node.gui_id === gui_id };
-    const node = self.explorer_path.find(predicate);
-
-    return node || null;
-  }
-
-  function find_node_in_tree_by_gui_id(gui_id) {
+  function find_node_by_gui_id(gui_id) {
     const predicate = function (node) { return node.gui_id === gui_id };
     const node = self.tree_nodes.find(predicate);
 
@@ -170,5 +177,49 @@ function uc_browsing_tree_position(tree, downward_path) {
       return new uc_browsing_tree_position(tree, self.downward_path.slice(0, -1).concat([ sibling ]));
     });
   }
+}
+
+function GraphBuilder () {
+  // abstract:
+  //
+  // function attach (parent_gui_id, graph); <-- returns id of the root
+  
+  this.build = function () {
+    const nodes = [];
+    const annotation = this.attach(null, nodes);
+    return {
+      nodes: nodes,
+      annotation: annotation
+    };
+  };
+}
+
+function LinearGraphBuilder (builders, reducer) {
+  this.__proto__ = new GraphBuilder();
+
+  if (builders.length === 0) {
+    throw new Error("Trying to create empty linear graph");
+  }
+
+  this.attach = function (parent_id, nodes) {
+    var prev_id = parent_id;
+    const ids = builders.map(builder => builder.attach(prev_id, nodes));
+    return reducer(ids);
+  };
+}
+
+function TreeGraphBuilder (root_data, subtree_builders, reducer) {
+  this.__proto__ = new GraphBuilder();
+
+  this.attach = function (parent_id, nodes) {
+    const root = {
+      gui_id: "T" + nodes.length,
+      parent_gui_id: parent_id,
+      ...root_data
+    };
+    nodes.push(root);
+    const subtree_annotations = subtree_builders.map(builder => builder.attach(root.gui_id, nodes));
+    return reducer(root.gui_id, subtree_annotations);
+  };
 }
 

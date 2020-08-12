@@ -169,11 +169,14 @@ function report_duration(name, start) {
   console.log(name + " took " + ((new Date()) - start) + " milliseconds.");
 }
 
-function lib_data_paul_req_tree_items(requests, tree, childlevels, cb_success, cb_failure) {
+/*
+ * Returns a $.Deferred providing a GraphBuilder object for the corresponding subtrees of the requests.
+ * The return value of the builders is the gui_id of their respective root.
+ */
+function lib_data_paul_req_tree_items(requests, childlevels) {
   if (requests.length === 0) {
     report_duration("req_tree_only", this.debug_start_time);
-    cb_success();
-    return;
+    return $.Deferred(promise => promise.resolve([]));
   }
 
   var url = this.data_src_path + "get?childlevels=" + childlevels + "&" + requests.map(function(req) { return "ids[]=" + req.elem_id }).join("&");
@@ -181,18 +184,15 @@ function lib_data_paul_req_tree_items(requests, tree, childlevels, cb_success, c
     url += "&showDeleted=1";
   }
 
-  function process_response_rec(request, tree, response, depth) {
+  function process_response_rec(request, response, depth) {
     if (depth < 0) {
-      return;
+      throw new Error("invalid depth");
     }
 
-    var raw_node = response[request.elem_id];
-    var node = {
+    const raw_node = response[request.elem_id];
+    const node_data = {
       elem_id: request.elem_id,
-      gui_id: "T" + tree.tree_nodes.length,
       name: raw_node.name,
-      parent_elem_id: request.parent_elem_id,
-      parent_gui_id: request.parent_gui_id,
       is_deleted: request.is_deleted,
       isMultiPar: false,
       description: raw_node.content,
@@ -200,103 +200,40 @@ function lib_data_paul_req_tree_items(requests, tree, childlevels, cb_success, c
       eval: c_EMPTY_EVAL_STRUCT
     };
 
-    tree.tree_nodes.push(node);
-
-    var new_requests = raw_node.children.map(function (child_id) {
+    var children = raw_node.children.map(function (child_id) {
           return {
             elem_id: child_id.toString(),
-            parent_elem_id: node.elem_id,
-            parent_gui_id: node.gui_id,
             is_deleted: 0
           };
     });
-    new_requests = new_requests.concat((raw_node.del_children || []).map(function(child_id) {
+    children = children.concat((raw_node.del_children || []).map(function(child_id) {
       return {
         elem_id: child_id.toString(),
-        parent_elem_id: node.elem_id,
-        parent_gui_id: node.gui_id,
         is_deleted: 1
       }
     }));
-    
-    new_requests.forEach(function (new_request) {
-      process_response_rec(new_request, tree, response, depth - 1);
-    });
+
+    const subtree_builders = depth > 0
+      ? children.map(child_request => process_response_rec(child_request, response, depth - 1))
+      : [];
+
+    return new TreeGraphBuilder(node_data, subtree_builders, (node_gui_id, child_gui_ids) => node_gui_id);
   }
 
   var self = this;
   const start_time = new Date();
-  $.get(url)
+  return $.Deferred(deferred => $.get(url)
     .done(function(data) {
       const request_end_time = new Date();
-      var newRequests = [];
-      requests.forEach(function(request, i) {
-        process_response_rec(request, tree, data.nodes, childlevels);
-        report_duration("req_tree_only", self.debug_start_time);
-        cb_success();
+      const requested_graph_builders = requests.map(function(request, i) {
+        return process_response_rec(request, data.nodes, childlevels);
       });
+      deferred.resolve(requested_graph_builders);
     })
-  .fail(cb_failure);
-}
-
-// requests: array of { elem_id, parent_elem_id, parent_qui_id, is_deleted }
-// result: concatenates tree.tree_nodes with a breadth-first list that contains the nodes of the graph, where the depth is recursion_countdown.
-function lib_data_paul_req_tree_items_old(requests, tree, recursion_countdown, cb_success, cb_failure) {
-  if (requests.length === 0 || recursion_countdown === 0 ) {
-    report_duration("req_tree_only", this.debug_start_time);
-    cb_success();
-    return;
-  }
-
-  var url = this.data_src_path + "get?" + requests.map(function(req) { return "ids[]=" + req.elem_id }).join("&");
-  if (uc_browsing_change_permission === 1) {
-    url += "&showDeleted=1";
-  }
-  var self = this;
-  const start_time = new Date();
-  $.get(url)
-    .done(function(data) {
-      report_duration("request", start_time);
-      const request_end_time = new Date();
-      var newRequests = [];
-      requests.forEach(function(request, i) {
-        var raw_node = data.nodes[i];
-        var node = {
-          elem_id: request.elem_id,
-          gui_id: "T" + tree.tree_nodes.length,
-          name: raw_node.name,
-          parent_elem_id: request.parent_elem_id,
-          parent_gui_id: request.parent_gui_id,
-          is_deleted: request.is_deleted,
-          isMultiPar: false,
-          description: raw_node.content,
-          type: get_xtype("1", raw_node.type),
-          eval: c_EMPTY_EVAL_STRUCT
-        };
-        tree.tree_nodes.push(node);
-
-        newRequests = newRequests.concat(raw_node.children.map(function(cid) {
-          return {
-            elem_id: cid.toString(),
-            parent_elem_id: node.elem_id,
-            parent_gui_id: node.gui_id,
-            is_deleted: 0
-          };
-        }));
-        newRequests = newRequests.concat((raw_node.del_children || []).map(function(cid) {
-          return {
-            elem_id: cid.toString(),
-            parent_elem_id: node.elem_id,
-            parent_gui_id: node.gui_id,
-            is_deleted: 1
-          }
-        }));
-      });
-
-      report_duration("response processing", request_end_time);
-      self.req_tree_items(newRequests, tree, recursion_countdown - 1, cb_success, cb_failure);
+    .fail(function() {
+      deferred.reject();
     })
-  .fail(cb_failure);
+  ).promise();
 }
 
 /*
@@ -315,76 +252,49 @@ function lib_data_paul_req_tree_only(iparams) {
     return;
   }
   
-  var tree = {
-    explorer_path: [],
-    tree_nodes: [],
-  };
-
   path = iparams.path;
   cb_success = iparams.cb_success;
   
   // path to selected item (explorer path)
 
   var self = this;
-  send_get_nodes(this, path, uc_browsing_change_permission === 1)
-    .done(function (data) {
-      var raw_nodes = path.map(function (id) {
-        return data.nodes[id];
-      }).reverse();
-      var raw_ancestor_nodes = raw_nodes.slice(1);
-      var raw_selected_node = raw_nodes[0];
-      
-      tree.explorer_path = raw_ancestor_nodes.map(function (raw_ancestor, i) {
-        var has_parent = i < raw_ancestor_nodes.length - 1;
-        var ancestor = {
-          gui_id: "E" + i,
-          elem_id: raw_ancestor.id.toString(),
-          name: raw_ancestor.name,
-          parent_elem_id: !has_parent ? null : raw_ancestor_nodes[i + 1].id.toString(),
-          parent_gui_id: !has_parent ? null : "E" + (i + 1),
-          isMultiPar: raw_ancestor.parents.length > 1,
-          eval: c_EMPTY_EVAL_STRUCT
-        };
-        return ancestor;
-      })
+  const downward_explorer_path = path.slice(0, -1);
+  const upper_explorer_path = downward_explorer_path.slice(0, -1);
+  const pivot_parent_id = downward_explorer_path.slice(-1)[0];
+  const pivot_id = path.slice(-1)[0];
+  const tree_origin_id = pivot_parent_id !== undefined ? pivot_parent_id : pivot_id;
+  const depth = pivot_parent_id !== undefined ? 10 : 9;
 
-      var selected_node_id = raw_selected_node.id.toString();
-      var parent = tree.explorer_path[0];
-      var selected_node_request = {
-        // gui_id: "T0",
-        elem_id: selected_node_id,
-        // name: raw_selected_node.name,
-        parent_elem_id: parent === undefined ? null : parent.elem_id,
-        parent_gui_id: parent === undefined ? null : parent.gui_id,
-        is_deleted: 0,
-        // isMultiPar: raw_selected_node.parents.length > 1,
-        // description: raw_selected_node.content,
-        // type: get_xtype("1", raw_selected_node.type),
-        // eval: c_EMPTY_EVAL_STRUCT
-      };
+  const explorer_path_requests = upper_explorer_path.map(function (id, i) {
+    return {
+      elem_id: id,
+      is_deleted: 0
+    };
+  });
+  var tree_request = {
+    elem_id: tree_origin_id,
+    is_deleted: 0
+  };
 
-      var cb_success2 = function() {
-        self.req_tree_state = "rts_idle";
-        cb_success(tree);
-      };
+  const upper_promise = self.req_tree_items(explorer_path_requests, 0);
+  const lower_promise = self.req_tree_items([tree_request], depth);
 
-      var cb_failure = function() {
-        alert("req_tree_items: failed!");
-        self.req_tree_state = "rts_idle";  
-      }
-
-      self.req_tree_items([selected_node_request], tree, 10, cb_success2, cb_failure);
+  $.when(upper_promise, lower_promise)
+    .then(function (upper_builders, lower_builders) {
+      const builder = new LinearGraphBuilder(upper_builders.concat(lower_builders), gui_id_list => gui_id_list);
+      const graph = builder.build();
+      const explorer_path = pivot_parent_id !== undefined ? graph.annotation.concat([]).reverse() : graph.annotation.slice(0, -1).reverse();
+      const tree = new uc_browsing_tree(
+        pivot_id,
+        explorer_path,
+        graph.nodes,
+      );
+      report_duration("req_tree_only", self.debug_start_time);
+      cb_success(tree);
+    })
+    .fail(function () {
+      alert("req_tree_only request failed");
     });
-}
-
-function send_get_nodes(lib_paul, ids, showDeleted) {
-  var options = ids.map(function(id) { return "ids[]=" + id });
-  if (showDeleted) {
-    options.push("showDeleted=1");
-  }
-
-  var url = lib_paul.data_src_path + "get?" + options.join("&");
-  return $.get(url);
 }
 
 /*
