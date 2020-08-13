@@ -1,28 +1,59 @@
+function Graph (nodes) {
+  const self = this;
+
+  self.nodes = nodes;
+
+  self.find_node_by_gui_id = function find_node_by_gui_id (gui_id) {
+    const predicate = function (node) { return node.gui_id === gui_id };
+
+    return self.nodes.find(predicate) || null;
+  };
+
+  /*
+   * gui_id may be null to find roots
+   */
+  self.find_children_of = function find_children_of(gui_id) {
+    const predicate = function (node) { return node.parent_gui_id === gui_id };
+    
+    return self.nodes.filter(predicate);
+  }
+
+  /*
+   * gui_id must not be null
+   */
+  self.find_siblings_of = function find_siblings_of(gui_id) {
+    const node = self.find_node_by_gui_id(gui_id);
+    const parent_gui_id = node.parent_gui_id;
+    const predicate = function (node) { return node.parent_gui_id === parent_gui_id };
+    
+    return self.nodes.filter(predicate);
+  }
+}
+
 /**
  * explorer_path is an array of nodes from the pivot of the tree upwards, EXCLUDING the pivot
  * The pivot is the root of the tree (the target of the explorer path, not its root;
  * and not the selection of the tree).
  * [pivot_gui_id, ...]
  */
-function uc_browsing_tree(pivot_elem_id, explorer_path, tree_nodes) {
+function uc_browsing_tree(pivot_gui_id, explorer_path, graph) {
   var self = this;
 
   // public
-  self.find_children_of = find_children_of;
-  self.find_siblings_of = find_siblings_of;
+  self.get_graph = get_graph;
   self.locate = locate;
   self.locate_pivot = locate_pivot;
 
   // private
-  self.tree_nodes = tree_nodes;
-  self.explorer_path = explorer_path.map(find_node_by_gui_id);
+  self.graph = graph;
+  self.explorer_path = explorer_path.map(id => graph.find_node_by_gui_id(id));
 
   /*
    * Determines the position (path from the explorer root) of the item with the given gui_id.
    * Returns null if not found, neither in the explorer path nor the tree.
    */
   function locate(gui_id) {
-    var node = find_node_by_gui_id(gui_id);
+    var node = graph.find_node_by_gui_id(gui_id);
     if (node === null) {
       return null;
     }
@@ -31,42 +62,18 @@ function uc_browsing_tree(pivot_elem_id, explorer_path, tree_nodes) {
 
     while (node !== null) {
       path.unshift(node);
-      node = find_node_by_gui_id(node.parent_gui_id);
+      node = graph.find_node_by_gui_id(node.parent_gui_id);
     }
 
     return new uc_browsing_tree_position(self, path);
   }
 
   function locate_pivot() {
-    if (self.explorer_path.length > 0) {
-      const downward_explorer_path = self.explorer_path.concat([]).reverse();
-      const parent_pos = new uc_browsing_tree_position(self, downward_explorer_path);
-      const children = parent_pos.locate_children();
-      return children.find(function (pos) { return pos.get_node().elem_id === pivot_elem_id }) || null;
-    } else {
-      return new uc_browsing_tree_position(self, [self.tree_nodes.find(function (node) { return node.elem_id === pivot_elem_id && node.parent_gui_id === null })]);
-    }
+    return locate(pivot_gui_id);
   }
 
-  function find_node_by_gui_id(gui_id) {
-    const predicate = function (node) { return node.gui_id === gui_id };
-    const node = self.tree_nodes.find(predicate);
-
-    return node || null;
-  }
-
-  function find_children_of(pos) {
-    const this_node = pos.get_node();
-    const predicate = function (node) { return node.parent_gui_id === this_node.gui_id };
-    
-    return self.tree_nodes.filter(predicate);
-  }
-
-  function find_siblings_of(pos) {
-    const this_node = pos.get_node();
-    const predicate = function (node) { return node.parent_gui_id === this_node.parent_gui_id };
-    
-    return self.explorer_path.filter(predicate).concat(self.tree_nodes.filter(predicate));
+  function get_graph() {
+    return self.graph;
   }
 }
 
@@ -139,7 +146,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   function locate_children() {
     const node = get_node();
 
-    const children = tree.find_children_of(self);
+    const children = tree.graph.find_children_of(self.get_node().gui_id);
 
     return children.map(function (child) {
       return new uc_browsing_tree_position(tree, self.downward_path.concat([ child ]));
@@ -171,7 +178,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   }
 
   function locate_siblings() {
-    const siblings = tree.find_siblings_of(self);
+    const siblings = tree.graph.find_siblings_of(self.get_node().gui_id);
 
     return siblings.map(function (sibling) {
       return new uc_browsing_tree_position(tree, self.downward_path.slice(0, -1).concat([ sibling ]));
@@ -188,7 +195,7 @@ function GraphBuilder () {
     const nodes = [];
     const annotation = this.attach(null, nodes);
     return {
-      nodes: nodes,
+      graph: new Graph(nodes),
       annotation: annotation
     };
   };

@@ -282,12 +282,25 @@ function lib_data_paul_req_tree_only(iparams) {
   $.when(upper_promise, lower_promise)
     .then(function (upper_builders, lower_builders) {
       const builder = new LinearGraphBuilder(upper_builders.concat(lower_builders), gui_id_list => gui_id_list);
-      const graph = builder.build();
-      const explorer_path = pivot_parent_id !== undefined ? graph.annotation.concat([]).reverse() : graph.annotation.slice(0, -1).reverse();
+      const result = builder.build();
+      const graph = result.graph;
+
+      var explorer_path;
+      var pivot_parent_gui_id;
+      if (pivot_parent_id !== undefined) {
+        explorer_path = result.annotation.slice().reverse();
+        pivot_parent_gui_id = explorer_path[0];
+      } else {
+        explorer_path = result.annotation.slice(0, -1).reverse();
+        pivot_parent_gui_id = null; // The pivot has no parent
+      }
+      const pivot_siblings = graph.find_children_of(pivot_parent_gui_id);
+      const pivot = pivot_siblings.find(sibling => sibling.elem_id === pivot_id);
+
       const tree = new uc_browsing_tree(
-        pivot_id,
+        pivot.gui_id,
         explorer_path,
-        graph.nodes,
+        result.graph,
       );
       report_duration("req_tree_only", self.debug_start_time);
       cb_success(tree);

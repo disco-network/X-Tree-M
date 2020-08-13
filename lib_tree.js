@@ -427,18 +427,7 @@ function lib_tree_get_tree()
 
 function lib_tree_get_item_data(gui_id)
 {
-  var index = parseInt(gui_id.substring(1,gui_id.length)); 
-  if (strStartsWith(gui_id, "E"))
-    return this.curr_tree_obj.explorer_path[index];
-  else
-  {
-    for (var i=0; i<this.curr_tree_obj.tree_nodes.length; i++)
-    {
-      if (this.curr_tree_obj.tree_nodes[i].gui_id == gui_id)
-        return this.curr_tree_obj.tree_nodes[i];
-    }
-  }
-  return null;
+  return this.curr_tree_obj.get_graph().find_node_by_gui_id(gui_id);
 }
                        
                        
