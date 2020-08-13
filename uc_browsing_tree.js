@@ -1,12 +1,14 @@
 function Graph (nodes) {
   const self = this;
 
-  self.nodes = nodes;
+  self.node_dict = {};
+  self.node_arr = nodes;
+  nodes.forEach(node => {
+    self.node_dict[node.gui_id] = node;
+  });
 
   self.find_node_by_gui_id = function find_node_by_gui_id (gui_id) {
-    const predicate = function (node) { return node.gui_id === gui_id };
-
-    return self.nodes.find(predicate) || null;
+    return self.node_dict[gui_id] || null;
   };
 
   /*
@@ -15,7 +17,7 @@ function Graph (nodes) {
   self.find_children_of = function find_children_of(gui_id) {
     const predicate = function (node) { return node.parent_gui_id === gui_id };
     
-    return self.nodes.filter(predicate);
+    return self.node_arr.filter(predicate);
   }
 
   /*
@@ -26,7 +28,7 @@ function Graph (nodes) {
     const parent_gui_id = node.parent_gui_id;
     const predicate = function (node) { return node.parent_gui_id === parent_gui_id };
     
-    return self.nodes.filter(predicate);
+    return self.node_arr.filter(predicate);
   }
 }
 
@@ -210,7 +212,10 @@ function LinearGraphBuilder (builders, reducer) {
 
   this.attach = function (parent_id, nodes) {
     var prev_id = parent_id;
-    const ids = builders.map(builder => builder.attach(prev_id, nodes));
+    const ids = builders.map(builder => {
+      prev_id = builder.attach(prev_id, nodes);
+      return prev_id;
+    });
     return reducer(ids);
   };
 }
