@@ -192,9 +192,8 @@ function print_disptype_tree(tree)
 {
   const start_time = new Date();
                                     // initialize for Explorer Bar
-  var exp_bar_html = "";
-
   // part 1 : print Explorer Bar
+  const explorer_bar_html_items = [];
   for (var predecessor = tree.locate_pivot(); predecessor.locate_parent() !== null; predecessor = predecessor.locate_parent()) {
                                     // prepare variables
     var position = predecessor.locate_parent();
@@ -203,37 +202,33 @@ function print_disptype_tree(tree)
     var gui_id_a = gui_id + "_a";
     var gui_id_mult = gui_id + "_pmenu_a";
     var predecessor_node = predecessor.get_node();
-    var name = node.name;
+    const name = node.name;
+    const visible_name = position.locate_parent() === null
+      ? "[" + name + "]"
+      : name;
 
-    var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'explorer_select\', this.id, c_KEYB_MODE_NONE, event);";
-    var on_click_str_multi = "";  
+    const on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'explorer_select\', this.id, c_KEYB_MODE_NONE, event);";
+    const on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor_node.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
+
                                     // root element (selected element is used as Explorer Bar)
-    if (position.locate_parent() === null)
+                                  // multi-parent item
+    if (predecessor_node.isMultiPar === true)
     {
-      // This might lead to HTML injection! (at least check whether it could)
-      exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">[' + name + ']</a></span>' + exp_bar_html;
+      explorer_bar_html_items.push('<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + visible_name + '</a></span>&nbsp;<span><a id=\"' + gui_id_mult + '\" onclick=\"' + on_click_str_multi + '\">{...}</a></span>');
     }
-    else  
+    else
     {
-      on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor_node.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
-
-                                    // multi-parent item
-      if (predecessor_node.isMultiPar === true)
-      {
-        exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + name + '</a></span>&nbsp;<span><a id=\"' + gui_id_mult + '\" onclick=\"' + on_click_str_multi + '\">{...}</a></span> \\&nbsp;' + exp_bar_html;                      
-      }
-      else
-      {
-                                    // normal items
-        exp_bar_html = '<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + name + '</a></span> \\&nbsp;' + exp_bar_html;
-      }
+                                  // normal items
+      explorer_bar_html_items.push('<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + visible_name + '</a></span>');
     }
-  }                        
+    
+  }
+  explorer_bar_html = explorer_bar_html_items.join(" \\&nbsp;");
   // add Explorer Path to GUI
   var gui_context = document.getElementById(this.gui_tree_context); 
    
   if (tree.locate_pivot().locate_parent() !== null)
-    setInnerHTML(gui_context, "&nbsp;" + exp_bar_html);
+    setInnerHTML(gui_context, "&nbsp;" + explorer_bar_html);
   else
     setInnerHTML(gui_context, "");
   
