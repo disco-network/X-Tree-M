@@ -565,7 +565,7 @@ function lib_tree_input_item(is_new, gui_id, item_type)
       type: item_type,
       eval: this.empty_eval_struct
     };
-    this.print_item(parent_ul, node);
+    this.print_item(parent_ul, node, "", true, () => {});
   }
 
                                     // get a tag element for modification

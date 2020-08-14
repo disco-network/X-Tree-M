@@ -351,21 +351,22 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   function delete_selected() {
     ensure(are_single_selection_operations_available(), "Single-selection operations are not available.");
 
-    const selected = locate_single_selected_node().get_node();
+    const selected = locate_single_selected_node();
+    const parent = selected.locate_parent();
 
-    if (selected.parent_elem_id == null) {
+    if (parent === null) {
       return;
     }
 
     self.is_busy = true;
     self.lib_data.command({
-      links: [{id: selected.elem_id, parent_id: selected.parent_elem_id}],
+      links: [{id: selected.get_node().elem_id, parent_id: parent.get_node().elem_id}],
       cb_success: after_deletion,
     }, "delete_item");
 
     function after_deletion() {
       self.is_busy = false;
-      self.select_and_zoom_to(locate_single_selected_node().get_node().parent_gui_id);
+      self.select_and_zoom_to(parent.get_node().gui_id);
     }
   }
 
