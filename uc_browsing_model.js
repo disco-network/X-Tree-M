@@ -305,6 +305,7 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function select_and_zoom(path) {
     ensure(!self.is_busy, "Cannot reload the tree because it is busy.");
+    ensure(are_browsing_operations_available(), "");
 
     self.is_busy = true;
     self.path_to_root = path;
@@ -373,6 +374,8 @@ function uc_browsing_model(dispatcher, lib_data, logger) {
   function begin_creating() {
     ensure(are_single_selection_operations_available(), "Single-selection operations are not available.");
     ensure(is_single_selection(), "");
+
+    expand_children();
 
     const selected = locate_single_selected_node().get_node();
 
