@@ -1,5 +1,5 @@
 // Class 'uc_browsing_features' -> Panel4
-function uc_browsing_features(gui_headline_context, lang_headline, gui_features_context, current_usecase, current_panel, cb_clicked_at_str, db_obj)
+function uc_browsing_features(gui_headline_context, lang_headline, gui_features_context, current_usecase, current_panel, dispatcher, db_obj)
 {
   // save params to object
   this.gui_headline_context = gui_headline_context;
@@ -7,7 +7,7 @@ function uc_browsing_features(gui_headline_context, lang_headline, gui_features_
   this.gui_features_context = gui_features_context;
   this.current_usecase = current_usecase;
   this.current_panel = current_panel;
-  this.cb_clicked_at_str = cb_clicked_at_str;
+  this.dispatcher = dispatcher;
   this.db_obj = db_obj;
 
   // bind object functions
@@ -48,11 +48,12 @@ function uc_browsing_features_load_favorites(favorites_array)
   {
     var my_div = document.createElement("div");
     my_div.id = 'favorite' + i + '_div';
-    var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'favorites\', \'" + i + "\', c_KEYB_MODE_NONE );";    
     var fav_text = "";
     for (var j=0; j<favorites_array[i].length; j++)
       fav_text = ' \\ ' + favorites_array[i][j].name + fav_text;
-    setInnerHTML(my_div, '<a id=\"favorite' + i + '\" onclick=\"' + on_click_str + '\" style=\"display: block; padding-left:0.2em;\">' + fav_text + '<br/></a>');  
+    setInnerHTML(my_div, '<a id=\"favorite' + i + '\" style=\"display: block; padding-left:0.2em;\">' + fav_text + '<br/></a>');  
+    const a_elem = my_div.getElementsByTagName("a")[0];
+    a_elem.onclick = () => this.dispatcher(this.current_usecase, this.current_panel, "favorites", i, c_KEYB_MODE_NONE);
     gui_context.appendChild(my_div);
   }
   

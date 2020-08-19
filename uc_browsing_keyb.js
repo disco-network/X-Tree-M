@@ -112,7 +112,12 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
 //                  this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"eval", content:c_EMPTY_EVAL_STRUCT, lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                    
 //              }
 //            }
-                var item_name = htmlEntities(document.getElementById("name_input").value);
+                const name_input = document.getElementById("name_input");
+                if (name_input === null) {
+                  break;
+                }
+
+                var item_name = htmlEntities(name_input.value);
                 item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
 
                 this.main.model.apply_name_input(item_name);

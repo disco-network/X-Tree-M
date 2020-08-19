@@ -1,20 +1,22 @@
 // Class 'lib_tree'
-function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, cb_clicked_at_str)
+function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, dispatcher)
 {
+  const handler = (operation, id, event) => this.dispatcher(this.current_usecase, this.current_panel, operation, id, c_KEYB_MODE_NONE, event);
+  this.handler = handler;
+
   // save params to object
   this.gui_headline_context = gui_headline_context;
   this.lang_headline = lang_headline;
   this.gui_tree_context = gui_tree_context;
   this.current_usecase = current_usecase;
   this.current_panel = current_panel;
-  this.cb_clicked_at_str = cb_clicked_at_str;
+  this.dispatcher = dispatcher;
 
   // bind object functions
   this.init = lib_tree_init.bind(this);
   this.print_title = lib_tree_print_title.bind(this);
-  this.create_stub = lib_tree_create_stub.bind(this);
-    this.print_disptype_tree = print_disptype_tree.bind(this);
-    this.print_disptype_bubbles = print_disptype_bubbles.bind(this);
+  this.print_disptype_tree = print_disptype_tree.bind(this);
+  this.print_disptype_bubbles = print_disptype_bubbles.bind(this);
   this.print_tree = lib_tree_print_tree.bind(this);
   this.print_item = lib_tree_print_item.bind(this);
   this.print_item_rec = lib_tree_print_item_rec.bind(this);
@@ -76,10 +78,14 @@ function lib_tree_init()
 // for init and for language change
 function lib_tree_print_title()
 {
-  
-  var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'switch_disp\', this.id, c_KEYB_MODE_NONE, event);";                                  
-  var link_html = '<span><a id=\"panel1_headline_a\" onclick=\"' + on_click_str + '\"><B>' + this.lang_headline[2+global_setup.display_type] + '</B></a></span>';
-  setInnerHTML(document.getElementById(this.gui_headline_context), link_html);
+  const self = this;
+  var on_click = function(event) { return self.handler("switch_disp", this.id, event) };
+  var link_html = '<span><a id="panel1_headline_a"><B>' + this.lang_headline[2+global_setup.display_type] + '</B></a></span>';
+
+  const container = document.getElementById(this.gui_headline_context);
+  setInnerHTML(container, link_html);
+  const a_elem = container.getElementsByTagName("a")[0];
+  a_elem.onclick = on_click;
 }
 
 
@@ -89,15 +95,15 @@ function lib_tree_print_title()
 
 function lib_tree_print_item_rec(root_ul, pos, hide_ul) {
   var self = this;
-  var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
-  this.print_item(root_ul, pos.get_node(), on_click_str, hide_ul, function (ul) {
+  const on_click = function(event) { return self.handler("tree_select", this.id, event) };
+  this.print_item(root_ul, pos.get_node(), on_click, hide_ul, function (ul) {
     pos.locate_children().forEach(function (child_pos) {
       self.print_item_rec(ul, child_pos, true);
     });
   });
 }
 
-function lib_tree_print_item(root_ul, node, on_click_str, hide_ul, insert_children) {
+function lib_tree_print_item(root_ul, node, on_click, hide_ul, insert_children) {
   // HTML-Code :
   // <LI>
   //   <IMG ... /IMG>  
@@ -129,7 +135,9 @@ function lib_tree_print_item(root_ul, node, on_click_str, hide_ul, insert_childr
       newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
     else
       newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
-    setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" onclick=\"' + on_click_str + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
+    setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
+    const a_elem = newDivItem.getElementsByTagName("a")[0];
+    a_elem.onclick = on_click;
                                     // Prepare container for Child Elements (UL)
   var newUlItem = document.createElement("ul");
     newUlItem.id = node.gui_id+"_ul";
@@ -173,27 +181,12 @@ function lib_tree_print_item(root_ul, node, on_click_str, hide_ul, insert_childr
   insert_children(newUlItem);
 }
 
-// create stub of a tree
-function lib_tree_create_stub(rootUl, curr_node, onclickStr, ul_hidden, tree_hier)
-{
-  // HTML-Code :
-  // <LI>
-  //   <IMG ... /IMG>  
-  //   <DIV ...>
-  //     <span><A .../A></span>
-  //   </DIV>
-  //   <UL .../UL>
-  // </LI>
-
-  this.print_item(rootUl, curr_node, onclickStr, ul_hidden, tree_hier, undefined);
-}
-
 function print_disptype_tree(tree)
 {
   const start_time = new Date();
                                     // initialize for Explorer Bar
   // part 1 : print Explorer Bar
-  const explorer_bar_html_items = [];
+  const explorer_bar_items = [];
   for (var predecessor = tree.locate_pivot(); predecessor.locate_parent() !== null; predecessor = predecessor.locate_parent()) {
                                     // prepare variables
     var position = predecessor.locate_parent();
@@ -207,30 +200,46 @@ function print_disptype_tree(tree)
       ? "[" + name + "]"
       : name;
 
-    const on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'explorer_select\', this.id, c_KEYB_MODE_NONE, event);";
-    const on_click_str_multi = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'open_parent_menu\', \'" + predecessor_node.gui_id + "_a\', c_KEYB_MODE_NONE, event);";       
+    const self = this;
+    const on_click = function (event) { return self.handler("explorer_select", this.id, event) };
+    const on_click_multi = function (event) { return self.handler("open_parent_menu", predecessor_node.gui_id + "_a", event) };
 
                                     // root element (selected element is used as Explorer Bar)
+    const fragment = document.createDocumentFragment();
+    const item1 = document.createElement("span");
+    item1.innerHTML = '<a id=\"' + gui_id_a + '\">' + visible_name + '</a>';
+    const a_elem1 = item1.getElementsByTagName("a")[0];
+    a_elem1.onclick = on_click;
+    fragment.appendChild(item1);
+
                                   // multi-parent item
     if (predecessor_node.isMultiPar === true)
     {
-      explorer_bar_html_items.push('<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + visible_name + '</a></span>&nbsp;<span><a id=\"' + gui_id_mult + '\" onclick=\"' + on_click_str_multi + '\">{...}</a></span>');
+      const item2 = document.createElement("span");
+      item2.innerHTML = '<a id=\"' + gui_id_mult + '\">{...}</a>';
+      const a_elem2 = item2.getElementsByTagName("a");
+      a_elem2.onclick = on_click_multi;
+
+      fragment.appendChild(document.createTextNode("&nbsp;"));
+      fragment.appendChild(item2);
     }
-    else
-    {
-                                  // normal items
-      explorer_bar_html_items.push('<span><a id=\"' + gui_id_a + '\" onclick=\"' + on_click_str + '\">' + visible_name + '</a></span>');
-    }
-    
+
+    explorer_bar_items.push(fragment);
   }
-  explorer_bar_html = explorer_bar_html_items.join(" \\&nbsp;");
   // add Explorer Path to GUI
   var gui_context = document.getElementById(this.gui_tree_context); 
    
-  if (tree.locate_pivot().locate_parent() !== null)
-    setInnerHTML(gui_context, "&nbsp;" + explorer_bar_html);
-  else
-    setInnerHTML(gui_context, "");
+  setInnerHTML(gui_context, "");
+  if (tree.locate_pivot().locate_parent() !== null) {
+    explorer_bar_items.reverse().forEach((item, i) => {
+      if (i === 0) {
+        gui_context.appendChild(document.createTextNode("\xa0"));
+      } else {
+        gui_context.appendChild(document.createTextNode(" \\\xa0"));
+      }
+      gui_context.appendChild(item);
+    });
+  }
   
   // part 2 : print child elements as tree
   var retval = {};
@@ -241,7 +250,6 @@ function print_disptype_tree(tree)
   treeRootDiv.classList.add("tree");
 
                                     // print stub elements
-  var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);";
   var highlevel_siblings = tree.locate_pivot().locate_siblings();
   for (var i = 0; i < highlevel_siblings.length; ++i) {
     var sibling_pos = highlevel_siblings[i];
@@ -277,10 +285,11 @@ function print_disptype_tree(tree)
       const ul = $(this).siblings('ul');
       const gui_id = ul.attr("id").slice(0, -3);
       if (ul.css("display") == "none") {
-        window[self.cb_clicked_at_str](self.current_usecase, self.current_panel, "expand_children", gui_id);
+        self.handler("expand_children", gui_id, undefined);
       }
-      else
-        window[self.cb_clicked_at_str](self.current_usecase, self.current_panel, "collapse_children", gui_id);
+      else {
+        self.handler("collapse_children", gui_id, undefined);
+      }
     }
   ); 
 
@@ -353,14 +362,20 @@ function lib_tree_get_symb(itemType)
 
 function lib_tree_print_multi_parent_menu(parent_list)
 {
+  const self = this;
+  const click_handlers = [];
   var html_text = "&nbsp;<I>" + c_LANG_LIB_TREE_MSG_MULTI_CHOICE[global_setup.curr_lang] + " :</I><BR><BR>";
   var gui_context = document.getElementById(this.gui_tree_context);
   for(var a=0; a<parent_list.length; a++)
   {
-    var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'parent_menu_select\', this.id, c_KEYB_MODE_NONE, event);"; 
-    html_text = html_text + '&nbsp;<a id=\"' + parent_list[a].elem_id + '_a\" onclick=\"' + on_click_str + '\">' + parent_list[a].name + '</a><br>';
+    const on_click = function (event) { return self.handler("parent_menu_select", this.id, event) };
+    click_handlers.push(on_click);
+    html_text = html_text + '&nbsp;<a id=\"' + parent_list[a].elem_id + '_a\">' + parent_list[a].name + '</a><br>';
   }
   setInnerHTML(gui_context, html_text);
+  gui_context.getElementsByTagName("a").forEach((el, i) => {
+    el.onclick = click_handlers[i];
+  });
 }
 
 
@@ -458,86 +473,6 @@ function lib_tree_get_children(gui_id)
       retval[retval_idx++] = this.curr_tree_obj.tree_nodes[i].gui_id;
   return retval;
 }
-
-function lib_tree_print_item_old(parent_gui_id, node, tree_hier, subtree)
-{
-  // HTML-Code :
-  // <LI ...>
-  //   <IMG ... /IMG>
-  //   <DIV ...>
-  //     <A .../A>
-  //   </DIV>
-  //   <UL ... /UL>
-  // </LI>  
-  
-                                    // prepare input form GUI element for displaying
-  var on_click_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'tree_select\', this.id, c_KEYB_MODE_NONE, event);"; 
-
-  /*
-                                    // LI container for single Item
-  var newLiItem = document.createElement("li");
-      newLiItem.id = new String(node.gui_id+"_li");
-	    newLiItem.style.cssText = 'display: block; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em; padding: 0;';
-                                    // Symbol displaying the Element Type
-  var newTypeImgItem = document.createElement("img");
-      newTypeImgItem.id = node.gui_id+"_sym";
-      newTypeImgItem.src = lib_tree_get_symb(node.type);
-      newTypeImgItem.align = "left";
-      newTypeImgItem.width = 22;  
-	    newTypeImgItem.height = 22;
-	                                  // Element Name
-  var newDivItem = document.createElement("div");
-      newDivItem.id = new String(node.gui_id+"_div");    
-  var deleted_item = 0;
-      if (node.gui_id != "N0")
-      {
-        if (node.is_deleted === 1)
-          deleted_item = 1;
-      }
-      if (deleted_item == 1)
-        setInnerHTML(newDivItem, '<span><a id=\"' + node.gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#FFFFB0; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');
-      else
-        setInnerHTML(newDivItem, '<span><a id=\"' + node.gui_id + '_a\" onclick=\"' + on_click_str + '\" style=\"display:block; color:#3030C0; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');
-                                    // Prepare container for Child Elements (UL)
-  var newUlItem = document.createElement("ul");
-      newUlItem.className = "hide_ul";  
-      newUlItem.id = node.gui_id+"_ul";
-                                    // connect items
-                                    // 1.) insert Type Symbol as first child into Container
-  newLiItem.appendChild(newTypeImgItem);
-                                    // 2.) insert Hierarchy Config Symbol (if avail) as second child
-  if (tree_hier != undefined)
-  {
-    var newHierImgItem = document.createElement("img");
-    newHierImgItem.id = node.gui_id+"_hiercfg_sym";
-    newHierImgItem.src = "symbol_cfg.gif";
-    newHierImgItem.align = "left";
-    newHierImgItem.width = 22;  
-	  newHierImgItem.height = 22;
-    newLiItem.appendChild(newHierImgItem);  
-  }           
-                                    // generate Evaluation Bar and fit it together with name field
-  var eval_value = 0.0;
-  for (var i=0; i<this.eval_cat_num; i++)
-  {
-    if (node.eval[i] != undefined)
-      eval_value = eval_value + node.eval[i].avg;
-  }
-  eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
-  my_eval_bar = f_eval_bar(newDivItem, eval_value);      
-  my_eval_bar.style.marginLeft = "1.5em";   
-                                    // 3.) insert Name field with Eval Bar as third child
-  newLiItem.appendChild(newDivItem);
-                                    // 4.) insert Child List as fourth child
-  newLiItem.appendChild(newUlItem); */
-                                    // insert current Item into parent's UL element
-  var parentUlItem = document.getElementById(parent_gui_id+"_ul");    
-  parentUlItem.style.cssText = 'display:block;';
-  // parentUlItem.appendChild(newLiItem);
-
-  this.print_item(parentUlItem, node, on_click_str, true, tree_hier, subtree);
-}
-
 
 // insert new list element under parent 'ul' element with text input form          
 function lib_tree_input_item(is_new, gui_id, item_type)
@@ -831,7 +766,8 @@ function print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree)
     }
   }
   
-  on_click_str = "window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'explorer_select\', this.id, c_KEYB_MODE_NONE, event);";          
+  const self = this;
+  on_click = function (event) { return self.handler("explorer_select", this.id, event) };
   
   var width = 960,
       height = 500;
@@ -876,7 +812,7 @@ function print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree)
         .attr("width", function(d) { return elementWidth*d.name.length; })
 //        .on('mouseover', function() { alert('over1'+this.id); } )
 //        .on('mouseout', function() { alert('out1'+this.id); } )        
-        .on("click", function(event) { eval(on_click_str); return;} )            
+        .on("click", on_click)            
         .style("fill", function(d) { return d.fill; })
         .style("stroke", function(d) { return d.stroke; }) 
         .style("stroke-width", function(d) { if (d.index==0) return "2.5px"; else return "1.5px";})           
@@ -899,7 +835,7 @@ function print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree)
 //        .on('mouseover', function() { alert('over2'+this.id); } )            
 //        .on('mouseout', function() { alert('out2'+this.id); } )                
 //        .on("click", function(event) {alert('click2'+this.id); eval(on_click_str);  return;}.bind(on_click_str))
-        .on("click", function(event) { eval(on_click_str);  return;} )            
+        .on("click", on_click)            
         .style("font", function(d) { if (d.index==0) return "10pt courier"; else return "10pt courier";})
         .call(force.drag);
   
@@ -913,7 +849,7 @@ function print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree)
           return 'translate(' + [d.x-(elementWidth*d.name.length/2), d.y-(elementHeight/2)] + ')'; 
       });        
     });
-  }.bind(on_click_str);
+  };
   
   drawGraph(graph);  
   

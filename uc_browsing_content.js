@@ -1,5 +1,5 @@
 // Class 'uc_browsing_content' -> Panel2
-function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, cb_clicked_at_str, db_obj, global_setup, global_main_save_setup)
+function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup)
 {
   // save params to object
   this.main = main;
@@ -8,7 +8,7 @@ function uc_browsing_content(main, gui_headline_context, lang_headline, gui_cont
   this.gui_content_context = gui_content_context;
   this.current_usecase = current_usecase;
   this.current_panel = current_panel;
-  this.cb_clicked_at_str = cb_clicked_at_str;
+  this.dispatcher = dispatcher;
   this.db_obj = db_obj;
   this.global_setup = global_setup;    
   this.global_main_save_setup = global_main_save_setup;
@@ -98,19 +98,23 @@ function uc_browsing_content_init_gui()
   
   // GUI Init
   var my_html = '';
-  var on_focus_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'content\', \'on_focus\', c_KEYB_MODE_NONE);";  
-  var on_blur_str = "return window." + this.cb_clicked_at_str + "(\'" + this.current_usecase + "\', \'" + this.current_panel + "\', \'content\', \'on_blur\', c_KEYB_MODE_NONE);";    
+  var on_focus = () => this.dispatcher(this.current_usecase, this.current_panel, "content", "on_focus", c_KEYB_MODE_NONE);
+  var on_blur = () => this.dispatcher(this.current_usecase, this.current_panel, "content", "on_blur", c_KEYB_MODE_NONE);
   my_html = my_html + '                  <H2><div id=\'' + this.current_panel + '_content_headline\' style=\"padding-left:0.5em; margin-top:-0.6em; margin-bottom:0.0em;\">' + c_LANG_MSG_LOADING[this.global_setup.curr_lang] + '</div></H2>';
   my_html = my_html + '                  <div id=\'' + this.current_panel + '_eval_area\' style=\"height:100px; margin-bottom:3.0em;\">';
   my_html = my_html + '                  </div>';
   my_html = my_html + '                  <div id=\'' + this.current_panel + '_content_description\' style=\"margin-left:0.7em; margin-top:1.0em; padding-left:0.1em; padding-right:0.1em; padding-bottom:0.1em; width:944px; height:300px; border-width:0.2em; border-style:solid; border-color:#C0C0F0;\">';
-  my_html = my_html + '                    <div id=\'' + this.current_panel + '_content_fulltext\' contenteditable=\"true\" onfocus=\"' + on_focus_str + '\" onblur=\"' + on_blur_str + '\" name=\"myname\" wrap=physical style=\"width:100%; height:100%; background-color:#FFFFFF; border-style:none;\">';  
+  my_html = my_html + '                    <div id=\'' + this.current_panel + '_content_fulltext\' contenteditable=\"true\" name=\"myname\" wrap=physical style=\"width:100%; height:100%; background-color:#FFFFFF; border-style:none;\">';  
   my_html = my_html + '                      ' + c_LANG_MSG_LOADING[this.global_setup.curr_lang];
   my_html = my_html + '                    </div>';
   my_html = my_html + '                  </div>';  
 //  my_html = my_html + '                  <H4><U><a id=\'' + this.current_panel + '_optional_cb_button\' href="" style=\"padding-left:0.7em; margin-top:-0.6em; margin-bottom:0.0em;\"></a></U></H4>';  
 
-  setInnerHTML(document.getElementById(this.gui_content_context), my_html);
+  const container = document.getElementById(this.gui_content_context);
+  setInnerHTML(container, my_html);
+  const content_fulltext = container.querySelector("#" + this.current_panel + "_content_fulltext");
+  content_fulltext.onfocus = on_focus;
+  content_fulltext.onblur = on_blur;
   
   var my_categories = [ "Passung", "Prioritaet", "Info-Qualitaet" ];
   var eval_val_width = 5; // -n .. +n

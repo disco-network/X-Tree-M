@@ -7,10 +7,10 @@ const BROWSING_STATES = {
   UNINITIALIZED: c_BS_UNINITIALIZED, LOADING: c_BS_LOADING, BROWSING: c_BS_BROWSING, NAMEINPUT: c_BS_NAMEINPUT, ERROR: c_BS_ERROR
 };
 
-function uc_browsing_main( cb_clicked_at_str, global_setup, global_main_save_setup, my_path  ) 
+function uc_browsing_main( dispatcher, global_setup, global_main_save_setup, my_path  ) 
 {
   // take over params into object
-  this.cb_clicked_at_str = cb_clicked_at_str;
+  this.dispatcher = dispatcher;
   this.global_setup = global_setup;
   this.global_main_save_setup = global_main_save_setup;
   this.my_path = my_path;
@@ -237,7 +237,7 @@ function uc_browsing_main_load(path) {
 
   const self = this;
   const cb_success = function () {
-    window[self.cb_clicked_at_str]("uc_browsing", "panel1", "show_tree", "T0_a", c_KEYB_MODE_NONE);
+    dispatcher("uc_browsing", "panel1", "show_tree", "T0_a", c_KEYB_MODE_NONE);
   }
   this.db_obj.command({path, cb_success}, "req_tree_only");
 }
@@ -316,11 +316,11 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                                     // get data from database module
             var curr_tree_data = this.db_obj.command({}, "get_tree");                                    
                                     // init info panel and set periodic timer
-            this.info_panel = new uc_browsing_infopanel("div_panel3_headline", c_LANG_UC_BROWSING_PANEL3_TITLE, "div_panel3_pad", "uc_browsing", "panel3", this.cb_clicked_at_str, curr_tree_data.ticker); 
-            var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel3\', \'update_info_panel\', \'disp_init\', c_KEYB_MODE_NONE);";
-            setTimeout(on_click_str, this.setup.info_timer); 
+            this.info_panel = new uc_browsing_infopanel("div_panel3_headline", c_LANG_UC_BROWSING_PANEL3_TITLE, "div_panel3_pad", "uc_browsing", "panel3", this.dispatcher, curr_tree_data.ticker); 
+            var on_click = () => this.dispatcher('uc_browsing', 'panel3', 'update_info_panel', 'disp_init', c_KEYB_MODE_NONE);
+            setTimeout(on_click, this.setup.info_timer); 
                                     // init features panel
-            this.features_panel = new uc_browsing_features("div_panel4_headline", c_LANG_UC_BROWSING_PANEL4_TITLE, "div_panel4_pad", "uc_browsing", "panel4", this.cb_clicked_at_str, this.db_obj);
+            this.features_panel = new uc_browsing_features("div_panel4_headline", c_LANG_UC_BROWSING_PANEL4_TITLE, "div_panel4_pad", "uc_browsing", "panel4", this.dispatcher, this.db_obj);
             this.curr_sel_favorite_id = 0;
             if (curr_tree_data.fav.length > 0)
             {
@@ -378,8 +378,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
               this.setup.tree_locked_item = [this.setup.tree_data_src_params.root_item];          
               this.panel1_selected_items =  jQuery.extend(true, [], this.panel4_stree_cfg_selsave);                                   
               selected_items_old = jQuery.extend(true, [], this.panel1_selected_items);
-              var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-              this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"tree_only"}, "req_tree"); 
+              var req_tree_cb = this.dispatcher('uc_browsing', 'panel1', 'show_tree', 'T0_a', c_KEYB_MODE_NONE);
+              this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:this.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:req_tree_cb, mode:"tree_only"}, "req_tree"); 
             }
           break;
                                     // request parents from database to prepare parent menu
@@ -387,8 +387,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
             this.panel1_selected_items[0]=this.tree_panel.get_item_data(gui_id);
             this.panel1_select_idx = 1;
             var myself = this.tree_panel.get_item_data(gui_id);
-            var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_parent_menu\', \'\', c_KEYB_MODE_NONE);";            
-            this.db_obj.command({elem_id:myself.elem_id, cb_fctn_str:on_click_str}, "req_all_parents");
+            var on_click = this.dispatcher('uc_browsing', 'panel1', 'show_parent_menu', '', c_KEYB_MODE_NONE);            
+            this.db_obj.command({elem_id:myself.elem_id, cb_fctn:on_click}, "req_all_parents");
           break;
                                     // open up Menu to choose desired parent node after clicking {...} button
           case "show_parent_menu" : 
@@ -480,8 +480,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                                                         // write this setup into Setups Memory
                         this.save_setup();
                                                         // load favorites in respective panel
-                        var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-                        this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+                        var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'fav_only', 'T0_a', c_KEYB_MODE_NONE);
+                        this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb, mode:"fav_only"}, "req_tree");
                       }
                       else
                         alert(c_LANG_WARNING_WRONG_SELECTION[this.global_setup.curr_lang]);  
@@ -492,8 +492,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                       if (this.curr_sel_favorite_id!=-1) 
                       {
                         this.setup.tree_last_selected = this.setup.favorites[this.curr_sel_favorite_id];
-                        var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-                        this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:[this.setup.tree_data_src_params.root_item], favIds:[], tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"tree_only"}, "req_tree"); 
+                        var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'show_tree', 'T0_a', c_KEYB_MODE_NONE);
+                        this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:[this.setup.tree_data_src_params.root_item], favIds:[], tickerIds:[], cb_fct_call:req_tree_cb, mode:"tree_only"}, "req_tree"); 
                       }
                       else
                         alert(c_LANG_WARNING_WRONG_SELECTION[this.global_setup.curr_lang]);  
@@ -510,8 +510,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                                                     // update internal variables
                         this.curr_sel_favorite_id = -1;
                                                     // change GUI accordingly
-                        var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-                        this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+                        var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'fav_only', 'T0_a', c_KEYB_MODE_NONE);
+                        this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb, mode:"fav_only"}, "req_tree");
                       }
                       else
                         alert(c_LANG_WARNING_WRONG_SELECTION[curr_lang]);  
@@ -526,8 +526,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                                                     // update internal variables
                       this.curr_sel_favorite_id = -1;
                                                     // change GUI accordingly
-                      var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-                      this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+                      var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'fav_only', 'T0_a', c_KEYB_MODE_NONE);
+                      this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb, mode:"fav_only"}, "req_tree");
                       break;
                   default :
                       this.features_panel.exec_favorites_cmds(parseInt(item));
@@ -568,8 +568,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                       if (this.curr_sel_favorite_id!=-1) 
                       {
                         this.setup.tree_last_selected = this.panel4_stree_cfg_storage[this.curr_sel_favorite_id][0].elem_id;
-                        var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-                        this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:[this.setup.tree_data_src_params.root_item], favIds:[], tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"tree_only"}, "req_tree"); 
+                        var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'show_tree', 'T0_a', c_KEYB_MODE_NONE);
+                        this.db_obj.command({elemId:this.setup.tree_last_selected, lock_id:[this.setup.tree_data_src_params.root_item], favIds:[], tickerIds:[], cb_fct_call:req_tree_cb, mode:"tree_only"}, "req_tree"); 
                       }
                       else
                         alert(c_LANG_WARNING_WRONG_SELECTION[this.global_setup.curr_lang]);  
@@ -670,8 +670,8 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
                   // cancel button in subtree config (Tree Hierarchy)
                   case "stree_cfg_cancel" :
                                       // restore Favorites Mode
-                      var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'T0_a\', c_KEYB_MODE_NONE);";            
-                      this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+                      var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'fav_only', 'T0_a', c_KEYB_MODE_NONE);
+                      this.db_obj.command({elemId:[], lock_id:0, favIds:this.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb, mode:"fav_only"}, "req_tree");
                       break;
                   default :
                       this.features_panel.exec_stree_cfg_cmds(parseInt(item));
@@ -705,11 +705,11 @@ function uc_browsing_main_update_info_panel(source)
 {
 //  alert(source);
                                     // request data from database 
-  var req_tree_cb_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'ticker_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-  this.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.setup.info_ticker1_item_id, this.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"ticker_only"}, "req_tree");
+  var req_tree_cb = () => this.dispatcher('uc_browsing', 'panel1', 'ticker_only', 'T0_a', c_KEYB_MODE_NONE);
+  this.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.setup.info_ticker1_item_id, this.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb, mode:"ticker_only"}, "req_tree");
                                     // setup next automatic timer for Info Panel
-  var on_click_str = "window." + this.cb_clicked_at_str + "(\'uc_browsing\', \'panel3\', \'update_info_panel\', \'update_info_panel\', c_KEYB_MODE_NONE);";
-  setTimeout(on_click_str, this.setup.info_timer);     
+  var on_click = () => this.dispatcher('uc_browsing', 'panel3', 'update_info_panel', 'update_info_panel', c_KEYB_MODE_NONE);
+  setTimeout(on_click, this.setup.info_timer);     
 }
 
 
@@ -818,12 +818,12 @@ function uc_browsing_main_init_model() {
 function uc_browsing_main_launch()
 {
                                     // create Panel 1
-  this.tree_panel = new lib_tree("div_panel1_headline", c_LANG_UC_BROWSING_MENUBAR[3][3][1], "div_panel1_pad", "uc_browsing", "panel1", this.cb_clicked_at_str);
+  this.tree_panel = new lib_tree("div_panel1_headline", c_LANG_UC_BROWSING_MENUBAR[3][3][1], "div_panel1_pad", "uc_browsing", "panel1", this.dispatcher);
                                     // create Panel 2
-  this.content_panel = new uc_browsing_content(this, "div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsi", "panel2", this.cb_clicked_at_str, this.db_obj, this.global_setup, this.global_main_save_setup); 
+  this.content_panel = new uc_browsing_content(this, "div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsi", "panel2", this.dispatcher, this.db_obj, this.global_setup, this.global_main_save_setup); 
                                     // create Menu and ToolBar just below MenuBar                                                  
   this.menubar = new uc_browsing_menubar( 'div_menubar', this, 'menubar', c_LANG_UC_BROWSING_MENUBAR); 
-  this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.cb_clicked_at_str);     
+  this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.dispatcher);
 
   uc_browsing_main_init_model.call(this);
 

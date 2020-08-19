@@ -49,7 +49,7 @@ function global_main_key_event(e)
     if ((my_key != 16) && (my_key != 17) && (my_key != 18) && (my_key < 115))
     {                 
       global_main_process_extra_keys(e);
-      this.curr_uc_main.keyb_proc(my_key, extra_keys, e);
+      curr_uc_main.keyb_proc(my_key, extra_keys, e);
       dispatched = true;
     }
   }
@@ -74,8 +74,8 @@ function global_main_event(receiver, sender, submodule, item, mode, event)
   {
     if (event != undefined)
       global_main_process_extra_keys(event);
-    while (this.curr_uc_main == undefined) {}
-    this.curr_uc_main.clicked_at(sender, submodule, item, extra_keys);
+    while (curr_uc_main == undefined) {}
+    curr_uc_main.clicked_at(sender, submodule, item, extra_keys);
   }
 }
 
@@ -120,8 +120,8 @@ function global_main_win_resize()
   var minimized_panel_width_str = new String(Math.round((win_width - 32)*0.1)) + "px";
   for (var i=0; i<3; i++)
   {
-    elem1 = document.getElementById(panel_names[i]);
-    elem2 = document.getElementById(panel_names[i]+"_content");
+    const elem1 = document.getElementById(panel_names[i]);
+    const elem2 = document.getElementById(panel_names[i]+"_content");
     if (i==window.currently_selected_panel)
       {elem1.style.width = maximized_panel_width_str; elem2.style.width = maximized_panel_width_str;}
     else
@@ -311,7 +311,12 @@ function global_main_load_setup()
 
 function global_main_init()
 {
-//  alert("init0");
+
+
+  document.body.onresize = global_main_win_resize;
+  document.getElementById("td_panel1").onmouseover = () => global_main_change_panel_focus(0);
+  document.getElementById("td_panel2").onmouseover = () => global_main_change_panel_focus(1);
+
                                     // get Sub-Directory name of instance and delete all slashes
   var my_path_raw = window.location.pathname;
   my_path = my_path_raw.replace(/\//g,''); 
@@ -326,7 +331,7 @@ function global_main_init()
       curr_uc_main = new uc_merging_main( "global_main_event", global_setup, global_main_save_setup, my_path );
     case "uc_browsing" :
     default :     
-      curr_uc_main = new uc_browsing_main( "global_main_event", global_setup, global_main_save_setup, my_path );
+      curr_uc_main = new uc_browsing_main( global_main_event, global_setup, global_main_save_setup, my_path );
     break;
   }
   curr_uc_main.launch();
@@ -342,3 +347,5 @@ function global_main_init()
 
 }
 
+// This is deferred until the page was parsed
+global_main_init();

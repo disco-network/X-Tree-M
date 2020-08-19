@@ -1,9 +1,9 @@
 // Toolbar just below Menubar
-function uc_browsing_toolbar( gui_elem_id, cb_clicked_at_str )
+function uc_browsing_toolbar( gui_elem_id, dispatcher )
 {
   // take over params into object
   this.gui_elem_id = gui_elem_id;
-  this.cb_clicked_at_str = cb_clicked_at_str;
+  this.dispatcher = dispatcher;
   
   // bind functions to object
   this.init = uc_browsing_toolbar_init.bind(this);

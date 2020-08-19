@@ -65,29 +65,30 @@ function uc_browsing_main_process_elem_menu(item)
         this.main.model.begin_renaming();
         break;          
     case "delete_item" :
-        if (this.main.panel1_selected_items.length!=0) 
-        {
-          if (this.main.panel1_selected_items[0].elem_id != this.main.setup.tree_data_src_params.root_item)
-          {
-                                      // new selection : parent of current selection
-            var new_sel0 = this.main.tree_panel.get_item_data(this.main.panel1_selected_items[0].parent_gui_id); 
-            var selected_items_old = jQuery.extend(true, [], this.main.panel1_selected_items);              
-            this.main.panel1_selected_items=[];
-            this.main.panel1_selected_items[0]= new_sel0;
-            this.main.panel1_select_idx = 1; 
-            this.main.setup.tree_last_selected = new_sel0.elem_id;
-            this.main.save_setup();
-                                      // delete all selected items from database and update tree in GUI
-            var sel_item_ids = [];
-            for (var i=0; i<selected_items_old.length; i++) {  sel_item_ids[i] = selected_items_old[i].elem_id; }
-            var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-            this.main.db_obj.command({parentId:new_sel0.elem_id, itemId:sel_item_ids, lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "delete_item");
-          }
-          else
-            alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);
-        }
-        else
-          alert(c_LANG_WARNING_NOTHING_SELECTED[this.main.global_setup.curr_lang]);
+        // if (this.main.panel1_selected_items.length!=0) 
+        // {
+        //   if (this.main.panel1_selected_items[0].elem_id != this.main.setup.tree_data_src_params.root_item)
+        //   {
+        //                               // new selection : parent of current selection
+        //     var new_sel0 = this.main.tree_panel.get_item_data(this.main.panel1_selected_items[0].parent_gui_id); 
+        //     var selected_items_old = jQuery.extend(true, [], this.main.panel1_selected_items);              
+        //     this.main.panel1_selected_items=[];
+        //     this.main.panel1_selected_items[0]= new_sel0;
+        //     this.main.panel1_select_idx = 1; 
+        //     this.main.setup.tree_last_selected = new_sel0.elem_id;
+        //     this.main.save_setup();
+        //                               // delete all selected items from database and update tree in GUI
+        //     var sel_item_ids = [];
+        //     for (var i=0; i<selected_items_old.length; i++) {  sel_item_ids[i] = selected_items_old[i].elem_id; }
+        //     var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+        //     this.main.db_obj.command({parentId:new_sel0.elem_id, itemId:sel_item_ids, lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "delete_item");
+        //   }
+        //   else
+        //     alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);
+        // }
+        // else
+        //   alert(c_LANG_WARNING_NOTHING_SELECTED[this.main.global_setup.curr_lang]);
+        this.main.model.delete_selected();
         break;
     case "clone_item" :
         // this.main.cloned_items = jQuery.extend(true, [], this.main.panel1_selected_items);
@@ -181,46 +182,46 @@ function uc_browsing_main_process_elem_menu(item)
         break;
         
     case "lock_topic"  :
-        throw new Error("Locking is not implemented");
-        if (this.main.panel1_selected_items.length==1) 
-        {
-                                    // unlock topic if it is locked for the second time
-          if (this.main.panel1_selected_items[0].elem_id == this.main.setup.tree_locked_item)
-            this.main.setup.tree_locked_item = this.main.setup.tree_data_src_params.root_item;
-          else  
-            this.main.setup.tree_locked_item = this.main.panel1_selected_items[0].elem_id;
-          this.main.save_setup();
-                                    // redraw tree
-          var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-          this.main.db_obj.command({elemId:[this.main.panel1_selected_items[0].elem_id], lock_id:this.main.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree");
-//          this.main.panel1_selected_items = []; 
-//          this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data("T0");
-//          this.main.panel1_select_idx = 1;
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
+        // throw new Error("Locking is not implemented");
+        // if (this.main.panel1_selected_items.length==1) 
+        // {
+        //                             // unlock topic if it is locked for the second time
+        //   if (this.main.panel1_selected_items[0].elem_id == this.main.setup.tree_locked_item)
+        //     this.main.setup.tree_locked_item = this.main.setup.tree_data_src_params.root_item;
+        //   else  
+        //     this.main.setup.tree_locked_item = this.main.panel1_selected_items[0].elem_id;
+        //   this.main.save_setup();
+        //                             // redraw tree
+        //   var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+        //   this.main.db_obj.command({elemId:[this.main.panel1_selected_items[0].elem_id], lock_id:this.main.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree");
+//      //     this.main.panel1_selected_items = []; 
+//      //     this.main.panel1_selected_items[0] = this.main.tree_panel.get_item_data("T0");
+//      //     this.main.panel1_select_idx = 1;
+        // }
+        // else
+        //   alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
         break;
     case "as_news"     :
-        if (this.main.panel1_selected_items.length==1) 
-        {
-          this.main.setup.info_ticker1_item_id = this.main.panel1_selected_items[0].elem_id;
-          this.main.save_setup();
-          var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'ticker_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-          this.main.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.main.setup.info_ticker1_item_id, this.main.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"ticker_only"}, "req_tree");
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
+        // if (this.main.panel1_selected_items.length==1) 
+        // {
+        //   this.main.setup.info_ticker1_item_id = this.main.panel1_selected_items[0].elem_id;
+        //   this.main.save_setup();
+        //   var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'ticker_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
+        //   this.main.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.main.setup.info_ticker1_item_id, this.main.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"ticker_only"}, "req_tree");
+        // }
+        // else
+        //   alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
         break;
     case "as_date"     :
-        if (this.main.panel1_selected_items.length==1) 
-        {
-          this.main.setup.info_ticker2_item_id = this.main.panel1_selected_items[0].elem_id;
-          this.main.save_setup();
-          var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'ticker_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-          this.main.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.main.setup.info_ticker1_item_id, this.main.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"ticker_only"}, "req_tree");
-        }
-        else
-          alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
+        // if (this.main.panel1_selected_items.length==1) 
+        // {
+        //   this.main.setup.info_ticker2_item_id = this.main.panel1_selected_items[0].elem_id;
+        //   this.main.save_setup();
+        //   var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'ticker_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
+        //   this.main.db_obj.command({elemId:[], lock_id:0, favIds:[], tickerIds:[this.main.setup.info_ticker1_item_id, this.main.setup.info_ticker2_item_id], cb_fct_call:req_tree_cb_str, mode:"ticker_only"}, "req_tree");
+        // }
+        // else
+        //   alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);      
         break;
     default : 
       alert(c_LANG_UC_BROWSING_MSG_UNKNOWN_COMMAND[this.main.global_setup.curr_lang] + item);
@@ -233,89 +234,89 @@ function uc_browsing_main_process_elem_menu(item)
 function uc_browsing_main_process_type_menu(item)
 {
   // choose element type
-  var item_int = lib_tree_get_type_no(item);
-  if (item_int >= 0)
-  {                                                  
-                                    // set type in Info Bar
-    this.toolbar.set_elem_type(item_int);
-                                    // set new type for all selected items
-    if (this.main.panel1_selected_items.length > 0)
-    {
-                                    // change type field in database
-                                    // create item in database
-      var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-      this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"type", content:c_LANG_LIB_TREE_ELEMTYPE[item_int+1][0], lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
-    }
-    this.main.panel1_elem_type = item_int;
-  }
-  else
-    alert(c_LANG_UC_BROWSING_MSG_UNKNOWN_ELEM_TYPE[this.main.global_setup.curr_lang]);
+  // var item_int = lib_tree_get_type_no(item);
+  // if (item_int >= 0)
+  // {                                                  
+  //                                   // set type in Info Bar
+  //   this.toolbar.set_elem_type(item_int);
+  //                                   // set new type for all selected items
+  //   if (this.main.panel1_selected_items.length > 0)
+  //   {
+  //                                   // change type field in database
+  //                                   // create item in database
+  //     var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+  //     this.main.db_obj.command({items:this.main.panel1_selected_items, field_id:"type", content:c_LANG_LIB_TREE_ELEMTYPE[item_int+1][0], lock_id:this.main.setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");
+  //   }
+  //   this.main.panel1_elem_type = item_int;
+  // }
+  // else
+  //   alert(c_LANG_UC_BROWSING_MSG_UNKNOWN_ELEM_TYPE[this.main.global_setup.curr_lang]);
 }
 
 
 function uc_browsing_main_process_fav_menu(item)                             
 {
-  switch (item)
-  {
-    // save currently selected tree item as favorite
-    case c_LANG_UC_BROWSING_MENUBAR[2][1][0] :
-      if (this.main.panel1_selected_items.length==1) 
-      {
-                                        // save currently selected item to last index of favorite item array
-        this.main.setup.favorites[this.main.setup.favorites.length] = this.main.panel1_selected_items[0].elem_id;
-                                        // write this setup into Setups Memory
-        this.main.save_setup();
-                                        // load favorites in respective panel
-        var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-        this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
-      }
-      else
-        alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);  
-    break;
-    
-    // load currently selected favorite as selected tree item
-    case c_LANG_UC_BROWSING_MENUBAR[2][2][0] :
-      if (this.curr_sel_favorite_id!=-1) 
-      {
-        this.main.setup.tree_last_selected = this.main.setup.favorites[this.curr_sel_favorite_id];
-        var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-        this.main.db_obj.command({elemId:[this.main.setup.tree_last_selected], lock_id:this.main.setup.tree_data_src_params.root_item, favIds:[], tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"tree_only"}, "req_tree"); 
-      }
-      else
-        alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);  
-    break;
-    
-    // delete currently selected favorite
-    case c_LANG_UC_BROWSING_MENUBAR[2][3][0] :
-      if (this.curr_sel_favorite_id!=-1) 
-      {
-                                    // delete element from list
-        this.main.setup.favorites.splice(this.curr_sel_favorite_id, 1);
-                                    // write list to cookies
-        this.main.save_setup();
-                                    // update internal variables
-        this.curr_sel_favorite_id = -1;
-                                    // change GUI accordingly
-        var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-        this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
-      }
-      else
-        alert(c_LANG_WARNING_WRONG_SELECTION[curr_lang]);  
-    break;
+  //switch (item)
+  //{
+  //  // save currently selected tree item as favorite
+  //  case c_LANG_UC_BROWSING_MENUBAR[2][1][0] :
+  //    if (this.main.panel1_selected_items.length==1) 
+  //    {
+  //                                      // save currently selected item to last index of favorite item array
+  //      this.main.setup.favorites[this.main.setup.favorites.length] = this.main.panel1_selected_items[0].elem_id;
+  //                                      // write this setup into Setups Memory
+  //      this.main.save_setup();
+  //                                      // load favorites in respective panel
+  //      var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
+  //      this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+  //    }
+  //    else
+  //      alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);  
+  //  break;
+  //  
+  //  // load currently selected favorite as selected tree item
+  //  case c_LANG_UC_BROWSING_MENUBAR[2][2][0] :
+  //    if (this.curr_sel_favorite_id!=-1) 
+  //    {
+  //      this.main.setup.tree_last_selected = this.main.setup.favorites[this.curr_sel_favorite_id];
+  //      var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+  //      this.main.db_obj.command({elemId:[this.main.setup.tree_last_selected], lock_id:this.main.setup.tree_data_src_params.root_item, favIds:[], tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"tree_only"}, "req_tree"); 
+  //    }
+  //    else
+  //      alert(c_LANG_WARNING_WRONG_SELECTION[this.main.global_setup.curr_lang]);  
+  //  break;
+  //  
+  //  // delete currently selected favorite
+  //  case c_LANG_UC_BROWSING_MENUBAR[2][3][0] :
+  //    if (this.curr_sel_favorite_id!=-1) 
+  //    {
+  //                                  // delete element from list
+  //      this.main.setup.favorites.splice(this.curr_sel_favorite_id, 1);
+  //                                  // write list to cookies
+  //      this.main.save_setup();
+  //                                  // update internal variables
+  //      this.curr_sel_favorite_id = -1;
+  //                                  // change GUI accordingly
+  //      var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
+  //      this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+  //    }
+  //    else
+  //      alert(c_LANG_WARNING_WRONG_SELECTION[curr_lang]);  
+  //  break;
 
-    // delete all favorites
-    case c_LANG_UC_BROWSING_MENUBAR[2][4][0] :
-                                    // delete element from list
-      this.main.setup.favorites = [];
-                                    // write list to cookies
-      this.main.save_setup();
-                                    // update internal variables
-      this.curr_sel_favorite_id = -1;
-                                    // change GUI accordingly
-      var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
-      this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
-    break;
-  }
+  //  // delete all favorites
+  //  case c_LANG_UC_BROWSING_MENUBAR[2][4][0] :
+  //                                  // delete element from list
+  //    this.main.setup.favorites = [];
+  //                                  // write list to cookies
+  //    this.main.save_setup();
+  //                                  // update internal variables
+  //    this.curr_sel_favorite_id = -1;
+  //                                  // change GUI accordingly
+  //    var req_tree_cb_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'fav_only\', \'" + "T0_a\', c_KEYB_MODE_NONE);";            
+  //    this.main.db_obj.command({elemId:[], lock_id:0, favIds:this.main.setup.favorites, tickerIds:[], cb_fct_call:req_tree_cb_str, mode:"fav_only"}, "req_tree");
+  //  break;
+  //}
   
 //  alert(item);
 }
@@ -417,11 +418,11 @@ function uc_browsing_menubar_clicked_at(submodule, item, mode)
         break; 
     case c_LANG_UC_BROWSING_MENUBAR[3][5][0][0] : // setup_menu.permissions
           // alert("Display_Type");
-          var myelem = document.getElementById("permissions0_a");
-          setInnerHTML(myelem, "change="+String(uc_browsing_change_permission)); 
-          uc_browsing_change_permission = 1-uc_browsing_change_permission;
-          var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
-          this.main.db_obj.command({elemId:[this.main.panel1_selected_items[0].elem_id], lock_id:this.main.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree"); 
+          // var myelem = document.getElementById("permissions0_a");
+          // setInnerHTML(myelem, "change="+String(uc_browsing_change_permission)); 
+          // uc_browsing_change_permission = 1-uc_browsing_change_permission;
+          // var on_click_str = "window." + this.main.cb_clicked_at_str + "(\'uc_browsing\', \'panel1\', \'show_tree\', \'T0_a\', c_KEYB_MODE_NONE);";            
+          // this.main.db_obj.command({elemId:[this.main.panel1_selected_items[0].elem_id], lock_id:this.main.setup.tree_locked_item, favIds:[], tickerIds:[], cb_fct_call:on_click_str, mode:"tree_only"}, "req_tree"); 
         break;               
     case c_LANG_UC_BROWSING_MENUBAR[4][0][0] : // help_menu
         switch (item)
@@ -483,9 +484,10 @@ function uc_browsing_menubar_add_submenu(sub_ul, submenu_data)
         var sub_item_li = document.createElement("li");  
         sub_item_li.style.cssText = 'background-color: #ccc; float:left; position:relative; display:block;';
         var sub_item_a_style_str   = 'style=\"color:#000000; display:block; width:130px; height: 25px; text-decoration:none; text-align:center; margin:5px;\" ';
-        var sub_item_a_onclick_str = "onclick=\"" + this.main.cb_clicked_at_str + "(\'" + this.main.name + "\', \'" + this.my_main_name + "\', \'" + submenu_data[0][0] + "\', \'" + new String(i-2) + "\', c_KEYB_MODE_NONE);\"";
-        var sub_item_a_str = '<a id=\"' + submenu_data[0][0]+ new String(i-2) + '_a\" ' + sub_item_a_style_str + sub_item_a_onclick_str + '>' + my_feature[i] + '</a>';        
+        var sub_item_a_str = '<a id=\"' + submenu_data[0][0]+ new String(i-2) + '_a\" ' + sub_item_a_style_str + '>' + my_feature[i] + '</a>';        
         setInnerHTML(sub_item_li, sub_item_a_str);
+        const a_elem = sub_item_li.getElementsByTagName("a")[0];
+        a_elem.onclick = () => this.main.dispatcher(this.main.name, this.my_main_name, submenu_data[0][0], (i - 2).toString(), c_KEYB_MODE_NONE);
         sub_child_ul.appendChild(sub_item_li); 
       }
     }
@@ -550,9 +552,10 @@ function uc_browsing_menubar_init()
         var menu_item_li = document.createElement("li"); 
         menu_item_li.style.cssText = 'background-color: #ccc; float:left; position:relative; display:block;';
         var menu_item_a_style_str   = 'style=\"color:#000000; display:block; width:130px; height: 25px; text-decoration:none; text-align:center; margin:5px;\" ';
-        var menu_item_a_onclick_str = "onclick=\"" + this.main.cb_clicked_at_str + "(\'" + this.main.name + "\', \'" + this.my_main_name + "\', \'" + menu[0][0] + "\', \'" + menu[j][0] + "\', c_KEYB_MODE_NONE);\"";
-        var menu_item_a_str = '<a id=\"' + menu[j][0] + '_a\" ' + menu_item_a_style_str + menu_item_a_onclick_str + '>' + menu[j][this.main.global_setup.curr_lang] + '</a>';        
+        var menu_item_a_str = '<a id=\"' + menu[j][0] + '_a\" ' + menu_item_a_style_str + '>' + menu[j][this.main.global_setup.curr_lang] + '</a>';        
         setInnerHTML(menu_item_li, menu_item_a_str)
+        const a_elem = menu_item_li.getElementsByTagName("a")[0];
+        a_elem.onclick = () => this.main.dispatcher(this.main.name, this.my_main_name, menu[0][0], menu[j][0], c_KEYB_MODE_NONE);
         menu_ul.appendChild(menu_item_li);
       }        
     }
