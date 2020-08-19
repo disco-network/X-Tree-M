@@ -1,5 +1,8 @@
+import { getInnerHTML, setInnerHTML, URLlinks } from "./global_functions.js";
+import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
+
 // Class 'uc_browsing_content' -> Panel2
-function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup)
+export function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup)
 {
   // save params to object
   this.main = main;
@@ -31,8 +34,6 @@ function uc_browsing_content(main, gui_headline_context, lang_headline, gui_cont
   
   this.init_gui();
   this.print_title();
-    
-  my_this = this;
 }
 
 
@@ -195,7 +196,7 @@ function uc_browsing_content_init_gui()
   ); 
   
   // click event on eval elements
-  $('#' + this.current_panel + '_eval_area').find('a.eval_field_a').bind('mouseup', this.my_this, function() {
+  $('#' + this.current_panel + '_eval_area').find('a.eval_field_a').on('mouseup', this, function (event) {
     $(this).parent().find('div.selected').css("border-bottom","o").toggleClass('selected unselected');
     $(this).find('div').toggleClass('unselected selected').css("border-bottom","2px solid #0000FF");
     var my_id = $(this).find('div').attr('id');
@@ -203,7 +204,7 @@ function uc_browsing_content_init_gui()
     var my_cat_str = my_id.substring(my_id.indexOf("#")+1, my_id.indexOf("_"));
     var my_eval_str = my_id.substring(my_id.indexOf("_")+11, my_id.length);    
 //    alert(my_cat_str + "#" + my_eval_str);
-    my_this.item_eval[parseInt(my_cat_str)] = parseInt(my_eval_str);
+    event.data.item_eval[parseInt(my_cat_str)] = parseInt(my_eval_str);
   });
 
 
@@ -226,15 +227,14 @@ function uc_browsing_content_init_gui()
   my_eval_area.appendChild(my_eval_save_button_div);                                        
 
   // highlighting on mousedown  
-  $('#my_eval_save_button_a').bind('mousedown', this.my_this, function() {
+  $('#my_eval_save_button_a').on('mousedown', this, function() {
     $(this).parent().css("border","2px solid #FFFF80");
-//    alert("down");
   });
 
   // unhighlighting + saving on mouseup
-  $('#my_eval_save_button_a').bind('mouseup', this.my_this, function() {
+  $('#my_eval_save_button_a').on('mouseup', this, function(event) {
     $(this).parent().css("border","2px solid #8080FF");
-    my_this.save_eval();
+    event.data.save_eval();
 //    alert("up");
   });
     

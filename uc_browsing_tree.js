@@ -1,4 +1,4 @@
-function Graph (nodes) {
+export function Graph (nodes) {
   const self = this;
 
   self.node_dict = {};
@@ -38,7 +38,7 @@ function Graph (nodes) {
  * and not the selection of the tree).
  * [pivot_gui_id, ...]
  */
-function uc_browsing_tree(pivot_gui_id, explorer_path, graph) {
+export function Tree(pivot_gui_id, explorer_path, graph) {
   var self = this;
 
   // public
@@ -203,7 +203,7 @@ function GraphBuilder () {
   };
 }
 
-function LinearGraphBuilder (builders, reducer) {
+export function LinearGraphBuilder (builders, reducer) {
   this.__proto__ = new GraphBuilder();
 
   if (builders.length === 0) {
@@ -220,7 +220,7 @@ function LinearGraphBuilder (builders, reducer) {
   };
 }
 
-function TreeGraphBuilder (root_data, subtree_builders, reducer) {
+export function TreeGraphBuilder (root_data, subtree_builders, reducer) {
   this.__proto__ = new GraphBuilder();
 
   this.attach = function (parent_id, nodes) {

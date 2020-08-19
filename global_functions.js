@@ -1,16 +1,19 @@
+export function report_duration(name, start) {
+  console.log(name + " took " + ((new Date()) - start) + " milliseconds.");
+}
+
+
 // #############################################################################
 // ###  compatibility functions
 // #############################################################################
 
-
-
 // grundlegendes Escape, um Text in HTML-Elementen nicht uminterpretiert zu bekommen
-function htmlEntities(str) {
+export function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // find out current width of window object "my_window"
-function get_total_win_width(my_window)
+export function get_total_win_width(my_window)
 {
   var ret_val = 0;
 
@@ -37,7 +40,7 @@ function get_total_win_width(my_window)
 }
 
 // find out current height of window object "my_window"
-function get_total_win_height(my_window)
+export function get_total_win_height(my_window)
 {
   var ret_val = 0;
 
@@ -93,7 +96,7 @@ if (!Function.prototype.bind) {
 
 
 // contains function
-function arrayContains(arr, findValue) {
+export function arrayContains(arr, findValue) {
     var i = arr.length;
      
     while (i--) {
@@ -103,31 +106,26 @@ function arrayContains(arr, findValue) {
 }// See more at: http://www.codemiles.com/javascript-examples/check-array-contains-a-value-using-javascript-t7796.html#sthash.urq6GPZj.dpuf
 
 
-function strStartsWith(myString, mySubstring)
-{
-  return myString.indexOf(mySubstring) == 0;
-}
-
-function strEndsWith(str, suffix) {                                  
+export function strEndsWith(str, suffix) {                                  
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }                                                                 
 
 // change GUI item ID (parentID#itemID) to item ID
-function get_id(gui_id)
+export function get_id(gui_id)
 {
   var sep_idx = gui_id.indexOf("#");
   return gui_id.substring(sep_idx + 1, gui_id.length);
 }
 
 // extract parent ID from GUI item ID
-function get_parent_id(gui_id)
+export function get_parent_id(gui_id)
 {
   var sep_idx = gui_id.indexOf("#");
   return gui_id.substring(0, sep_idx);
 }
 
 
-function getParentIdx(parentId, parentItems)
+export function getParentIdx(parentId, parentItems)
 {
   var parentIdx = -1;
   for (var i=0; i<parentItems.length; i++)
@@ -136,7 +134,7 @@ function getParentIdx(parentId, parentItems)
   return null;
 }
 
-function getChildren(myObj)
+export function getChildren(myObj)
 {
   if (myObj.children != null)
     return myObj.children;
@@ -144,7 +142,7 @@ function getChildren(myObj)
     return myObj.childNodes;
 }
 
-function getDBElementById(domObj, id) 
+export function getDBElementById(domObj, id) 
 {
   var myChildNodes = getChildren(getChildren(domObj)[0]);
 
@@ -167,7 +165,7 @@ function getDBElementById(domObj, id)
 
 
 
-function getXMLElementById(domObj, id) 
+export function getXMLElementById(domObj, id) 
 {
   var myChildNodes = domObj.children;
 
@@ -188,7 +186,7 @@ function getXMLElementById(domObj, id)
 }
 
 
-function setInnerHTML(myObj, content)
+export function setInnerHTML(myObj, content)
 {
   var is_value = false;
   if (myObj.value != undefined)
@@ -218,7 +216,7 @@ function setInnerHTML(myObj, content)
 }
 
 
-function getInnerHTML(myObj)
+export function getInnerHTML(myObj)
 {
   if (myObj.id != "")
     return $('#'+myObj.id).html();
@@ -246,7 +244,7 @@ function getInnerHTML(myObj)
 
 
 //replace multiple URLs inside a string in html links
-function URLlinks(text) {
+export function URLlinks(text) {
   // ### Case 1 : URL-Text -> Link
   // find http:// or https:// or ftp:// or file:// or www. but not directly after an HTML tag, after 
   // a quote mark or in the middle of words to avoid wrong replacements; here is a sample text to prove
@@ -272,7 +270,7 @@ function URLlinks(text) {
 }
 
 //replace line breaks with <br> html tags
-function nl2br (str, is_xhtml) {   
+export function nl2br (str, is_xhtml) {   
 	var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
 //    alert('#'+str+'#');	
 	return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
@@ -292,7 +290,7 @@ function nl2br (str, is_xhtml) {
 // my_eval_value = -100 .. +100 (absolute value is displayed; negative 
 //    values in red; positive values in green)
 /////////////////////////////////////////////////////
-function f_eval_bar(my_eval_area, my_eval_value)
+export function f_eval_bar(my_eval_area, my_eval_value)
 {
   // setups
   var my_eval_val_abs = Math.abs(my_eval_value);
@@ -376,9 +374,9 @@ function f_eval_bar(my_eval_area, my_eval_value)
   return my_curr_eval_disp;
 }
 
-function f_append_to_pad(pad, msg)
+export function f_append_to_pad(pad, msg)
 {
-  pad_obj = document.getElementById(pad);
-  curr_pad_content = getInnerHTML(pad_obj);
+  const pad_obj = document.getElementById(pad);
+  const curr_pad_content = getInnerHTML(pad_obj);
   setInnerHTML(pad_obj, curr_pad_content+'<BR>'+msg);
 }

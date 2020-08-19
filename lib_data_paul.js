@@ -1,4 +1,8 @@
-
+import { report_duration, f_append_to_pad } from "./global_functions.js";
+import { Graph, Tree, LinearGraphBuilder, TreeGraphBuilder } from "./uc_browsing_tree.js";
+import {
+  c_LANG_UC_BROWSING_PANEL2_EVAL_CATS
+} from "./uc_browsing_lang.js";
 
 
 // Bridge for Paul's approach to make a MySQL database accessible through PHP (alternative to local XML based
@@ -22,9 +26,17 @@
 //   http://datokrat.sirius.uberspace.de/xtreem/changeItem.php?id=1&name=NeuerName&content=NeuerContent
 
 
+export const c_EMPTY_EVAL_STRUCT = [];
+for (var i=0; i < c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length-1; i++)
+{
+  const item = {};
+  item.avg = 0.0;
+  item.num = 0;
+  c_EMPTY_EVAL_STRUCT.push(item);
+}  
 
 // Class 'lib_data_disco'
-function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, global_setup)
+export function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, global_setup)
 {
   // import params
   this.data_src_path = data_src_path;
@@ -73,27 +85,6 @@ function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, glo
   this.move_item_state = "mis_idle";
   this.eval_cat_num = c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length-1;
 
-
-  // constructor call
-  
-  // init object variables  
-
-  c_EMPTY_EVAL_STRUCT = [];
-  for (var i=0; i<this.eval_cat_num; i++)
-  {
-    c_EMPTY_EVAL_STRUCT[i] = {};
-    c_EMPTY_EVAL_STRUCT[i].avg = 0.0;
-    c_EMPTY_EVAL_STRUCT[i].num = 0;
-  }  
-  
-  
-  
-//  this.context = Context; //new Context('http://' + this.data_src_path); 
-//  this.context.NamedValues.filter('it.NamedValueSetId == 3').toArray().then(
-//       function(response) {
-//          this.root_id = response[0].Value;
-//       }
-//     ); 
 }
 
 
@@ -163,11 +154,6 @@ function lib_data_paul_write_tree(iparams)
 {
   alert("Paul : Write Tree not yet implemented");
 } 
-
-
-function report_duration(name, start) {
-  console.log(name + " took " + ((new Date()) - start) + " milliseconds.");
-}
 
 /*
  * Returns a $.Deferred providing a GraphBuilder object for the corresponding subtrees of the requests.
@@ -252,8 +238,8 @@ function lib_data_paul_req_tree_only(iparams) {
     return;
   }
   
-  path = iparams.path;
-  cb_success = iparams.cb_success;
+  const path = iparams.path;
+  const cb_success = iparams.cb_success;
   
   // path to selected item (explorer path)
 
@@ -297,7 +283,7 @@ function lib_data_paul_req_tree_only(iparams) {
       const pivot_siblings = graph.find_children_of(pivot_parent_gui_id);
       const pivot = pivot_siblings.find(sibling => sibling.elem_id === pivot_id);
 
-      const tree = new uc_browsing_tree(
+      const tree = new Tree(
         pivot.gui_id,
         explorer_path,
         result.graph,

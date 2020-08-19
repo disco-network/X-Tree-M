@@ -1,4 +1,6 @@
-function uc_browsing_menubar(gui_elem_id, main, my_main_name, menu_data)
+import { setInnerHTML } from "./global_functions.js";
+
+export function uc_browsing_menubar(gui_elem_id, main, my_main_name, menu_data)
 {
   // take over params into object
   this.gui_elem_id = gui_elem_id;
@@ -471,7 +473,7 @@ function uc_browsing_menubar_add_submenu(sub_ul, submenu_data)
   sub_child_ul.style.cssText = 'position:absolute; display:none; padding:0px; top:0;left:100%;';
   sub_title_li.appendChild(sub_child_ul);
   
-  if (strStartsWith(submenu_data[1][0],'#'))
+  if (submenu_data[1][0].startsWith('#'))
   {
     var feature_type = -1;
     var command = "";

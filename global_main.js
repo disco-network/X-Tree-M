@@ -1,3 +1,7 @@
+import { get_total_win_width, get_total_win_height } from "./global_functions.js";
+import { uc_browsing_main } from "./uc_browsing_main.js";
+import { uc_merging_main } from "./uc_merging_main.js";
+
 var extra_keys = c_KEYB_MODE_NONE;
 var my_path = "";
 var log_var = [];

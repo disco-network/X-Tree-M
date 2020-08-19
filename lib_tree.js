@@ -1,5 +1,8 @@
+import { report_duration, f_eval_bar, getInnerHTML, setInnerHTML } from "./global_functions.js";
+import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
+
 // Class 'lib_tree'
-function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, dispatcher)
+export function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, dispatcher)
 {
   const handler = (operation, id, event) => this.dispatcher(this.current_usecase, this.current_panel, operation, id, c_KEYB_MODE_NONE, event);
   this.handler = handler;
@@ -169,7 +172,7 @@ function lib_tree_print_item(root_ul, node, on_click, hide_ul, insert_children) 
     }
   }
   eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
-  my_eval_bar = f_eval_bar(newDivItem, eval_value);      
+  const my_eval_bar = f_eval_bar(newDivItem, eval_value);      
   my_eval_bar.style.marginLeft = "2.8em";    
                                     // 3.) insert Name field with Eval Bar as third child
   newLiItem.appendChild(newDivItem);

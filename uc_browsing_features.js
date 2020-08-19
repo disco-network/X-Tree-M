@@ -1,5 +1,5 @@
 // Class 'uc_browsing_features' -> Panel4
-function uc_browsing_features(gui_headline_context, lang_headline, gui_features_context, current_usecase, current_panel, dispatcher, db_obj)
+export function uc_browsing_features(gui_headline_context, lang_headline, gui_features_context, current_usecase, current_panel, dispatcher, db_obj)
 {
   // save params to object
   this.gui_headline_context = gui_headline_context;

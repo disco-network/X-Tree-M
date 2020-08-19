@@ -1,4 +1,5 @@
-function uc_browsing_model(dispatcher, lib_data, logger) {
+
+export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
 
   // public

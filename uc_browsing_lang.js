@@ -1,4 +1,4 @@
-var c_LANG_UC_BROWSING_MENUBAR = [];
+export var c_LANG_UC_BROWSING_MENUBAR = [];
 
 // komplete Menubar as Structure :
 function f_set_menubar()
@@ -88,49 +88,49 @@ function f_set_menubar()
 
 c_LANG_UC_BROWSING_MENUBAR = f_set_menubar();
 
-var c_LANG_UC_BROWSING_MENU_LANG_TITLE = c_LANG_UC_BROWSING_MENUBAR[3][1][0];
+export var c_LANG_UC_BROWSING_MENU_LANG_TITLE = c_LANG_UC_BROWSING_MENUBAR[3][1][0];
 
-var c_LANG_UC_BROWSING_HELP_HINTS =
+export var c_LANG_UC_BROWSING_HELP_HINTS =
 ["do_nothing"           ,
  "Useful hints :\n(1) The X-Tree-M tool can be controlled through Touchscreen and Mouse but is optimized for Keyboard usage. If you want to use X-Tree-M for fast info recording you should learn the 10-Finger-System and know the various Keyboard-Shortcuts which can often be found next to each element in the Menu. \n(2) A mouseover on the graphical Element Type Symbols in the Tree Panel usually opens/closes the next level. Please mind that the displayed level depth is limited and that you sometimes need to select an item to reach the next level. \n(3) If you want to load a Favorite Entry you can press CTRL and click at it. \n(4) If you concentrate on a special topic it is recommended to lock it to save loading time and memory and to reduce the displayed complexity. \n(5) The Tickers are made to inform you about changes. When you have chosen a Topic as Ticker content by clicking 'as ... Ticker' in the Element Menu it is loaded instantly and further updated after some minutes. \n(6) While the DISCO version offers more professional access to the database, the XML-Version is useful to work offline and to save your database content as File. \n(7) Reset corrupt Cookies by using \'Help/Clear Cookies\'",
  "N�tzliche Hinweise :\n(1) Das X-Tree-M-Tool can per Touchscreen oder Maus bedient werden, ist aber f�r Keyboard-Gebrauch optimiert. Wenn Sie X-Tree-M f�r das schnelle Festhalten von Information benutzen wollen, sollten Sie das 10-Finger-System und diverse Keyboard-Shortcuts kennen, welche oft neben dem Element im Men� stehen. \n(2) Ein Ber�hren der Element-Typ-Symbole in der Baumdarstellung �ffnet/schlie�t die n�chste Ebene. Bitte beachten Sie, da� die dargestellte Level-Tiefe begrenzt ist und Sie manchmal ein Element selektieren m�ssen, um auf weitere Ebenen zugreifen zu k�nnen. \n(3) Wenn die einen Favoriten-Eintrag laden m�chten, k�nnen Sie einfach CTRL dr�cken und dabei auf den Eintrag klicken. \n(4) Falls Sie sich auf ein Thema konzentrieren, k�nnen Sie es locken, um Ladezeit und Speicher zu sparen und die Darstellung einfacher zu machen. \n(5) Die Ticker wurden erstellt, um Sie �ber �nderungen zu informieren. Nachdem Sie ein Thema als Ticker-Inhalt ausgew�hlt und 'als ... Ticker' geklickt haben, wird dieses geladen und alle paar Minuten aktualisiert. \n(6) W�hrend die DISCO-Variante des Tools einen professionellen geshareten Datenbank-Zugriff gew�hrleistet, kommt die XML-Version dann zum Tragen, wenn Sie Offline arbeiten oder die Daten als File abspeichern wollen. \n(7) L�schen Sie kaputte Cookies durch \'Hilfe/Cookies l�schen\'"
 ];
 
-var c_LANG_UC_BROWSING_HELP_CREATED = 
+export var c_LANG_UC_BROWSING_HELP_CREATED = 
 ["do_nothing"           ,"created: "                                  ,"erstellt: "                           ];
 
-var c_LANG_UC_BROWSING_HELP_VERSION = 
+export var c_LANG_UC_BROWSING_HELP_VERSION = 
 ["do_nothing"           ,"version: "                                  ,"Version: "                           ];
 
-var c_LANG_UC_BROWSING_TOOLBAR_CURR_REGION = 
+export var c_LANG_UC_BROWSING_TOOLBAR_CURR_REGION = 
 ["do_nothing"           ,"Current Region"                             ,"Aktuelle Region"                      ];
 
 
-var c_LANG_UC_BROWSING_TOOLBAR_OTHER_FILTERS = 
+export var c_LANG_UC_BROWSING_TOOLBAR_OTHER_FILTERS = 
 ["do_nothing"           ,"Other Filters"                              ,"Andere Filter"                      ];
 
 
-var c_LANG_UC_BROWSING_TOOLBAR_BACK_TO_MSG =
+export var c_LANG_UC_BROWSING_TOOLBAR_BACK_TO_MSG =
 ["do_nothing"           ,"Back to"                                    ,"Zur�ck zu"                          ];
 
 
-var c_LANG_UC_BROWSING_PANEL1_TITLE =
+export var c_LANG_UC_BROWSING_PANEL1_TITLE =
 ["do_nothing"           ,"Tree"                                       ,"Baum"];
 
 
-var c_LANG_UC_BROWSING_PANEL2_TITLE =
+export var c_LANG_UC_BROWSING_PANEL2_TITLE =
 ["do_nothing"           ,"Content"                                    ,"Inhalt"];
 
 
-var c_LANG_UC_BROWSING_PANEL2_DESCRIPTION = 
+export var c_LANG_UC_BROWSING_PANEL2_DESCRIPTION = 
 ["do_nothing"           ,"Description"                                , "Beschreibung"];
 
 
-var c_LANG_UC_BROWSING_PANEL2_COMMENTS = 
+export var c_LANG_UC_BROWSING_PANEL2_COMMENTS = 
 ["do_nothing"           ,"Comments"                                   , "Kommentare"];
 
 
-var c_LANG_UC_BROWSING_PANEL2_EVAL_CATS =
+export var c_LANG_UC_BROWSING_PANEL2_EVAL_CATS =
 [
         ["category"                                     ,"Category"                             ,"Kategory"                             ],      
         [    "fitting"                                  ,"Fitting"                              ,"Passung"                              ],
@@ -139,23 +139,23 @@ var c_LANG_UC_BROWSING_PANEL2_EVAL_CATS =
 ];
 
 
-var c_LANG_UC_BROWSING_PANEL3_TITLE =
+export var c_LANG_UC_BROWSING_PANEL3_TITLE =
 ["do_nothing"           ,"Info Box"                                   ,"Info-Box"];
 
 
-var c_LANG_UC_BROWSING_PANEL3_TICKER1_TITLE =
+export var c_LANG_UC_BROWSING_PANEL3_TICKER1_TITLE =
 ["do_nothing"           ,"News"                                       ,"Neues"];
 
 
-var c_LANG_UC_BROWSING_PANEL3_TICKER2_TITLE =
+export var c_LANG_UC_BROWSING_PANEL3_TICKER2_TITLE =
 ["do_nothing"           ,"Dates"                                      ,"Termine"];
 
 
-var c_LANG_UC_BROWSING_PANEL4_TITLE =
+export var c_LANG_UC_BROWSING_PANEL4_TITLE =
 ["do_nothing"           ,"Favorites"                                  ,"Favoriten"];
 
 
-var c_LANG_UC_BROWSING_PANEL4_FAVORITES =
+export var c_LANG_UC_BROWSING_PANEL4_FAVORITES =
 [
         ["favorites"                                    ,"Favorites"                            ,"Favoriten"                            ],      
         [    "favorites_add"                            ,"Add"                                  ,"Hinzuf�gen"                           ],
@@ -168,7 +168,7 @@ var c_LANG_UC_BROWSING_PANEL4_FAVORITES =
 
 
 
-var c_LANG_UC_BROWSING_PANEL4_STREE_CFG =
+export var c_LANG_UC_BROWSING_PANEL4_STREE_CFG =
 [
         ["stree_cfg"                                    ,"Tree Hierarchy"                       ,"Baum-Hierarchie"                      ],      
         [    "stree_cfg_add"                            ,"Add"                                  ,"Hinzuf�gen"                           ],
@@ -183,42 +183,42 @@ var c_LANG_UC_BROWSING_PANEL4_STREE_CFG =
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_INVALID_KEYB_MODE  =
+export var c_LANG_UC_BROWSING_MSG_INVALID_KEYB_MODE  =
 [ "no_nothing",
   "Invalid keyboard mode !",
   "Ung�ltiger Keyboard Modus !"
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_UNKNOWN_COMMAND = 
+export var c_LANG_UC_BROWSING_MSG_UNKNOWN_COMMAND = 
 [ "do_nothing",
   "Unknown command : ",
   "Unbekanntes Kommando : "
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_UNKNOWN_ELEM_TYPE =
+export var c_LANG_UC_BROWSING_MSG_UNKNOWN_ELEM_TYPE =
 [ "do_nothing",
   "Unknown element type !",
   "Unbekannter Element-Typ !"
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_UNKNOWN_SUBMODULE =
+export var c_LANG_UC_BROWSING_MSG_UNKNOWN_SUBMODULE =
 [ "do_nothing",
   "Unknown submodule : ",
   "Unbekanntes Untermodul : "
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_UNKNOWN_SENDER =
+export var c_LANG_UC_BROWSING_MSG_UNKNOWN_SENDER =
 [ "do_nothing",
   "Unknown sender : ",
   "Unbekannter Absender : "
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_SETUP_LOADING_FAILED =
+export var c_LANG_UC_BROWSING_MSG_SETUP_LOADING_FAILED =
 [
       "do_nothing"          ,
       "User Setup loading failed. Using Default Values.",
@@ -226,13 +226,13 @@ var c_LANG_UC_BROWSING_MSG_SETUP_LOADING_FAILED =
 ];
 
 
-var c_LANG_UC_BROWSING_MSG_ITEM_TOO_LONG =
+export var c_LANG_UC_BROWSING_MSG_ITEM_TOO_LONG =
 [ "do_nothing",
   "Attention ! Name too long -> will be cut on saving.",
   "Achtung ! Name zu lang -> wird beim Speichern abgeschnitten."
 ];
 
-var c_LANG_UC_BROWSING_MSG_SELECT_MAIN_TREE =
+export var c_LANG_UC_BROWSING_MSG_SELECT_MAIN_TREE =
 [ "do_nothing",
   "Do not select the Root Item to perform this action !",
   "Bitte nicht den Wurzelknoten ausw�hlen, um diese Einstellung vorzunehmen !"

@@ -1,10 +1,12 @@
+import { lib_data_paul } from "./lib_data_paul.js";
+
 // https://piratenpad.de/p/3dCFdjUeoUAPY
 // http://jsfiddle.net/rniemeyer/LkqTU/
 // http://jsfiddle.net/stevegreatrex/RZXyT/1/
 // http://knockoutjs.com/examples/clickCounter.html
 
 
-function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsing_save_setup, global_setup, global_main_save_setup)
+export function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsing_save_setup, global_setup, global_main_save_setup)
 {
   // take over params
   this.defaultParentStorage = defaultParentStorage;

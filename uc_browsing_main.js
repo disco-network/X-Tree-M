@@ -1,3 +1,20 @@
+import { uc_browsing_keyb } from "./uc_browsing_keyb.js";
+import { uc_browsing_infopanel } from "./uc_browsing_infopanel.js";
+import { uc_browsing_features } from "./uc_browsing_features.js";
+import { uc_browsing_content } from "./uc_browsing_content.js";
+import { uc_browsing_menubar } from "./uc_browsing_menubar.js";
+import { uc_browsing_toolbar } from "./uc_browsing_toolbar.js";
+import { uc_browsing_model } from "./uc_browsing_model.js";
+import {
+  c_LANG_UC_BROWSING_MSG_INVALID_KEYB_MODE,
+  c_LANG_UC_BROWSING_PANEL2_TITLE,
+  c_LANG_UC_BROWSING_PANEL3_TITLE,
+  c_LANG_UC_BROWSING_PANEL4_TITLE,
+  c_LANG_UC_BROWSING_MSG_UNKNOWN_SUBMODULE,
+  c_LANG_UC_BROWSING_MENUBAR } from "./uc_browsing_lang.js";
+import { lib_data_main } from "./lib_data_main.js";
+import { lib_tree } from "./lib_tree.js";
+
 const c_BS_UNINITIALIZED = 0;
 const c_BS_LOADING = 1;
 const c_BS_BROWSING = 2;
@@ -7,7 +24,7 @@ const BROWSING_STATES = {
   UNINITIALIZED: c_BS_UNINITIALIZED, LOADING: c_BS_LOADING, BROWSING: c_BS_BROWSING, NAMEINPUT: c_BS_NAMEINPUT, ERROR: c_BS_ERROR
 };
 
-function uc_browsing_main( dispatcher, global_setup, global_main_save_setup, my_path  ) 
+export function uc_browsing_main( dispatcher, global_setup, global_main_save_setup, my_path  ) 
 {
   // take over params into object
   this.dispatcher = dispatcher;

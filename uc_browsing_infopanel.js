@@ -1,5 +1,5 @@
 // Class 'uc_browsing_infopanel' -> Panel3
-function uc_browsing_infopanel(gui_headline_context, lang_headline, gui_infopanel_context, current_usecase, current_panel, dispatcher, gui_params)
+export function uc_browsing_infopanel(gui_headline_context, lang_headline, gui_infopanel_context, current_usecase, current_panel, dispatcher, gui_params)
 {
   // save params to object
   this.gui_headline_context = gui_headline_context;

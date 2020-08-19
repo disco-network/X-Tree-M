@@ -1,5 +1,5 @@
 // Class 'uc_browsing_keyb' -> Keyboard Handling for Usecase "Browsing"
-function uc_browsing_keyb(main)
+export function uc_browsing_keyb(main)
 {
   
   this.main = main;  

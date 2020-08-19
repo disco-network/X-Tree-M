@@ -1,5 +1,12 @@
+import { setInnerHTML } from "./global_functions.js";
+import {
+  c_LANG_UC_BROWSING_MENU_LANG_TITLE,
+  c_LANG_UC_BROWSING_TOOLBAR_CURR_REGION,
+  c_LANG_UC_BROWSING_TOOLBAR_BACK_TO_MSG
+} from "./uc_browsing_lang.js";
+
 // Toolbar just below Menubar
-function uc_browsing_toolbar( gui_elem_id, dispatcher )
+export function uc_browsing_toolbar( gui_elem_id, dispatcher )
 {
   // take over params into object
   this.gui_elem_id = gui_elem_id;

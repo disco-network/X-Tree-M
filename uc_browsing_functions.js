@@ -1,3 +1,5 @@
+// is not needed at the moment
+
 function uc_browsing_is_loop(tree_part, dest_item, src_items)
 {
   var retval = false; 
