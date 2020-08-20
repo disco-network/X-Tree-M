@@ -1,3 +1,5 @@
+import { c_KEYB_MODE_NONE, c_DATA_SOURCE_TYPE_ID_COOKIE } from "./global_defs.js";
+import { plugin_name, global_status } from "./global_setup.js";
 import { uc_browsing_keyb } from "./uc_browsing_keyb.js";
 import { uc_browsing_infopanel } from "./uc_browsing_infopanel.js";
 import { uc_browsing_features } from "./uc_browsing_features.js";
@@ -5,6 +7,7 @@ import { uc_browsing_content } from "./uc_browsing_content.js";
 import { uc_browsing_menubar } from "./uc_browsing_menubar.js";
 import { uc_browsing_toolbar } from "./uc_browsing_toolbar.js";
 import { uc_browsing_model } from "./uc_browsing_model.js";
+import { uc_browsing_setup, c_DEFAULT_UC_BROWSING_SETUP_COOKIE, c_DEFAULT_UC_BROWSING_SETUP } from "./uc_browsing_setup.js";
 import {
   c_LANG_UC_BROWSING_MSG_INVALID_KEYB_MODE,
   c_LANG_UC_BROWSING_PANEL2_TITLE,
@@ -14,6 +17,8 @@ import {
   c_LANG_UC_BROWSING_MENUBAR } from "./uc_browsing_lang.js";
 import { lib_data_main } from "./lib_data_main.js";
 import { lib_tree } from "./lib_tree.js";
+import { lib_dbg_log } from "./lib_dbg_log.js";
+import { c_FEATURE_MODE_FAVORITES } from "./uc_browsing_defs.js";
 
 const c_BS_UNINITIALIZED = 0;
 const c_BS_LOADING = 1;

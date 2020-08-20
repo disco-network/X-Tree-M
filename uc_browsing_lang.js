@@ -1,7 +1,11 @@
+import { uc_browsing_change_permission } from "./uc_browsing_setup.js";
+import { c_LANG } from "./global_lang.js";
+import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
+
 export var c_LANG_UC_BROWSING_MENUBAR = [];
 
-// komplete Menubar as Structure :
-function f_set_menubar()
+// complete Menubar as Structure :
+export function f_set_menubar()
 {
   var retval =    //                                        # English                                # German
     [

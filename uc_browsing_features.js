@@ -1,3 +1,6 @@
+import { c_KEYB_MODE_NONE } from "./global_defs.js";
+import { global_setup } from "./global_setup.js";
+
 // Class 'uc_browsing_features' -> Panel4
 export function uc_browsing_features(gui_headline_context, lang_headline, gui_features_context, current_usecase, current_panel, dispatcher, db_obj)
 {

@@ -1,5 +1,7 @@
+import { global_setup } from "./global_setup.js";
+
 // Class 'lib_dbg_log'
-function lib_dbg_log()
+export function lib_dbg_log()
 {
   // import params
   

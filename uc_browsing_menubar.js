@@ -1,4 +1,8 @@
+import { c_KEYB_MODE_NONE, c_DATA_SOURCE_TYPE_ID_XML, c_DATA_SOURCE_TYPE_ID_DISCO } from "./global_defs.js";
 import { setInnerHTML } from "./global_functions.js";
+import { plugin_name, plugin_date, plugin_version, c_DEFAULT_GLOBAL_SETUP } from "./global_setup.js";
+import { c_DEFAULT_UC_BROWSING_SETUP } from "./uc_browsing_setup.js";
+import { c_FEATURE_MODE_STREE_CFG } from "./uc_browsing_defs.js";
 
 export function uc_browsing_menubar(gui_elem_id, main, my_main_name, menu_data)
 {

@@ -1,4 +1,6 @@
+import { c_DATA_SOURCE_TYPE_ID_HTML, c_DATA_SOURCE_TYPE_ID_XML, c_DATA_SOURCE_TYPE_ID_PAUL } from "./global_defs.js";
 import { lib_data_paul } from "./lib_data_paul.js";
+import { c_LANG_LIB_DATA_MSG_UNKNOWN_COMMAND } from "./lib_data_lang.js";
 
 // https://piratenpad.de/p/3dCFdjUeoUAPY
 // http://jsfiddle.net/rniemeyer/LkqTU/

@@ -1,9 +1,11 @@
+import { c_DATA_SOURCE_TYPE_ID_COOKIE } from "./global_defs.js";
+
 // ####### Tool-Title ########################################
-var plugin_name = "X-Tree-M";
+export var plugin_name = "X-Tree-M";
 
 
 // ####### GLOBAL SETUP DEFAULTS #############################
-var c_DEFAULT_GLOBAL_SETUP = {};
+export var c_DEFAULT_GLOBAL_SETUP = {};
 
 /*
  * ---------------------------------------------------------------------------------------
@@ -126,13 +128,13 @@ var c_DEFAULT_GLOBAL_SETUP = {};
  */
 
 // ###### ===========> VERSION-SETUPS BEGIN <=============== ######
-main_version_hi = 0;
-main_version_lo = 1;
-sub_version_hi = 9;
-sub_version_lo = 0;
-var plugin_date = "2019/06/23";
+const main_version_hi = 0;
+const main_version_lo = 1;
+const sub_version_hi = 9;
+const sub_version_lo = 0;
+export var plugin_date = "2019/06/23";
                                     // Version Text for printing
-var plugin_version = main_version_hi + "." + main_version_lo + "." + sub_version_hi + "." + sub_version_lo;
+export var plugin_version = main_version_hi + "." + main_version_lo + "." + sub_version_hi + "." + sub_version_lo;
 // ###### ===========> VERSION-SETUPS END <================= ######
 
                                     // version as comparable Integer
@@ -157,14 +159,14 @@ c_DEFAULT_GLOBAL_SETUP.eval_scale_gui = 5.0;  // results in internally saved eva
 c_DEFAULT_GLOBAL_SETUP.dbg_log_max_entries = 30;
 c_DEFAULT_GLOBAL_SETUP.debugMode = false;
 
-var global_setup = jQuery.extend(true, {}, c_DEFAULT_GLOBAL_SETUP);
+export var global_setup = jQuery.extend(true, {}, c_DEFAULT_GLOBAL_SETUP);
 
 
 // ####### DEFAULT PATH TO GLOBAL SETUP #######################
 
-var c_DEFAULT_SETUP_SOURCE_COOKIE_NAME = "setup_src";
+export var c_DEFAULT_SETUP_SOURCE_COOKIE_NAME = "setup_src";
 
-var c_DEFAULT_SETUP_SOURCE_COOKIE = {};
+export var c_DEFAULT_SETUP_SOURCE_COOKIE = {};
                                     // version as comparable Integer
 c_DEFAULT_SETUP_SOURCE_COOKIE.version = c_DEFAULT_GLOBAL_SETUP.version;
                                     // Constant Characteristic Testpattern
@@ -175,7 +177,7 @@ c_DEFAULT_SETUP_SOURCE_COOKIE.setup_src_path = "global_setup";
 
 
 // ####### GLOBAL STATUS #####################################
-var global_status = {};
+export var global_status = {};
 global_status.setup_src_rd_okay = false;
 global_status.cookies_enabled = false;
 global_status.global_setup_loaded = false;

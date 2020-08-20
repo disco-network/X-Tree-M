@@ -1,3 +1,6 @@
+import { c_KEYB_MODE_NONE } from "./global_defs.js";
+import { global_setup, c_DEFAULT_GLOBAL_SETUP } from "./global_setup.js";
+
 // Class 'uc_browsing_keyb' -> Keyboard Handling for Usecase "Browsing"
 export function uc_browsing_keyb(main)
 {

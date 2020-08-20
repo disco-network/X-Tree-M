@@ -1,5 +1,8 @@
+import { c_KEYB_MODE_NONE } from "./global_defs.js";
 import { report_duration, f_eval_bar, getInnerHTML, setInnerHTML } from "./global_functions.js";
+import { global_setup } from "./global_setup.js";
 import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
+import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
 // Class 'lib_tree'
 export function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, dispatcher)

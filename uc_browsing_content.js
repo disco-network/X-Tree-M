@@ -1,5 +1,9 @@
+import { c_KEYB_MODE_NONE } from "./global_defs.js";
 import { getInnerHTML, setInnerHTML, URLlinks } from "./global_functions.js";
 import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
+import {
+  c_LANG_MSG_LOADING,
+} from "./global_lang.js";
 
 // Class 'uc_browsing_content' -> Panel2
 export function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup)

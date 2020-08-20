@@ -1,6 +1,14 @@
+import { c_KEYB_MODE_NONE, c_DATA_SOURCE_TYPE_ID_NONE, c_DATA_SOURCE_TYPE_ID_COOKIE, c_DATA_SOURCE_TYPE_ID_DISCO, c_DATA_SOURCE_TYPE_ID_XML, c_DATA_SOURCE_TYPE_ID_LENGTH } from "./global_defs.js";
+import {
+  c_LANG_MSG_COOKIES_INACTIVE,
+  c_LANG_MSG_SETUP_LOADING_FAILED,
+  c_LANG_MSG_LOADING,
+} from "./global_lang.js";
 import { get_total_win_width, get_total_win_height } from "./global_functions.js";
+import { plugin_name, global_setup, global_status, c_DEFAULT_GLOBAL_SETUP, c_DEFAULT_SETUP_SOURCE_COOKIE, c_DEFAULT_SETUP_SOURCE_COOKIE_NAME } from "./global_setup.js";
 import { uc_browsing_main } from "./uc_browsing_main.js";
 import { uc_merging_main } from "./uc_merging_main.js";
+import { lib_data_cookie } from "./lib_data_cookie.js";
 
 var extra_keys = c_KEYB_MODE_NONE;
 var my_path = "";

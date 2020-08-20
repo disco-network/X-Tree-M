@@ -3,6 +3,8 @@ import { Graph, Tree, LinearGraphBuilder, TreeGraphBuilder } from "./uc_browsing
 import {
   c_LANG_UC_BROWSING_PANEL2_EVAL_CATS
 } from "./uc_browsing_lang.js";
+import { uc_browsing_change_permission } from "./uc_browsing_setup.js";
+import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
 
 // Bridge for Paul's approach to make a MySQL database accessible through PHP (alternative to local XML based

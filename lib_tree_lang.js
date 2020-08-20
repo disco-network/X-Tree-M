@@ -1,7 +1,7 @@
-var c_LANG_LIB_TREE_MSG_MULTI_CHOICE =
+export var c_LANG_LIB_TREE_MSG_MULTI_CHOICE =
 ["do_nothing", "Please choose the proper parent item !", "Bitte w�hlen Sie das passende Eltern-Element !"];
 
-var c_LANG_LIB_TREE_ELEMTYPE = 
+export var c_LANG_LIB_TREE_ELEMTYPE = 
 [
       // Menu Title
       ["type_menu"            ,"Element Type"                         ,"Elementtyp"                           ],

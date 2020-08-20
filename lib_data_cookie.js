@@ -4,7 +4,7 @@
 // http://techpatterns.com/downloads/javascript_cookies.php
 // http://www.quirksmode.org/js/cookies.html
 
-function lib_data_cookie(tool, path, submodule)
+export function lib_data_cookie(tool, path, submodule)
 {
  
   // object functions

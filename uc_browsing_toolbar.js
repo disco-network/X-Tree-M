@@ -4,6 +4,13 @@ import {
   c_LANG_UC_BROWSING_TOOLBAR_CURR_REGION,
   c_LANG_UC_BROWSING_TOOLBAR_BACK_TO_MSG
 } from "./uc_browsing_lang.js";
+import {
+  c_LANG,
+} from "./global_lang.js";
+import { global_setup } from "./global_setup.js";
+import {
+  c_LANG_LIB_TREE_ELEMTYPE
+} from "./lib_tree_lang.js";
 
 // Toolbar just below Menubar
 export function uc_browsing_toolbar( gui_elem_id, dispatcher )
