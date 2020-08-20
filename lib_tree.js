@@ -4,6 +4,20 @@ import { global_setup } from "./global_setup.js";
 import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
 import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
+import { init } from "./snabbdom/init.js";
+import { classModule } from "./snabbdom/modules/class.js";
+import { propsModule } from "./snabbdom/modules/props.js";
+import { styleModule } from "./snabbdom/modules/style.js";
+import { eventListenersModule } from "./snabbdom/modules/eventlisteners.js";
+import { h } from "./snabbdom/h.js";
+
+const patch = init([
+  classModule,
+  propsModule,
+  styleModule,
+  eventListenersModule
+]);
+
 // Class 'lib_tree'
 export function lib_tree(gui_headline_context, lang_headline, gui_tree_context, current_usecase, current_panel, dispatcher)
 {
@@ -99,17 +113,19 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
-function lib_tree_print_item_rec(root_ul, pos, hide_ul) {
+function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids) {
   var self = this;
-  const on_click = function(event) { return self.handler("tree_select", this.id, event) };
-  this.print_item(root_ul, pos.get_node(), on_click, hide_ul, function (ul) {
-    pos.locate_children().forEach(function (child_pos) {
-      self.print_item_rec(ul, child_pos, true);
-    });
-  });
+  const gui_id = pos.get_node().gui_id;
+  const selected = selected_gui_ids.indexOf(gui_id) >= 0;
+  const expanded = expanded_gui_ids[gui_id] !== undefined;
+  const on_click = function(event) { return self.handler("tree_select", gui_id + "_a", event) };
+
+  return this.print_item(pos.get_node(), on_click, selected, !expanded, pos.locate_children().map(child_pos => {
+    return self.print_item_rec(child_pos, selected_gui_ids, expanded_gui_ids);
+  }));
 }
 
-function lib_tree_print_item(root_ul, node, on_click, hide_ul, insert_children) {
+function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   // HTML-Code :
   // <LI>
   //   <IMG ... /IMG>  
@@ -119,78 +135,134 @@ function lib_tree_print_item(root_ul, node, on_click, hide_ul, insert_children) 
   //   <UL .../UL>
   // </LI>
   
-  var gui_id = node.gui_id + '_a';    
-                                    // LI container for single Item  
-  var newLiItem = document.createElement("li");
-    newLiItem.id = node.gui_id+"_li";
-    newLiItem.style.cssText = 'list-style: none; margin: 0; padding: 0;';    
-                                    // Symbol displaying the Element Type
-  var newTypeImgItem = document.createElement("img");
-  if (node.type != "none")
-  {
-    newTypeImgItem.id = node.gui_id+"_sym";
-    newTypeImgItem.src = lib_tree_get_symb(node.type);
-    newTypeImgItem.align = "left";
-    newTypeImgItem.width = 20;  
-    newTypeImgItem.height = 20;    
-  }    
-	                                  // Element Name	  
-  var newDivItem = document.createElement("div");
-    newDivItem.id = node.gui_id+'_div';
-    if (node.is_deleted === 1)
-      newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
-    else
-      newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
-    setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
-    const a_elem = newDivItem.getElementsByTagName("a")[0];
-    a_elem.onclick = on_click;
-                                    // Prepare container for Child Elements (UL)
-  var newUlItem = document.createElement("ul");
-    newUlItem.id = node.gui_id+"_ul";
-    newUlItem.style.cssText = 'margin: 0; padding-left: 1.5em';
-    if (hide_ul)
-      newUlItem.style.display = "none";
-                                    // connect items
-                                    // 1.) insert Type Symbol as first child into Container
-  newLiItem.appendChild(newTypeImgItem);     
-                                    // 2.) insert Hierarchy Config Symbol (if avail) as second child
-  if (node.tree_hier != undefined)
-  {
-    var newHierImgItem = document.createElement("img");
-    newHierImgItem.id = node.gui_id+"_hiercfg_sym";
-    newHierImgItem.src = "symbol_cfg.gif";
-    newHierImgItem.align = "left";
-    newHierImgItem.width = 22;  
-	  newHierImgItem.height = 22;
-    newLiItem.appendChild(newHierImgItem);  
-  }           
-                                    // generate Evaluation Bar and fit it together with name field
-  var eval_value = 0.0;
-  if (node.eval != undefined) 
-  {
-    for (var i=0; i<this.eval_cat_num; i++)
-    { 
-      if (node.eval[i] != undefined)
-        eval_value = eval_value + node.eval[i].avg;
-    }
-  }
-  eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
-  const my_eval_bar = f_eval_bar(newDivItem, eval_value);      
-  my_eval_bar.style.marginLeft = "2.8em";    
-                                    // 3.) insert Name field with Eval Bar as third child
-  newLiItem.appendChild(newDivItem);
-                                    // 4.) insert Child List as fourth child  
-  newLiItem.appendChild(newUlItem);
-                                    // insert current Item into parent's UL element
-  root_ul.appendChild(newLiItem);
+  const self = this;
+  const gui_id = node.gui_id + '_a';
 
-  insert_children(newUlItem);
+  const img_vnode = h("img", {
+    props: {
+      id: node.gui_id + "_sym",
+      src: node.type !== "none" ? lib_tree_get_symb(node.type) : "",
+      align: "left",
+      width: 20,
+      height: 20
+    },
+    on: {
+      click: () => {
+        if (hide_ul) {
+          self.handler("expand_children", node.gui_id, undefined);
+        } else {
+          self.handler("collapse_children", node.gui_id, undefined);
+        }
+      }
+    }
+  });
+
+  const name_vnode = h("div", {
+    props: {
+      id: node.gui_id + "_div",
+      className: node.is_deleted === 1 ? "div deleted" : "div",
+    }
+  }, [
+    h("span", [
+      h("a.name", {
+        props: {
+          id: gui_id
+        },
+        on: {
+          click: on_click
+        }
+      }, [ node.name ])
+    ])
+  ]);
+
+  const ul_vnode = h("ul", {
+    props: {
+      id: node.gui_id + "_ul",
+      className: hide_ul ? "children hide" : "children",
+    }
+  }, children);
+
+  return h("li", { key: node.gui_id, props: { id: node.gui_id + "_li", className: selected ? "tree-item selected" : "tree-item" } }, [
+    img_vnode,
+    name_vnode,
+    ul_vnode
+  ]);
+
+//                                     // LI container for single Item  
+//   var newLiItem = document.createElement("li");
+//     newLiItem.id = node.gui_id+"_li";
+//     newLiItem.style.cssText = 'list-style: none; margin: 0; padding: 0;';    
+//                                     // Symbol displaying the Element Type
+//   var newTypeImgItem = document.createElement("img");
+//   if (node.type != "none")
+//   {
+//     newTypeImgItem.id = node.gui_id+"_sym";
+//     newTypeImgItem.src = lib_tree_get_symb(node.type);
+//     newTypeImgItem.align = "left";
+//     newTypeImgItem.width = 20;  
+//     newTypeImgItem.height = 20;    
+//   }    
+// 	                                  // Element Name	  
+//   var newDivItem = document.createElement("div");
+//     newDivItem.id = node.gui_id+'_div';
+//     if (node.is_deleted === 1)
+//       newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
+//     else
+//       newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
+//     setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
+//     const a_elem = newDivItem.getElementsByTagName("a")[0];
+//     a_elem.onclick = on_click;
+//                                     // Prepare container for Child Elements (UL)
+//   var newUlItem = document.createElement("ul");
+//     newUlItem.id = node.gui_id+"_ul";
+//     newUlItem.style.cssText = 'margin: 0; padding-left: 1.5em';
+//     if (hide_ul)
+//       newUlItem.style.display = "none";
+//                                     // connect items
+//                                     // 1.) insert Type Symbol as first child into Container
+//   newLiItem.appendChild(newTypeImgItem);     
+//                                     // 2.) insert Hierarchy Config Symbol (if avail) as second child
+//   if (node.tree_hier != undefined)
+//   {
+//     var newHierImgItem = document.createElement("img");
+//     newHierImgItem.id = node.gui_id+"_hiercfg_sym";
+//     newHierImgItem.src = "symbol_cfg.gif";
+//     newHierImgItem.align = "left";
+//     newHierImgItem.width = 22;  
+// 	  newHierImgItem.height = 22;
+//     newLiItem.appendChild(newHierImgItem);  
+//   }           
+//                                     // generate Evaluation Bar and fit it together with name field
+//   var eval_value = 0.0;
+//   if (node.eval != undefined) 
+//   {
+//     for (var i=0; i<this.eval_cat_num; i++)
+//     { 
+//       if (node.eval[i] != undefined)
+//         eval_value = eval_value + node.eval[i].avg;
+//     }
+//   }
+//   eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
+//   const my_eval_bar = f_eval_bar(newDivItem, eval_value);      
+//   my_eval_bar.style.marginLeft = "2.8em";    
+//                                     // 3.) insert Name field with Eval Bar as third child
+//   newLiItem.appendChild(newDivItem);
+//                                     // 4.) insert Child List as fourth child  
+//   newLiItem.appendChild(newUlItem);
+//                                     // insert current Item into parent's UL element
+//   root_ul.appendChild(newLiItem);
+// 
+//   insert_children(newUlItem);
 }
 
-function print_disptype_tree(tree)
+function print_disptype_tree(tree, selected_gui_ids, expanded_gui_ids)
 {
+  const self = this;
   const start_time = new Date();
                                     // initialize for Explorer Bar
+
+  const explorer_item_vnodes = [];
+
   // part 1 : print Explorer Bar
   const explorer_bar_items = [];
   for (var predecessor = tree.locate_pivot(); predecessor.locate_parent() !== null; predecessor = predecessor.locate_parent()) {
@@ -198,113 +270,81 @@ function print_disptype_tree(tree)
     var position = predecessor.locate_parent();
     var node = position.get_node();
     var gui_id = node.gui_id;
-    var gui_id_a = gui_id + "_a";
-    var gui_id_mult = gui_id + "_pmenu_a";
-    var predecessor_node = predecessor.get_node();
-    const name = node.name;
-    const visible_name = position.locate_parent() === null
-      ? "[" + name + "]"
-      : name;
+    const gui_id_a = gui_id + "_a";
+    const gui_id_mult = gui_id + "_pmenu_a";
+    const predecessor_node = predecessor.get_node();
 
-    const self = this;
-    const on_click = function (event) { return self.handler("explorer_select", this.id, event) };
+    const visible_name = position.locate_parent() === null
+      ? "[" + node.name + "]"
+      : node.name;
+    const on_click = function (event) { return self.handler("explorer_select", gui_id_a, event) };
     const on_click_multi = function (event) { return self.handler("open_parent_menu", predecessor_node.gui_id + "_a", event) };
 
-                                    // root element (selected element is used as Explorer Bar)
-    const fragment = document.createDocumentFragment();
-    const item1 = document.createElement("span");
-    item1.innerHTML = '<a id=\"' + gui_id_a + '\">' + visible_name + '</a>';
-    const a_elem1 = item1.getElementsByTagName("a")[0];
-    a_elem1.onclick = on_click;
-    fragment.appendChild(item1);
-
-                                  // multi-parent item
-    if (predecessor_node.isMultiPar === true)
-    {
-      const item2 = document.createElement("span");
-      item2.innerHTML = '<a id=\"' + gui_id_mult + '\">{...}</a>';
-      const a_elem2 = item2.getElementsByTagName("a");
-      a_elem2.onclick = on_click_multi;
-
-      fragment.appendChild(document.createTextNode("&nbsp;"));
-      fragment.appendChild(item2);
-    }
-
-    explorer_bar_items.push(fragment);
+    const link_vnode = h("span", [
+      h("a", { props: { id: gui_id_a }, on: { click: on_click } }, [ visible_name ])
+    ]);
+    const parents_link_vnode = predecessor_node.isMultiPar
+      ? h("span", [
+          h("a", { props: { id: gui_id_mult }, on: { click: on_click_multi } }, [ "{...}" ])
+        ])
+      : undefined;
+    const item_vnode = h("span.nav-item", [ link_vnode, parents_link_vnode ]);
+    explorer_item_vnodes.push(item_vnode);
   }
   // add Explorer Path to GUI
-  var gui_context = document.getElementById(this.gui_tree_context); 
-   
-  setInnerHTML(gui_context, "");
-  if (tree.locate_pivot().locate_parent() !== null) {
-    explorer_bar_items.reverse().forEach((item, i) => {
-      if (i === 0) {
-        gui_context.appendChild(document.createTextNode("\xa0"));
-      } else {
-        gui_context.appendChild(document.createTextNode(" \\\xa0"));
-      }
-      gui_context.appendChild(item);
-    });
-  }
+
+  const navbar_vnode = h("div.navbar", explorer_item_vnodes);
   
   // part 2 : print child elements as tree
   var retval = {};
-  var treeRootUl = document.createElement("ul"); 
-  treeRootUl.id = this.current_panel + '_root_ul';
-  var treeRootDiv = document.createElement("div");
-  treeRootDiv.style.cssText = 'margin-left:-2.3em; margin-top:-0.9em;';
-  treeRootDiv.classList.add("tree");
 
                                     // print stub elements
-  var highlevel_siblings = tree.locate_pivot().locate_siblings();
-  for (var i = 0; i < highlevel_siblings.length; ++i) {
-    var sibling_pos = highlevel_siblings[i];
-
+  const highlevel_siblings = tree.locate_pivot().locate_siblings();
+  const tree_item_vnodes = highlevel_siblings.map(sibling_pos => {
     const is_pivot = sibling_pos.equals_to(tree.locate_pivot());
     if (is_pivot)
     {
       retval = sibling_pos.get_node();
     }
+    return this.print_item_rec(sibling_pos, selected_gui_ids, expanded_gui_ids); // TODO
+  });
 
-    const rec_start_time = new Date();
-    this.print_item_rec(treeRootUl, sibling_pos, !is_pivot);
-    report_duration("print_item_rec", rec_start_time);
-  }
+  const tree_root_div = h("div.tree", [
+    navbar_vnode,
+    h("ul.siblings", { props: { id: this.current_panel + "_root_ul" } }, tree_item_vnodes)
+  ]);
 
-  gui_context.appendChild(treeRootDiv);
-  treeRootDiv.appendChild(treeRootUl);
+  const vnode = h("div", {
+    props: { id: this.gui_tree_context }
+  }, [
+    tree_root_div
+  ]);
 
-                                    // first tree object equals locked item
-                                    // -> needs to be marked as locked by using []
-  if (tree.locate_pivot().locate_parent() === null)
-  {
-    var replace_item = document.getElementById(tree.locate_pivot().get_node().gui_id + '_a');
-    var old_item_text = getInnerHTML(replace_item);
-    setInnerHTML(replace_item, '[' + old_item_text + ']');
-  }
-                           
-  // part 3 : register events
-                                    // ... unfold them on first mouseover of according icon image
-  const self = this;
-  $('#' + this.gui_tree_context).find('img').mouseenter(
-    function () {
-      const ul = $(this).siblings('ul');
-      const gui_id = ul.attr("id").slice(0, -3);
-      if (ul.css("display") == "none") {
-        self.handler("expand_children", gui_id, undefined);
-      }
-      else {
-        self.handler("collapse_children", gui_id, undefined);
-      }
-    }
-  ); 
+  var gui_context = document.getElementById(this.gui_tree_context); 
+  patch(gui_context, vnode);
+
+  // // part 3 : register events
+  //                                   // ... unfold them on first mouseover of according icon image
+  // const self = this;
+  // $('#' + this.gui_tree_context).find('img').mouseenter(
+  //   function () {
+  //     const ul = $(this).siblings('ul');
+  //     const gui_id = ul.attr("id").slice(0, -3);
+  //     if (ul.css("display") == "none") {
+  //       self.handler("expand_children", gui_id, undefined);
+  //     }
+  //     else {
+  //       self.handler("collapse_children", gui_id, undefined);
+  //     }
+  //   }
+  // ); 
 
   return retval;  
 }
 
 
 // print part of a tree in the respective GUI element
-function lib_tree_print_tree(tree_obj, sel_elem_id)
+function lib_tree_print_tree(tree_obj, selected_gui_ids, expanded_gui_ids)
 {
   // for performance analysis
   const start_time = new Date();
@@ -322,7 +362,7 @@ function lib_tree_print_tree(tree_obj, sel_elem_id)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   var retval;
   if (global_setup.display_type == 0)
-    retval = this.print_disptype_tree(tree_obj, sel_elem_id);
+    retval = this.print_disptype_tree(tree_obj, selected_gui_ids, expanded_gui_ids);
   else
     retval = this.print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree);
 

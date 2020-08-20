@@ -15,6 +15,10 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.expand_children_of = expand_children_of;
   self.collapse_children_of = collapse_children_of;
 
+  self.get_tree = get_tree;
+  self.get_selected_gui_ids = get_selected_gui_ids;
+  self.get_expanded_gui_ids = get_expanded_gui_ids;
+
   // private
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
@@ -28,6 +32,18 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
   self.tree = null;
   self.expanded_node_gui_ids = null;
+
+  function get_tree() {
+    return self.tree;
+  }
+
+  function get_selected_gui_ids() {
+    return self.selected_gui_ids;
+  }
+
+  function get_expanded_gui_ids() {
+    return self.expanded_node_gui_ids;
+  }
 
   function handle_key_press(key_chord) {
 

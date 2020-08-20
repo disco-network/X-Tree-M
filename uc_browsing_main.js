@@ -1,4 +1,4 @@
-import { c_KEYB_MODE_NONE, c_DATA_SOURCE_TYPE_ID_COOKIE } from "./global_defs.js";
+import { c_KEYB_MODE_NONE, c_KEYB_MODE_CTRL_ONLY, c_KEYB_MODE_SHIFT_ONLY, c_DATA_SOURCE_TYPE_ID_COOKIE } from "./global_defs.js";
 import { plugin_name, global_status } from "./global_setup.js";
 import { uc_browsing_keyb } from "./uc_browsing_keyb.js";
 import { uc_browsing_infopanel } from "./uc_browsing_infopanel.js";
@@ -95,6 +95,9 @@ export function uc_browsing_main( dispatcher, global_setup, global_main_save_set
   this.panel4_stree_cfg_storage = [];
   this.text_focus = 0;
 
+  // private:
+  this.render_tree = render_tree;
+
   // constructor call
   this.init();    
 } 
@@ -123,6 +126,7 @@ function uc_browsing_main_lang_change()
  */
 function uc_browsing_main_select_by_id(elem_id)
 {
+  console.log("select_by_id");
   if (this.state !== c_BS_BROWSING) {
     this.error("Invalid state: Item selection is only possible while browsing.");
   }
@@ -793,11 +797,21 @@ function uc_browsing_main_init()
   this.db_obj = new lib_data_main(this.def_parent_storage, this.setup, this.save_setup, this.global_setup, this.global_main_save_setup); 
 }
 
+function render_tree() {
+  const self = this;
+  
+  self.tree_panel.print_tree(
+    self.model.get_tree(),
+    self.model.get_selected_gui_ids(),
+    self.model.get_expanded_gui_ids()
+  );
+}
+
 function uc_browsing_main_init_model() {
   var self = this;
   var dispatcher = {
     tree_panel_changed: function(tree, selected_id) {
-      self.tree_panel.print_tree(tree, selected_id);
+      self.render_tree();
     },
     renaming_started: function(renamed_node) {
       self.tree_panel.input_item(false, renamed_node.gui_id, renamed_node.type);
@@ -806,21 +820,21 @@ function uc_browsing_main_init_model() {
       self.tree_panel.input_item(true, parent_node.gui_id, parent_node.type);
     },
     expand_children_by_gui_id(gui_id) {
-      var curr_ul = document.getElementById(gui_id + '_ul');
-      curr_ul.style.display="block";
+      self.render_tree();
     },
     collapse_children_by_gui_id(gui_id) {
-      var curr_ul = document.getElementById(gui_id + '_ul');
-      curr_ul.style.display="none";
+      self.render_tree();
     },
     selection_changed(old_sel, new_sel) {
-      old_sel.forEach(function (gui_id) {
-        self.tree_panel.markup_items(gui_id, false);
-      });
-
-      new_sel.forEach(function (gui_id) {
-        self.tree_panel.markup_items(gui_id, true);
-      });
+//       old_sel.forEach(function (gui_id) {
+//         self.tree_panel.markup_items(gui_id, false);
+//       });
+// 
+//       new_sel.forEach(function (gui_id) {
+//         self.tree_panel.markup_items(gui_id, true);
+//       });
+      
+      self.render_tree();
 
       if (new_sel.length === 1) {
         const gui_id = new_sel[0];
