@@ -10,6 +10,7 @@ import { propsModule } from "./snabbdom/modules/props.js";
 import { styleModule } from "./snabbdom/modules/style.js";
 import { eventListenersModule } from "./snabbdom/modules/eventlisteners.js";
 import { h } from "./snabbdom/h.js";
+import { thunk } from "./snabbdom/thunk.js";
 
 const patch = init([
   classModule,
@@ -72,6 +73,9 @@ export function lib_tree(gui_headline_context, lang_headline, gui_tree_context, 
   this.scale_eval_tree = 100.0;
   this.empty_eval_struct = [];
 
+  // private:
+  this.vnode = null;
+
   // constructor  
   this.init();
 }
@@ -125,6 +129,25 @@ function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids) {
   }));
 }
 
+  function img_thunk(gui_id, type) {
+    return h("img#" + gui_id + "_sym", {
+      props: {
+        src: type !== "none" ? lib_tree_get_symb(type) : "",
+        align: "left",
+        width: 20,
+        height: 20
+      },
+    on: {
+      click: () => {
+        if (hide_ul) {
+          self.handler("expand_children", node.gui_id, undefined);
+        } else {
+          self.handler("collapse_children", node.gui_id, undefined);
+        }
+      }
+    }
+    });
+  }
 function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   // HTML-Code :
   // <LI>
@@ -138,51 +161,35 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   const self = this;
   const gui_id = node.gui_id + '_a';
 
-  const img_vnode = h("img", {
-    props: {
-      id: node.gui_id + "_sym",
-      src: node.type !== "none" ? lib_tree_get_symb(node.type) : "",
-      align: "left",
-      width: 20,
-      height: 20
-    },
-    on: {
-      click: () => {
-        if (hide_ul) {
-          self.handler("expand_children", node.gui_id, undefined);
-        } else {
-          self.handler("collapse_children", node.gui_id, undefined);
-        }
-      }
-    }
-  });
 
-  const name_vnode = h("div", {
+
+  const img_vnode = thunk("img#" + node.gui_id + "_sym", img_thunk, [node.gui_id, node.type]);
+  const name_class = node.is_deleted === 1
+    ? "div deleted"
+    : "div";
+  const name_vnode = h("div#" + node.gui_id + "_div", {
     props: {
-      id: node.gui_id + "_div",
-      className: node.is_deleted === 1 ? "div deleted" : "div",
+      className: name_class
     }
   }, [
     h("span", [
-      h("a.name", {
-        props: {
-          id: gui_id
-        },
-        on: {
-          click: on_click
-        }
+      h("a#" + gui_id + ".name", {
+         on: {
+           click: on_click
+         }
       }, [ node.name ])
     ])
   ]);
 
-  const ul_vnode = h("ul", {
+  const ul_class = hide_ul ? "children hide" : "children";
+  const ul_vnode = h("ul#" + node.gui_id + "_ul", {
     props: {
-      id: node.gui_id + "_ul",
-      className: hide_ul ? "children hide" : "children",
+      className: ul_class
     }
   }, children);
 
-  return h("li", { key: node.gui_id, props: { id: node.gui_id + "_li", className: selected ? "tree-item selected" : "tree-item" } }, [
+  const ret_class = selected ? "tree-item selected" : "tree-item";
+  return h("li#" + node.gui_id + "_li", { key: node.gui_id, props: { className: ret_class } }, [
     img_vnode,
     name_vnode,
     ul_vnode
@@ -281,11 +288,11 @@ function print_disptype_tree(tree, selected_gui_ids, expanded_gui_ids)
     const on_click_multi = function (event) { return self.handler("open_parent_menu", predecessor_node.gui_id + "_a", event) };
 
     const link_vnode = h("span", [
-      h("a", { props: { id: gui_id_a }, on: { click: on_click } }, [ visible_name ])
+      h("a#" + gui_id_a, { on: { click: on_click } }, [ visible_name ])
     ]);
     const parents_link_vnode = predecessor_node.isMultiPar
       ? h("span", [
-          h("a", { props: { id: gui_id_mult }, on: { click: on_click_multi } }, [ "{...}" ])
+          h("a#" + gui_id_mult, { on: { click: on_click_multi } }, [ "{...}" ])
         ])
       : undefined;
     const item_vnode = h("span.nav-item", [ link_vnode, parents_link_vnode ]);
@@ -311,17 +318,21 @@ function print_disptype_tree(tree, selected_gui_ids, expanded_gui_ids)
 
   const tree_root_div = h("div.tree", [
     navbar_vnode,
-    h("ul.siblings", { props: { id: this.current_panel + "_root_ul" } }, tree_item_vnodes)
+    h("ul#" + this.current_panel + "_root_ul.siblings", tree_item_vnodes)
   ]);
 
-  const vnode = h("div", {
-    props: { id: this.gui_tree_context }
-  }, [
+  const vnode = h("div#" + this.gui_tree_context, [
     tree_root_div
   ]);
 
-  var gui_context = document.getElementById(this.gui_tree_context); 
-  patch(gui_context, vnode);
+  var old;
+  if (this.vnode) {
+    old = this.vnode;
+  } else {
+    old = document.getElementById(this.gui_tree_context); 
+    old.innerHTML = "";
+  }
+  this.vnode = patch(old, vnode);
 
   // // part 3 : register events
   //                                   // ... unfold them on first mouseover of according icon image
