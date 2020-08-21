@@ -129,25 +129,6 @@ function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids) {
   }));
 }
 
-  function img_thunk(gui_id, type) {
-    return h("img#" + gui_id + "_sym", {
-      props: {
-        src: type !== "none" ? lib_tree_get_symb(type) : "",
-        align: "left",
-        width: 20,
-        height: 20
-      },
-    on: {
-      click: () => {
-        if (hide_ul) {
-          self.handler("expand_children", node.gui_id, undefined);
-        } else {
-          self.handler("collapse_children", node.gui_id, undefined);
-        }
-      }
-    }
-    });
-  }
 function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   // HTML-Code :
   // <LI>
@@ -162,8 +143,24 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   const gui_id = node.gui_id + '_a';
 
 
+  const img_vnode = h("img#" + node.gui_id + "_sym", {
+      props: {
+        src: node.type !== "none" ? lib_tree_get_symb(node.type) : "",
+        align: "left",
+        width: 20,
+        height: 20
+      },
+    on: {
+      mouseenter: () => {
+        if (hide_ul) {
+          self.handler("expand_children", node.gui_id, undefined);
+        } else {
+          self.handler("collapse_children", node.gui_id, undefined);
+        }
+      }
+    }
+    });
 
-  const img_vnode = thunk("img#" + node.gui_id + "_sym", img_thunk, [node.gui_id, node.type]);
   const name_class = node.is_deleted === 1
     ? "div deleted"
     : "div";
