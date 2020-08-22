@@ -15,6 +15,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.expand_children_of = expand_children_of;
   self.collapse_children_of = collapse_children_of;
 
+  self.is_loading = is_loading;
   self.get_tree = get_tree;
   self.get_selected_gui_ids = get_selected_gui_ids;
   self.get_expanded_gui_ids = get_expanded_gui_ids;
@@ -24,6 +25,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.lib_data = lib_data;
   self.logger = logger;
   self.is_busy = false;
+  self.is_tree_ready = false;
   self.is_name_input_active = false;
   self.is_renaming_not_creating = null;
   self.path_to_root = null;
@@ -33,6 +35,10 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.tree = null;
   self.expanded_node_gui_ids = null;
 
+  function is_loading() {
+    return self.is_tree_ready;
+  }
+  
   function get_tree() {
     return self.tree;
   }
@@ -161,6 +167,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_single_selection_operations_available());
 
     self.is_busy = true;
+    self.is_tree_ready = false;
     self.lib_data.command({
       src_elem: ids,
       dst_elem: parent_pos.get_node().elem_id,
@@ -169,12 +176,15 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         cb_success();
       }
     }, "copy_item");
+
+    dispatcher.tree_changed();
   }
 
   function delete_links(links, cb_success) {
     ensure(are_browsing_operations_available());
 
     self.is_busy = true;
+    self.is_tree_ready = false;
     self.lib_data.command({
       links: links,
       cb_success: function () {
@@ -182,6 +192,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         cb_success();
       }
     }, "delete_item");
+
+    dispatcher.tree_changed();
   }
 
   function expand_children() {
@@ -198,7 +210,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     }
 
     self.expanded_node_gui_ids[gui_id] = true;
-    self.dispatcher.expand_children_by_gui_id(gui_id);
+    self.dispatcher.tree_changed();
   }
 
   function collapse_children() {
@@ -214,7 +226,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_single_selection_operations_available(), "");
 
     delete self.expanded_node_gui_ids[gui_id];
-    self.dispatcher.collapse_children_by_gui_id(gui_id);
+    self.dispatcher.tree_changed();
   }
 
   function move_selection_up() {
@@ -227,7 +239,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       const old_selection = self.selected_gui_ids;
       self.selected_gui_ids = [ prev_pos.get_node().gui_id ];
 
-      self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
+      self.dispatcher.tree_changed();
+      self.dispatcher.selection_changed();
     } else if (prev_pos !== null) {
       self.select_and_zoom_to(prev_pos.get_node().gui_id);
     }
@@ -243,7 +256,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       const old_selection = self.selected_gui_ids;
       self.selected_gui_ids = [ next_pos.get_node().gui_id ];
 
-      self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
+      self.dispatcher.tree_changed();
+      self.dispatcher.selection_changed();
     }
   }
 
@@ -325,6 +339,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_browsing_operations_available(), "");
 
     self.is_busy = true;
+    self.is_tree_ready = false;
     self.path_to_root = path;
 
     self.lib_data.command({
@@ -336,12 +351,15 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         const gui_id = self.tree.locate_pivot().get_node().gui_id;
         self.expanded_node_gui_ids = { [gui_id]: true };
         self.selected_gui_ids = [ gui_id ];
+        self.is_tree_ready = true;
 
         // seems strange to use the elem_id here..?
-        dispatcher.tree_panel_changed(self.tree, locate_single_selected_node().get_node().elem_id);
-        dispatcher.selection_changed([], self.selected_gui_ids);
+        self.dispatcher.tree_changed();
+        dispatcher.selection_changed();
       }
     }, "req_tree_only");
+
+    dispatcher.tree_changed();
   }
 
   function select_and_zoom_to(gui_id) {
@@ -363,7 +381,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       self.selected_gui_ids = [ gui_id ].concat(old_selection);
     }
 
-    self.dispatcher.selection_changed(old_selection, self.selected_gui_ids);
+    self.dispatcher.tree_changed();
+    self.dispatcher.selection_changed();
   }
 
   function delete_selected() {
@@ -377,10 +396,13 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     }
 
     self.is_busy = true;
+    self.is_tree_ready = false;
     self.lib_data.command({
       links: [{id: selected.get_node().elem_id, parent_id: parent.get_node().elem_id}],
       cb_success: after_deletion,
     }, "delete_item");
+
+    dispatcher.tree_changed();
 
     function after_deletion() {
       self.is_busy = false;
@@ -426,6 +448,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
     if (was_renaming_not_creating) {
       self.is_busy = true;
+      self.is_tree_ready = false;
       self.lib_data.command({
         elem_id: selected.elem_id,
         field_id: "name",
@@ -439,6 +462,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       }
     } else {
       self.is_busy = true;
+      self.is_tree_ready = false;
       self.lib_data.command({
         parent_elem_id: selected.elem_id,
         name: name,
@@ -451,6 +475,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         self.select_and_zoom(self.path_to_root);
       }
     }
+
+    dispatcher.tree_changed();
   }
 
   function are_single_selection_operations_available() {
@@ -463,32 +489,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function path_to(gui_id) {
     return self.tree.locate(gui_id).get_downward_path();
-//    var id = gui_id;
-//    var path = [];
-//  
-//    while (id != null) {
-//      var item = get_item_by_gui_id(id);
-//      path.unshift(item.elem_id);
-//      id = item.parent_gui_id;
-//    }
-//    
-//    return path;
   }
-
-//  function get_item_by_gui_id(gui_id)
-//  {
-//    const predicate = function(node) {
-//      return node.gui_id === gui_id;
-//    };
-//
-//    const explorer_hit = self.tree.explorer_path.find(predicate);
-//    const tree_hit = self.tree.tree_nodes.find(predicate);
-//
-//    const result = explorer_hit || tree_hit || null;
-//
-//    ensure(result !== null, "Could not find item by its gui_id.");
-//    return result;
-//  }
 
   function error(msg) {
     self.logger(msg);

@@ -801,6 +801,7 @@ function render_tree() {
   const self = this;
   
   self.tree_panel.print_tree(
+    self.model.is_loading(),
     self.model.get_tree(),
     self.model.get_selected_gui_ids(),
     self.model.get_expanded_gui_ids()
@@ -810,7 +811,7 @@ function render_tree() {
 function uc_browsing_main_init_model() {
   var self = this;
   var dispatcher = {
-    tree_panel_changed: function(tree, selected_id) {
+    tree_changed: function(tree, selected_id) {
       self.render_tree();
     },
     renaming_started: function(renamed_node) {
@@ -819,23 +820,8 @@ function uc_browsing_main_init_model() {
     creating_started: function(parent_node) {
       self.tree_panel.input_item(true, parent_node.gui_id, parent_node.type);
     },
-    expand_children_by_gui_id(gui_id) {
-      self.render_tree();
-    },
-    collapse_children_by_gui_id(gui_id) {
-      self.render_tree();
-    },
-    selection_changed(old_sel, new_sel) {
-//       old_sel.forEach(function (gui_id) {
-//         self.tree_panel.markup_items(gui_id, false);
-//       });
-// 
-//       new_sel.forEach(function (gui_id) {
-//         self.tree_panel.markup_items(gui_id, true);
-//       });
-      
-      self.render_tree();
-
+    selection_changed() {
+      const new_sel = self.model.get_selected_gui_ids();
       if (new_sel.length === 1) {
         const gui_id = new_sel[0];
         self.content_panel.load_item_content(self.tree_panel.get_item_data(gui_id));

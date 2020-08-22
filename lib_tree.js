@@ -36,6 +36,7 @@ export function lib_tree(gui_headline_context, lang_headline, gui_tree_context, 
   // bind object functions
   this.init = lib_tree_init.bind(this);
   this.print_title = lib_tree_print_title.bind(this);
+  this.get_disptype_tree_vnode = get_disptype_tree_vnode.bind(this);
   this.print_disptype_tree = print_disptype_tree.bind(this);
   this.print_disptype_bubbles = print_disptype_bubbles.bind(this);
   this.print_tree = lib_tree_print_tree.bind(this);
@@ -259,8 +260,26 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
 //   insert_children(newUlItem);
 }
 
-function print_disptype_tree(tree, selected_gui_ids, expanded_gui_ids)
+function print_disptype_tree(is_tree_available, tree, selected_gui_ids, expanded_gui_ids)
 {
+  const vnode = this.get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids);
+
+  var old;
+  if (this.vnode) {
+    old = this.vnode;
+  } else {
+    old = document.getElementById(this.gui_tree_context); 
+    old.innerHTML = "";
+  }
+  this.vnode = patch(old, vnode);
+}
+
+function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids)
+{
+  if (!is_tree_available) {
+    return h("span", ["Loading..."]);
+  }
+
   const self = this;
   const start_time = new Date();
                                     // initialize for Explorer Bar
@@ -322,37 +341,14 @@ function print_disptype_tree(tree, selected_gui_ids, expanded_gui_ids)
     tree_root_div
   ]);
 
-  var old;
-  if (this.vnode) {
-    old = this.vnode;
-  } else {
-    old = document.getElementById(this.gui_tree_context); 
-    old.innerHTML = "";
-  }
-  this.vnode = patch(old, vnode);
-
-  // // part 3 : register events
-  //                                   // ... unfold them on first mouseover of according icon image
-  // const self = this;
-  // $('#' + this.gui_tree_context).find('img').mouseenter(
-  //   function () {
-  //     const ul = $(this).siblings('ul');
-  //     const gui_id = ul.attr("id").slice(0, -3);
-  //     if (ul.css("display") == "none") {
-  //       self.handler("expand_children", gui_id, undefined);
-  //     }
-  //     else {
-  //       self.handler("collapse_children", gui_id, undefined);
-  //     }
-  //   }
-  // ); 
+  return vnode;
 
   return retval;  
 }
 
 
 // print part of a tree in the respective GUI element
-function lib_tree_print_tree(tree_obj, selected_gui_ids, expanded_gui_ids)
+function lib_tree_print_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids)
 {
   // for performance analysis
   const start_time = new Date();
@@ -370,7 +366,7 @@ function lib_tree_print_tree(tree_obj, selected_gui_ids, expanded_gui_ids)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   var retval;
   if (global_setup.display_type == 0)
-    retval = this.print_disptype_tree(tree_obj, selected_gui_ids, expanded_gui_ids);
+    retval = this.print_disptype_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids);
   else
     retval = this.print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree);
 
