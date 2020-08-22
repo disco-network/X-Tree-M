@@ -1,5 +1,7 @@
-import { c_KEYB_MODE_NONE } from "./global_defs.js";
+import { c_KEYB_MODE_NONE, c_KEYB_MODE_CTRL_ONLY, c_KEYB_MODE_SHIFT_ONLY, c_KEYB_MODE_ALT_ONLY } from "./global_defs.js";
 import { global_setup, c_DEFAULT_GLOBAL_SETUP } from "./global_setup.js";
+import { htmlEntities } from "./global_functions.js";
+import { c_LANG_UC_BROWSING_MENUBAR } from "./uc_browsing_lang.js";
 
 // Class 'uc_browsing_keyb' -> Keyboard Handling for Usecase "Browsing"
 export function uc_browsing_keyb(main)

@@ -1,3 +1,4 @@
+import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
 export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
@@ -19,6 +20,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.get_tree = get_tree;
   self.get_selected_gui_ids = get_selected_gui_ids;
   self.get_expanded_gui_ids = get_expanded_gui_ids;
+  self.get_creating_parent = get_creating_parent;
+  self.get_renaming_node = get_renaming_node;
 
   // private
   self.dispatcher = dispatcher;
@@ -26,8 +29,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.logger = logger;
   self.is_busy = false;
   self.is_tree_ready = false;
-  self.is_name_input_active = false;
-  self.is_renaming_not_creating = null;
+  self.renaming_gui_id = null;
+  self.creating_below_gui_id = null;
   self.path_to_root = null;
   self.selected_gui_ids = null;
   self.action_in_clipboard = null;
@@ -49,6 +52,14 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
   function get_expanded_gui_ids() {
     return self.expanded_node_gui_ids;
+  }
+
+  function get_creating_parent() {
+    return self.creating_below_gui_id;
+  }
+
+  function get_renaming_node() {
+    return self.renaming_gui_id;
   }
 
   function handle_key_press(key_chord) {
@@ -177,7 +188,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       }
     }, "copy_item");
 
-    dispatcher.tree_changed();
+    self.dispatcher.tree_changed();
   }
 
   function delete_links(links, cb_success) {
@@ -193,7 +204,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       }
     }, "delete_item");
 
-    dispatcher.tree_changed();
+    self.dispatcher.tree_changed();
   }
 
   function expand_children() {
@@ -240,7 +251,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       self.selected_gui_ids = [ prev_pos.get_node().gui_id ];
 
       self.dispatcher.tree_changed();
-      self.dispatcher.selection_changed();
     } else if (prev_pos !== null) {
       self.select_and_zoom_to(prev_pos.get_node().gui_id);
     }
@@ -257,7 +267,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       self.selected_gui_ids = [ next_pos.get_node().gui_id ];
 
       self.dispatcher.tree_changed();
-      self.dispatcher.selection_changed();
     }
   }
 
@@ -355,11 +364,10 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
         // seems strange to use the elem_id here..?
         self.dispatcher.tree_changed();
-        dispatcher.selection_changed();
       }
     }, "req_tree_only");
 
-    dispatcher.tree_changed();
+    self.dispatcher.tree_changed();
   }
 
   function select_and_zoom_to(gui_id) {
@@ -382,7 +390,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     }
 
     self.dispatcher.tree_changed();
-    self.dispatcher.selection_changed();
   }
 
   function delete_selected() {
@@ -402,7 +409,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       cb_success: after_deletion,
     }, "delete_item");
 
-    dispatcher.tree_changed();
+    self.dispatcher.tree_changed();
 
     function after_deletion() {
       self.is_busy = false;
@@ -418,10 +425,9 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
     const selected = locate_single_selected_node().get_node();
 
-    self.is_name_input_active = true;
-    self.is_renaming_not_creating = false;
+    self.creating_below_gui_id = selected.gui_id;
 
-    dispatcher.creating_started(selected);
+    self.dispatcher.tree_changed();
   }
 
   function begin_renaming() {
@@ -429,24 +435,24 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
     const selected = locate_single_selected_node().get_node();
 
-    self.is_name_input_active = true;
-    self.is_renaming_not_creating = true;
+    self.renaming_gui_id = selected.gui_id;
 
-    dispatcher.renaming_started(selected);
+    self.dispatcher.tree_changed();
   }
 
   function apply_name_input(name) {
-    ensure(self.is_name_input_active, "");
+    const rename = self.renaming_gui_id !== null;
+    const create = self.creating_below_gui_id !== null;
+    ensure(rename || create);
+    ensure(!rename || !create);
     ensure(!self.is_busy, "");
     ensure(is_single_selection(), "");
 
-    const was_renaming_not_creating = self.is_renaming_not_creating;
-    self.is_name_input_active = false;
-    self.is_renaming_not_creating = null;
+    self.renaming_gui_id = self.creating_below_gui_id = null;
 
     const selected = locate_single_selected_node().get_node();
 
-    if (was_renaming_not_creating) {
+    if (rename) {
       self.is_busy = true;
       self.is_tree_ready = false;
       self.lib_data.command({
@@ -476,7 +482,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       }
     }
 
-    dispatcher.tree_changed();
+    self.dispatcher.tree_changed();
   }
 
   function are_single_selection_operations_available() {
@@ -484,7 +490,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function are_browsing_operations_available() {
-    return !self.is_busy && !self.is_name_input_active;
+    return !self.is_busy && self.renaming_gui_id === null && self.creating_below_gui_id === null;
   }
 
   function path_to(gui_id) {

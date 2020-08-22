@@ -118,19 +118,35 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
-function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids) {
+function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids, create_gui_id, rename_gui_id) {
   var self = this;
+  const node = pos.get_node();
   const gui_id = pos.get_node().gui_id;
   const selected = selected_gui_ids.indexOf(gui_id) >= 0;
   const expanded = expanded_gui_ids[gui_id] !== undefined;
   const on_click = function(event) { return self.handler("tree_select", gui_id + "_a", event) };
+  const rename_this = node.gui_id === rename_gui_id;
+  const create_child = node.gui_id === create_gui_id;
 
-  return this.print_item(pos.get_node(), on_click, selected, !expanded, pos.locate_children().map(child_pos => {
-    return self.print_item_rec(child_pos, selected_gui_ids, expanded_gui_ids);
-  }));
+  const children = pos.locate_children().map(child_pos => {
+    return self.print_item_rec(child_pos, selected_gui_ids, expanded_gui_ids, create_gui_id, rename_gui_id);
+  });
+
+  if (create_child) {
+    const new_node = {
+      gui_id: "N0",
+      name: "",
+      type: node.type, // is this right?
+      eval: this.empty_eval_struct
+    };
+    const new_vnode = this.print_item(new_node, () => {}, false, false, [], true);
+    children.push(new_vnode);
+  }
+
+  return this.print_item(pos.get_node(), on_click, selected, !expanded, children, rename_this);
 }
 
-function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
+function lib_tree_print_item(node, on_click, selected, hide_ul, children, rename) {
   // HTML-Code :
   // <LI>
   //   <IMG ... /IMG>  
@@ -142,6 +158,7 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
   
   const self = this;
   const gui_id = node.gui_id + '_a';
+
 
 
   const img_vnode = h("img#" + node.gui_id + "_sym", {
@@ -171,11 +188,19 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
     }
   }, [
     h("span", [
-      h("a#" + gui_id + ".name", {
-         on: {
-           click: on_click
-         }
-      }, [ node.name ])
+      !rename
+        ? h("a#" + gui_id + ".name", {
+          on: {
+            click: on_click
+          }}, [ node.name ])
+        : h("input#name_input", {
+          props: {
+            type: "text",
+            value: node.name
+          },
+          hook: {
+            insert: vnode => { vnode.elm.focus() }
+          }})
     ])
   ]);
 
@@ -260,9 +285,9 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children) {
 //   insert_children(newUlItem);
 }
 
-function print_disptype_tree(is_tree_available, tree, selected_gui_ids, expanded_gui_ids)
+function print_disptype_tree(is_tree_available, tree, selected_gui_ids, expanded_gui_ids, create, rename)
 {
-  const vnode = this.get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids);
+  const vnode = this.get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids, create, rename);
 
   var old;
   if (this.vnode) {
@@ -274,7 +299,7 @@ function print_disptype_tree(is_tree_available, tree, selected_gui_ids, expanded
   this.vnode = patch(old, vnode);
 }
 
-function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids)
+function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expanded_gui_ids, create, rename)
 {
   if (!is_tree_available) {
     return h("span", ["Loading..."]);
@@ -304,7 +329,7 @@ function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expa
     const on_click_multi = function (event) { return self.handler("open_parent_menu", predecessor_node.gui_id + "_a", event) };
 
     const link_vnode = h("span", [
-      h("a#" + gui_id_a, { on: { click: on_click } }, [ visible_name ])
+        h("a#" + gui_id_a, { on: { click: on_click } }, [ visible_name ])
     ]);
     const parents_link_vnode = predecessor_node.isMultiPar
       ? h("span", [
@@ -329,7 +354,7 @@ function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expa
     {
       retval = sibling_pos.get_node();
     }
-    return this.print_item_rec(sibling_pos, selected_gui_ids, expanded_gui_ids); // TODO
+    return this.print_item_rec(sibling_pos, selected_gui_ids, expanded_gui_ids, create, rename); // TODO
   });
 
   const tree_root_div = h("div.tree", [
@@ -348,7 +373,7 @@ function get_disptype_tree_vnode(is_tree_available, tree, selected_gui_ids, expa
 
 
 // print part of a tree in the respective GUI element
-function lib_tree_print_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids)
+function lib_tree_print_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids, create, rename)
 {
   // for performance analysis
   const start_time = new Date();
@@ -366,7 +391,7 @@ function lib_tree_print_tree(is_tree_available, tree_obj, selected_gui_ids, expa
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   var retval;
   if (global_setup.display_type == 0)
-    retval = this.print_disptype_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids);
+    retval = this.print_disptype_tree(is_tree_available, tree_obj, selected_gui_ids, expanded_gui_ids, create, rename);
   else
     retval = this.print_disptype_bubbles(tree_obj, sel_elem_id, selected_item_in_tree);
 

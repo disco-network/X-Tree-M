@@ -704,7 +704,7 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
 
   $.post(this.data_src_path+"create?"+post_params, { })
     .done(function(data) {
-      newId = data.id.toString();
+      const newId = data.id.toString();
       iparams_cp.cb_success(newId);
     }.bind(this))
 }  
