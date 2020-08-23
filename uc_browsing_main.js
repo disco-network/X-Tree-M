@@ -801,12 +801,7 @@ function render_tree() {
   const self = this;
   
   self.tree_panel.print_tree(
-    self.model.is_loading(),
-    self.model.get_tree(),
-    self.model.get_selected_gui_ids(),
-    self.model.get_expanded_gui_ids(),
-    self.model.get_creating_parent(),
-    self.model.get_renaming_node()
+    self.model.get_state()
   );
 }
 
@@ -816,7 +811,7 @@ function uc_browsing_main_init_model() {
     tree_changed: function() {
       self.render_tree();
 
-      const new_sel = self.model.get_selected_gui_ids();
+      const new_sel = self.model.get_state().selected;
       if (new_sel !== null && new_sel.length === 1) {
         const gui_id = new_sel[0];
         self.content_panel.load_item_content(self.tree_panel.get_item_data(gui_id));

@@ -1,5 +1,38 @@
 import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
+function VisibleState() {
+
+  this.set = (tree, selected, expanded) => {
+    this.is_available = true;
+    this.tree = tree;
+    this.selected = selected;
+    this.expanded = expanded;
+    this.creating = null;
+    this.renaming = null;
+  };
+  this.reset = () => {
+    this.is_available = false;
+    this.tree = null;
+    this.selected = null;
+    this.expanded = null;
+    this.creating = null;
+    this.renaming = null;
+  };
+
+  this.reset();
+
+  this.begin_creating = parent_gui_id => this.creating = parent_gui_id;
+  this.end_creating = () => this.creating = null;
+  this.begin_renaming = gui_id => this.renaming = gui_id;
+  this.end_renaming = () => this.renaming = null;
+
+  this.can_browse = () => this.is_available && !this.creating && !this.renaming;
+
+  this.is_valid = () => (!this.creating || !this.renaming) &&
+    (!this.is_available || (typeof this.tree === "object" && typeof this.selected !== "object" && typeof this.expanded === "object")) &&
+    (typeof this.is_available === "boolean");
+}
+
 export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
 
@@ -16,50 +49,19 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.expand_children_of = expand_children_of;
   self.collapse_children_of = collapse_children_of;
 
-  self.is_loading = is_loading;
-  self.get_tree = get_tree;
-  self.get_selected_gui_ids = get_selected_gui_ids;
-  self.get_expanded_gui_ids = get_expanded_gui_ids;
-  self.get_creating_parent = get_creating_parent;
-  self.get_renaming_node = get_renaming_node;
+  self.get_state = get_state;
 
   // private
+  self.visible_state = new VisibleState();
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
   self.logger = logger;
   self.is_busy = false;
-  self.is_tree_ready = false;
-  self.renaming_gui_id = null;
-  self.creating_below_gui_id = null;
   self.path_to_root = null;
-  self.selected_gui_ids = null;
   self.action_in_clipboard = null;
-
-  self.tree = null;
-  self.expanded_node_gui_ids = null;
-
-  function is_loading() {
-    return self.is_tree_ready;
-  }
   
-  function get_tree() {
-    return self.tree;
-  }
-
-  function get_selected_gui_ids() {
-    return self.selected_gui_ids;
-  }
-
-  function get_expanded_gui_ids() {
-    return self.expanded_node_gui_ids;
-  }
-
-  function get_creating_parent() {
-    return self.creating_below_gui_id;
-  }
-
-  function get_renaming_node() {
-    return self.renaming_gui_id;
+  function get_state() {
+    return self.visible_state;
   }
 
   function handle_key_press(key_chord) {
@@ -145,8 +147,11 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function get_selected_elem_ids() {
-    return self.selected_gui_ids.map(function (gui_id) {
-      const pos = self.tree.locate(gui_id);
+    const selected = self.visible_state.selected;
+    const tree = self.visible_state.tree;
+
+    return selected.map(function (gui_id) {
+      const pos = tree.locate(gui_id);
       if (pos === null) {
         console.log("ignored invalid gui_id");
         return null;
@@ -157,8 +162,11 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function get_selected_links() {
-    return self.selected_gui_ids.map(function (gui_id) {
-      const pos = self.tree.locate(gui_id);
+    const selected = self.visible_state.selected;
+    const tree = self.visible_state.tree;
+
+    return selected.map(function (gui_id) {
+      const pos = tree.locate(gui_id);
       if (pos === null) {
         console.log("ignored invalid gui_id");
         return null;
@@ -178,7 +186,9 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_single_selection_operations_available());
 
     self.is_busy = true;
-    self.is_tree_ready = false;
+    self.visible_state.reset();
+    self.dispatcher.tree_changed();
+
     self.lib_data.command({
       src_elem: ids,
       dst_elem: parent_pos.get_node().elem_id,
@@ -187,15 +197,15 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         cb_success();
       }
     }, "copy_item");
-
-    self.dispatcher.tree_changed();
   }
 
   function delete_links(links, cb_success) {
     ensure(are_browsing_operations_available());
 
     self.is_busy = true;
-    self.is_tree_ready = false;
+    self.visible_state.reset();
+    self.dispatcher.tree_changed();
+
     self.lib_data.command({
       links: links,
       cb_success: function () {
@@ -203,8 +213,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
         cb_success();
       }
     }, "delete_item");
-
-    self.dispatcher.tree_changed();
   }
 
   function expand_children() {
@@ -220,7 +228,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       return;
     }
 
-    self.expanded_node_gui_ids[gui_id] = true;
+    self.visible_state.expanded[gui_id] = true;
     self.dispatcher.tree_changed();
   }
 
@@ -236,7 +244,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   function collapse_children_of(gui_id) {
     ensure(are_single_selection_operations_available(), "");
 
-    delete self.expanded_node_gui_ids[gui_id];
+    delete self.visible_state.expanded[gui_id];
     self.dispatcher.tree_changed();
   }
 
@@ -247,8 +255,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     const prev_pos = locate_node_before(position);
 
     if (prev_pos !== null && prev_pos.is_in_tree()) {
-      const old_selection = self.selected_gui_ids;
-      self.selected_gui_ids = [ prev_pos.get_node().gui_id ];
+      const old_selection = self.visible_state.selected;
+      self.visible_state.selected = [ prev_pos.get_node().gui_id ];
 
       self.dispatcher.tree_changed();
     } else if (prev_pos !== null) {
@@ -263,8 +271,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     const next_pos = locate_node_after(position);
 
     if (next_pos !== null && next_pos.is_in_tree()) {
-      const old_selection = self.selected_gui_ids;
-      self.selected_gui_ids = [ next_pos.get_node().gui_id ];
+      const old_selection = self.visible_state.selected;
+      self.visible_state.selected = [ next_pos.get_node().gui_id ];
 
       self.dispatcher.tree_changed();
     }
@@ -321,7 +329,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   function locate_visible_children(position) {
     const gui_id = position.get_node().gui_id;
 
-    if (!position.is_in_tree() || self.expanded_node_gui_ids[gui_id]) {
+    if (!position.is_in_tree() || self.visible_state.expanded[gui_id]) {
       return position.locate_children();
     }
 
@@ -329,14 +337,17 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function is_single_selection() {
-    return self.selected_gui_ids.length === 1;
+    return self.visible_state.selected.length === 1;
   }
 
   function locate_single_selected_node() {
     ensure(is_single_selection(), "");
 
-    const gui_id = self.selected_gui_ids[0];
-    return self.tree.locate(gui_id);
+    const selected = self.visible_state.selected;
+    const tree = self.visible_state.tree;
+
+    const gui_id = selected[0];
+    return tree.locate(gui_id);
   }
 
   function reload() {
@@ -348,19 +359,17 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     ensure(are_browsing_operations_available(), "");
 
     self.is_busy = true;
-    self.is_tree_ready = false;
     self.path_to_root = path;
+    self.visible_state.reset();
 
     self.lib_data.command({
       path,
       cb_success: function(tree) {
         self.is_busy = false;
-        self.tree = tree;
-
-        const gui_id = self.tree.locate_pivot().get_node().gui_id;
-        self.expanded_node_gui_ids = { [gui_id]: true };
-        self.selected_gui_ids = [ gui_id ];
-        self.is_tree_ready = true;
+        const gui_id = tree.locate_pivot().get_node().gui_id;
+        const expanded  = { [gui_id]: true };
+        const selected = [ gui_id ];
+        self.visible_state.set(tree, selected, expanded);
 
         // seems strange to use the elem_id here..?
         self.dispatcher.tree_changed();
@@ -379,14 +388,14 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       return;
     }
 
-    const old_selection = self.selected_gui_ids;
-    const selection_with_deselected_element = self.selected_gui_ids.filter(function (id) { return gui_id !== id });
+    const old_selection = self.visible_state.selected;
+    const selection_with_deselected_element = self.visible_state.selected.filter(function (id) { return gui_id !== id });
     const was_present_in_old_selection = old_selection.length > selection_with_deselected_element.length;
 
     if (was_present_in_old_selection) {
-      self.selected_gui_ids = selection_with_deselected_element;
+      self.visible_state.selected = selection_with_deselected_element;
     } else {
-      self.selected_gui_ids = [ gui_id ].concat(old_selection);
+      self.visible_state.selected = [ gui_id ].concat(old_selection);
     }
 
     self.dispatcher.tree_changed();
@@ -403,13 +412,12 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     }
 
     self.is_busy = true;
-    self.is_tree_ready = false;
+    self.visible_state.reset();
+    self.dispatcher.tree_changed();
     self.lib_data.command({
       links: [{id: selected.get_node().elem_id, parent_id: parent.get_node().elem_id}],
       cb_success: after_deletion,
     }, "delete_item");
-
-    self.dispatcher.tree_changed();
 
     function after_deletion() {
       self.is_busy = false;
@@ -425,8 +433,7 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
     const selected = locate_single_selected_node().get_node();
 
-    self.creating_below_gui_id = selected.gui_id;
-
+    self.visible_state.creating = selected.gui_id;
     self.dispatcher.tree_changed();
   }
 
@@ -435,54 +442,46 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 
     const selected = locate_single_selected_node().get_node();
 
-    self.renaming_gui_id = selected.gui_id;
-
+    self.visible_state.renaming = selected.gui_id;
     self.dispatcher.tree_changed();
   }
 
   function apply_name_input(name) {
-    const rename = self.renaming_gui_id !== null;
-    const create = self.creating_below_gui_id !== null;
+    const rename = self.visible_state.renaming !== null;
+    const create = self.visible_state.creating !== null;
     ensure(rename || create);
     ensure(!rename || !create);
     ensure(!self.is_busy, "");
     ensure(is_single_selection(), "");
 
-    self.renaming_gui_id = self.creating_below_gui_id = null;
+    self.visible_state.renaming = self.visible_state.creating = null;
 
     const selected = locate_single_selected_node().get_node();
 
+    self.is_busy = true;
+    self.visible_state.reset();
+    self.dispatcher.tree_changed();
+
     if (rename) {
-      self.is_busy = true;
-      self.is_tree_ready = false;
       self.lib_data.command({
         elem_id: selected.elem_id,
         field_id: "name",
         content: name,
-        cb_success: after_renaming,
+        cb_success: after_operation,
       }, "change_item_field");
-  
-      function after_renaming() {
-        self.is_busy = false;
-        self.select_and_zoom(self.path_to_root);
-      }
     } else {
-      self.is_busy = true;
-      self.is_tree_ready = false;
       self.lib_data.command({
         parent_elem_id: selected.elem_id,
         name: name,
         type: c_LANG_LIB_TREE_ELEMTYPE[1][0],
-        cb_success: after_creating,
+        cb_success: after_operation,
       }, "create_item");
-
-      function after_creating() {
-        self.is_busy = false;
-        self.select_and_zoom(self.path_to_root);
-      }
     }
 
-    self.dispatcher.tree_changed();
+    function after_operation() {
+      self.is_busy = false;
+      self.select_and_zoom(self.path_to_root);
+    }
   }
 
   function are_single_selection_operations_available() {
@@ -490,11 +489,11 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   function are_browsing_operations_available() {
-    return !self.is_busy && self.renaming_gui_id === null && self.creating_below_gui_id === null;
+    return !self.is_busy && self.visible_state.creating === null && self.visible_state.renaming === null;
   }
 
   function path_to(gui_id) {
-    return self.tree.locate(gui_id).get_downward_path();
+    return self.visible_state.tree.locate(gui_id).get_downward_path();
   }
 
   function error(msg) {
