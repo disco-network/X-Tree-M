@@ -295,8 +295,10 @@ function print_disptype_tree(state)
 
 function get_disptype_tree_vnode(state)
 {
-  if (!state.can_browse()) {
+  if (!state.is_available) {
     return h("span", ["Loading..."]);
+  } else if (state.operation === "paste") {
+    return h("span", ["Pasting..."]);
   }
 
   const self = this;

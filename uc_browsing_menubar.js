@@ -535,20 +535,20 @@ function uc_browsing_menubar_init()
   main_ul.style.cssText = 'color:#000000; padding:0px; list-style:none; position:absolute; margin-top:-10px;';
 
   // traverse all menus
-  for (var i=0; i<this.menu_data.length; i++)
+  for (let i=0; i<this.menu_data.length; i++)
   {
-    var menu = this.menu_data[i];
+    const menu = this.menu_data[i];
     // create menu title
-    var menu_title_li = document.createElement("li");
+    const menu_title_li = document.createElement("li");
     menu_title_li.style.cssText = 'background-color: #ccc; float:left; position:relative; margin-right:1px;';
-    var menu_title_a = document.createElement("a");
+    const menu_title_a = document.createElement("a");
     menu_title_a.style.cssText = 'color:#000000; text-decoration:none; text-align:center; padding:1px 5px;';
     setInnerHTML(menu_title_a, menu[0][this.main.global_setup.curr_lang]);
     menu_title_li.appendChild(menu_title_a);
-    var menu_ul = document.createElement("ul");
+    let menu_ul = document.createElement("ul");
     menu_ul.style.cssText = 'position:absolute; left:0; top:100%; display:none; padding:0px;'; 
     // traverse all other items
-    for (var j=1; j<menu.length; j++)
+    for (let j=1; j<menu.length; j++)
     {
       if (Array.isArray(menu[j][0]))
       {

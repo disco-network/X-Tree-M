@@ -816,13 +816,7 @@ function uc_browsing_main_init_model() {
         const gui_id = new_sel[0];
         self.content_panel.load_item_content(self.tree_panel.get_item_data(gui_id));
       }
-    },
-//     renaming_started: function(renamed_node) {
-//       self.tree_panel.input_item(false, renamed_node.gui_id, renamed_node.type);
-//     },
-//     creating_started: function(parent_node) {
-//       self.tree_panel.input_item(true, parent_node.gui_id, parent_node.type);
-//     },
+    }
   };
 
   var logger = function(msg) {
