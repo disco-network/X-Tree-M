@@ -158,7 +158,7 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children, rename
   const img_vnode = h("img#" + node.gui_id + "_sym", {
       props: {
         src: node.type !== "none" ? lib_tree_get_symb(node.type) : "",
-        align: "left",
+        //align: "left",
         width: 20,
         height: 20
       },
@@ -181,6 +181,7 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children, rename
       className: name_class
     }
   }, [
+    img_vnode,
     h("span", [
       !rename
         ? h("a#" + gui_id + ".name", {
@@ -207,7 +208,6 @@ function lib_tree_print_item(node, on_click, selected, hide_ul, children, rename
 
   const ret_class = selected ? "tree-item selected" : "tree-item";
   return h("li#" + node.gui_id + "_li", { key: node.gui_id, props: { className: ret_class } }, [
-    img_vnode,
     name_vnode,
     ul_vnode
   ]);
