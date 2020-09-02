@@ -3,6 +3,7 @@ import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 import { VisibleState } from "./uc_browsing/state.js";
 import { ClipboardSaga } from "./uc_browsing/clipboard.js";
 import { BrowsingSaga } from "./uc_browsing/browse.js";
+import { DeleteSaga } from "./uc_browsing/delete.js";
 
 export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
@@ -14,8 +15,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.select_and_zoom = select_and_zoom;
   self.select_and_zoom_to = select_and_zoom_to;
 
-//  self.delete_selected = delete_selected;
-//
 //  self.begin_renaming = begin_renaming;
 //  self.begin_creating = begin_creating;
 //  self.apply_name_input = apply_name_input;
@@ -27,13 +26,15 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     tree_changed: () => dispatcher.tree_changed()
   };
   self.browsing_saga = new BrowsingSaga(self.browsing_dispatcher, self.visible_state, (path, cb_success) => lib_data.command({path, cb_success}, "req_tree_only"));
-  self.clipboard_dispatcher = {
+  self.edit_dispatcher = {
     tree_changed: () => dispatcher.tree_changed(),
     select_and_zoom_to: (gui_id) => self.browsing_saga.select_and_zoom_to(gui_id)
   };
-  self.clipboard_saga = new ClipboardSaga(self.clipboard_dispatcher, self.visible_state,
+  self.clipboard_saga = new ClipboardSaga(self.edit_dispatcher, self.visible_state,
     (copy_ids, target_id, cb_success) => lib_data.command({src_ids: copy_ids, target_id, cb_success}, "copy_item"),
     (copy_links, target_id, cb_success) => lib_data.command({sources: copy_links, target_id, cb_success}, "move_item"));
+  self.delete_saga = new DeleteSaga(self.edit_dispatcher, self.visible_state,
+    (links, cb_success) => lib_data.command({ links, cb_success }, "delete_item"));
 
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
@@ -75,27 +76,31 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   }
 
   this.expand_children = () => {
-    self.browsing_saga.expand_children();
+    this.browsing_saga.expand_children();
   };
 
   this.expand_children_of = (gui_id) => {
-    self.browsing_saga.expand_children_of(gui_id);
+    this.browsing_saga.expand_children_of(gui_id);
   };
 
   this.collapse_children = () => {
-    self.browsing_saga.collapse_children();
+    this.browsing_saga.collapse_children();
   };
 
   this.collapse_children_of = (gui_id) => {
-    self.browsing_saga.collapse_children_of(gui_id);
+    this.browsing_saga.collapse_children_of(gui_id);
   };
 
   this.move_selection_down = () => {
-    self.browsing_saga.move_selection_down();
+    this.browsing_saga.move_selection_down();
   };
 
   this.move_selection_up = () => {
-    self.browsing_saga.move_selection_up();
+    this.browsing_saga.move_selection_up();
+  };
+
+  this.delete_selected = () => {
+    this.delete_saga.delete_selected();
   };
 
 //  function delete_links(links, cb_success) {
