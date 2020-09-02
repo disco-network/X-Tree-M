@@ -299,6 +299,12 @@ function get_disptype_tree_vnode(state)
     return h("span", ["Loading..."]);
   } else if (state.operation === "paste") {
     return h("span", ["Pasting..."]);
+  } else if (state.operation === "delete") {
+    return h("span", ["Deleting..."]);
+  } else if (state.operation === "rename") {
+    return h("span", ["Renaming..."]);
+  } else if (state.operation === "create") {
+    return h("span", ["Creating..."]);
   }
 
   const self = this;

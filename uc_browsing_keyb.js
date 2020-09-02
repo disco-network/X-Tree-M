@@ -122,7 +122,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
                   break;
                 }
 
-                var item_name = htmlEntities(name_input.value);
+                var item_name = name_input.value;
                 item_name = item_name.substring(0, c_DEFAULT_GLOBAL_SETUP.tree_item_max_letters);
 
                 this.main.model.apply_name_input(item_name);

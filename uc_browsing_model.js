@@ -4,6 +4,7 @@ import { VisibleState } from "./uc_browsing/state.js";
 import { ClipboardSaga } from "./uc_browsing/clipboard.js";
 import { BrowsingSaga } from "./uc_browsing/browse.js";
 import { DeleteSaga } from "./uc_browsing/delete.js";
+import { RenameSaga } from "./uc_browsing/rename.js";
 
 export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
@@ -35,6 +36,13 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     (copy_links, target_id, cb_success) => lib_data.command({sources: copy_links, target_id, cb_success}, "move_item"));
   self.delete_saga = new DeleteSaga(self.edit_dispatcher, self.visible_state,
     (links, cb_success) => lib_data.command({ links, cb_success }, "delete_item"));
+  self.rename_saga = new RenameSaga(self.edit_dispatcher, self.visible_state,
+    (id, name, cb_success) => lib_data.command({
+      elem_id: id,
+      field_id: "name",
+      content: name,
+      cb_success: cb_success
+    }, "change_item_field"));
 
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
@@ -103,6 +111,14 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     this.delete_saga.delete_selected();
   };
 
+  this.begin_renaming = () => {
+    this.rename_saga.begin();
+  }
+
+  this.apply_name_input = (name) => {
+    this.rename_saga.apply(name);
+  };
+
 //  function delete_links(links, cb_success) {
 //    ensure(are_browsing_operations_available());
 //
@@ -117,30 +133,6 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
 //        cb_success();
 //      }
 //    }, "delete_item");
-//  }
-//
-//  function delete_selected() {
-//    ensure(are_single_selection_operations_available(), "Single-selection operations are not available.");
-//
-//    const selected = locate_single_selected_node();
-//    const parent = selected.locate_parent();
-//
-//    if (parent === null) {
-//      return;
-//    }
-//
-//    self.is_busy = true;
-//    self.visible_state.reset();
-//    self.dispatcher.tree_changed();
-//    self.lib_data.command({
-//      links: [{id: selected.get_node().elem_id, parent_id: parent.get_node().elem_id}],
-//      cb_success: after_deletion,
-//    }, "delete_item");
-//
-//    function after_deletion() {
-//      self.is_busy = false;
-//      self.select_and_zoom_to(parent.get_node().gui_id);
-//    }
 //  }
 //
 //  function begin_creating() {
