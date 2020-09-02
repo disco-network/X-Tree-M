@@ -5,6 +5,7 @@ import { ClipboardSaga } from "./uc_browsing/clipboard.js";
 import { BrowsingSaga } from "./uc_browsing/browse.js";
 import { DeleteSaga } from "./uc_browsing/delete.js";
 import { RenameSaga } from "./uc_browsing/rename.js";
+import { CreateSaga } from "./uc_browsing/create.js";
 
 export function uc_browsing_model(dispatcher, lib_data, logger) {
   var self = this;
@@ -29,7 +30,8 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
   self.browsing_saga = new BrowsingSaga(self.browsing_dispatcher, self.visible_state, (path, cb_success) => lib_data.command({path, cb_success}, "req_tree_only"));
   self.edit_dispatcher = {
     tree_changed: () => dispatcher.tree_changed(),
-    select_and_zoom_to: (gui_id) => self.browsing_saga.select_and_zoom_to(gui_id)
+    select_and_zoom_to: (gui_id) => self.browsing_saga.select_and_zoom_to(gui_id),
+    expand_children: () => self.browsing_saga.expand_children()
   };
   self.clipboard_saga = new ClipboardSaga(self.edit_dispatcher, self.visible_state,
     (copy_ids, target_id, cb_success) => lib_data.command({src_ids: copy_ids, target_id, cb_success}, "copy_item"),
@@ -43,6 +45,13 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
       content: name,
       cb_success: cb_success
     }, "change_item_field"));
+  self.create_saga = new CreateSaga(self.edit_dispatcher, self.visible_state,
+    (id, name, cb_success) => lib_data.command({
+      parent_elem_id: id,
+      name: name,
+      type: c_LANG_LIB_TREE_ELEMTYPE[1][0],
+      cb_success: cb_success
+    }, "create_item"));
 
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;
@@ -115,8 +124,13 @@ export function uc_browsing_model(dispatcher, lib_data, logger) {
     this.rename_saga.begin();
   }
 
+  this.begin_creating = () => {
+    this.create_saga.begin();
+  };
+
   this.apply_name_input = (name) => {
     this.rename_saga.apply(name);
+    this.create_saga.apply(name);
   };
 
 //  function delete_links(links, cb_success) {
