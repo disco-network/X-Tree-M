@@ -3,9 +3,15 @@ import { LinearGraphBuilder, TreeGraphBuilder, Tree } from "./uc_browsing_tree.j
 
 const DEFAULT_TYPE = c_LANG_LIB_TREE_ELEMTYPE[1][0];
 
+/**
+ * An in-memory data provider.
+ *
+ * Its main purpose is the uncomplicated use in tests.
+ */
 export function lib_data_client() {
 
   /**
+   * (private)
    * Maps IDs to Nodes.
    * Node schema:
    *   elem_id
@@ -15,13 +21,26 @@ export function lib_data_client() {
    *   child_links
    *     is_deleted
    *     child_id
-   **/
+   */
   this.nodes = new Map();
 
+  /**
+   * (public)
+   * Call this function to prepare the available nodes.
+   * For the node schema, see this.nodes above.
+   */
   this.set_nodes = (nodes) => {
     this.nodes = nodes;
   };
 
+  /**
+   * (public)
+   * Create the tree object that is associated to the given path.
+   *
+   * Arguments: a single params object containing attributes
+   *   path: the downward explorer path including the pivot node (=root of the actual tree)
+   *   cb_success: callback that will be called after a successful request. The first argument will be the tree.
+   */
   this.req_tree_only = ({ path, cb_success }) => {
     
     const downward_explorer_path = path.slice(0, -1);
@@ -62,6 +81,7 @@ export function lib_data_client() {
     setTimeout(() => cb_success(tree));
   };
 
+  // private
   this.get_tree_builder = (id, is_deleted, depth) => {
     if (depth < 0) {
       throw new Error("invalid depth");
@@ -77,6 +97,7 @@ export function lib_data_client() {
     return new TreeGraphBuilder(node, subtree_builders, (node_gui_id, children_gui_ids) => node_gui_id);
   }
 
+  // private
   this.create_node = (id, raw_node, is_deleted) => {
     const node = {
       elem_id: id,

@@ -7,7 +7,15 @@ import { uc_browsing_model } from "../uc_browsing_model.js";
 
 const assert = chai.assert;
 
+/**
+ * Integration tests of uc_browsing_model
+ *
+ * Basic idea: do something and track state changes.
+ * The assertion_runner is a generator function that contains the assertions:
+ * "yield;" indicates that we wait until the state has changed.
+ **/
 describe("The Use Case Browsing Model", () => {
+
   it("loads the tree on startup", (done) => {
     const assertion_runner = gen_assertion_runner();
 
