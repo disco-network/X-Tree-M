@@ -26,6 +26,8 @@ export function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsi
   this.command = lib_data_main_command.bind(this);
   this.get_tree_item_parents = lib_data_main_get_tree_item_parents.bind(this);
   this.set_default_parents = lib_data_main_set_default_parents.bind(this);
+
+  this.req_tree_only = lib_data_main_req_tree_only.bind(this);
   
   // object variables
   this.db_obj = null;
@@ -64,7 +66,7 @@ function lib_data_main_command(iparams, cmd_name)
     case "req_tree"                     : this.db_obj.req_tree(iparams); break;
     case "req_tree_only"                : this.db_obj.req_tree_only(iparams); break;
     case "get_tree"                     : ovalues = this.db_obj.get_tree(iparams); break;
-    case "write_tree"                   : this.db_obj.write_tree(iparams); break;
+    case "write_tree"                   : this.db_obj.write_tree(iparams); break; // not needed anymore?
     case "delete_item"                  : this.db_obj.delete_tree_item(iparams); break;
     case "create_item"                  : this.db_obj.create_tree_item(iparams); break;
     case "change_item_field"            : this.db_obj.change_tree_item_field(iparams); break;
@@ -82,6 +84,9 @@ function lib_data_main_command(iparams, cmd_name)
   return ovalues; 
 }
 
+function lib_data_main_req_tree_only(iparams) {
+  this.command(iparams, "req_tree_only");
+}
 
 
 function lib_data_main_get_tree_item_parents(iparams)

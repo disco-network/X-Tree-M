@@ -37,7 +37,7 @@ for (var i=0; i < c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length-1; i++)
   c_EMPTY_EVAL_STRUCT.push(item);
 }  
 
-// Class 'lib_data_disco'
+// Class 'lib_data_paul'
 export function lib_data_paul(data_src_path, data_src_params, defaultParentStorage, global_setup)
 {
   // import params
