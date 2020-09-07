@@ -40,6 +40,9 @@ export function lib_data_client() {
    * Arguments: a single params object containing attributes
    *   path: the downward explorer path including the pivot node (=root of the actual tree)
    *   cb_success: callback that will be called after a successful request. The first argument will be the tree.
+   *
+   * The created node objects have the following attributes:
+   *   elem_id, name, description, type, is_deleted, isMultiPar, eval, gui_id, parent_gui_id.
    */
   this.req_tree_only = ({ path, cb_success }) => {
     
@@ -69,11 +72,12 @@ export function lib_data_client() {
       pivot_parent_gui_id = null;
     }
 
-    const pivot_siblings = graph.find_children_of(pivot_parent_gui_id);
-    const pivot = pivot_siblings.find(sibling => sibling.elem_id === pivot_id);
+    const pivot_siblings = graph.get_gui_children_of(pivot_parent_gui_id);
+    const pivot_gui_id = pivot_siblings
+      .find(gui_id => graph.get_node_by_gui_id(gui_id).elem_id === pivot_id);
 
     const tree = new Tree(
-      pivot.gui_id,
+      pivot_gui_id,
       explorer_path,
       result.graph,
     );
@@ -87,10 +91,11 @@ export function lib_data_client() {
       throw new Error("invalid depth");
     }
 
+    const load_children = depth > 0;
     const raw_node = this.nodes.get(id);
     const node = this.create_node(id, raw_node, is_deleted);
 
-    const subtree_builders = depth > 0
+    const subtree_builders = load_children
       ? raw_node.child_links.map(link => this.get_tree_builder(link.child_id, link.is_deleted, depth - 1))
       : [];
 
@@ -106,7 +111,7 @@ export function lib_data_client() {
       type: DEFAULT_TYPE,
       is_deleted: is_deleted,
       isMultiPar: false,
-      eval: raw_node.eval
+      eval: raw_node.eval,
     };
     return node;
   };

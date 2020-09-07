@@ -46,7 +46,7 @@ export function DeleteSaga(dispatcher, state, data_delete) {
       .then(() => {
         this.state.operation = "browse";
         // select and zoom to parent
-        deferred.resolve(link.parent.get_node().gui_id);
+        deferred.resolve(link.parent.get_gui_id());
         //this.dispatcher.select_and_zoom_to(link.parent.get_node().gui_id);
       });
 

@@ -282,11 +282,12 @@ function lib_data_paul_req_tree_only(iparams) {
         explorer_path = result.annotation.slice(0, -1).reverse();
         pivot_parent_gui_id = null; // The pivot has no parent
       }
-      const pivot_siblings = graph.find_children_of(pivot_parent_gui_id);
-      const pivot = pivot_siblings.find(sibling => sibling.elem_id === pivot_id);
-
+      const pivot_siblings = graph.get_gui_children_of(pivot_parent_gui_id);
+      const pivot_gui_id = pivot_siblings
+        .find(gui_id => graph.get_node_by_gui_id(gui_id).elem_id === pivot_id);
+  
       const tree = new Tree(
-        pivot.gui_id,
+        pivot_gui_id,
         explorer_path,
         result.graph,
       );

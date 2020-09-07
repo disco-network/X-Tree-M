@@ -10,7 +10,7 @@ export function RenameSaga(dispatcher, state, data_rename) {
 
     const selected = this.state.locate_single_selected();
 
-    this.state.renaming = selected.get_node().gui_id;
+    this.state.renaming = selected.get_gui_id();
     this.state.operation = "rename_input";
     this.dispatcher.tree_changed();
   };
@@ -21,7 +21,7 @@ export function RenameSaga(dispatcher, state, data_rename) {
     };
 
     const renamed = this.state.tree.locate(this.state.renaming);
-    const renamed_gui_id = renamed.get_node().gui_id;
+    const renamed_gui_id = renamed.get_gui_id();
     const renamed_id = renamed.get_node().elem_id;
 
     this.state.operation = "rename";

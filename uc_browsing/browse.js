@@ -28,7 +28,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
       return;
     }
 
-    this.expand_children_of(this.state.locate_single_selected().get_node().gui_id);
+    this.expand_children_of(this.state.locate_single_selected().get_gui_id());
   }
 
   this.expand_children_of = (gui_id) => {
@@ -45,7 +45,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
       return;
     }
 
-    this.collapse_children_of(this.state.locate_single_selected().get_node().gui_id);
+    this.collapse_children_of(this.state.locate_single_selected().get_gui_id());
   }
 
   this.collapse_children_of = (gui_id) => {
@@ -95,11 +95,11 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
 
     if (prev_pos !== null && prev_pos.is_in_tree()) {
       const old_selection = this.state.selected;
-      this.state.selected = [ prev_pos.get_node().gui_id ];
+      this.state.selected = [ prev_pos.get_gui_id() ];
 
       this.dispatcher.tree_changed();
     } else if (prev_pos !== null) {
-      this.select_and_zoom_to(prev_pos.get_node().gui_id);
+      this.select_and_zoom_to(prev_pos.get_gui_id());
     }
   }
 
@@ -113,7 +113,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
 
     if (next_pos !== null && next_pos.is_in_tree()) {
       const old_selection = this.state.selected;
-      this.state.selected = [ next_pos.get_node().gui_id ];
+      this.state.selected = [ next_pos.get_gui_id() ];
 
       this.dispatcher.tree_changed();
     }
@@ -168,7 +168,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
   }
 
   this.locate_visible_children = (position) => {
-    const gui_id = position.get_node().gui_id;
+    const gui_id = position.get_gui_id();
 
     if (!position.is_in_tree() || this.state.expanded[gui_id]) {
       return position.locate_children();
@@ -196,7 +196,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
 
     request_tree(path, (tree) => {
         this.is_busy = false;
-        const gui_id = tree.locate_pivot().get_node().gui_id;
+        const gui_id = tree.locate_pivot().get_gui_id();
         const expanded  = { [gui_id]: true };
         const selected = [ gui_id ];
         this.state.set(tree, selected, expanded);

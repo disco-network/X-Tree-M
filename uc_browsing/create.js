@@ -12,7 +12,7 @@ export function CreateSaga(dispatcher, state, data_create) {
 
     const selected = this.state.locate_single_selected();
 
-    this.state.creating = selected.get_node().gui_id;
+    this.state.creating = selected.get_gui_id();
     this.state.operation = "create_input";
     this.dispatcher.tree_changed();
   };
@@ -23,7 +23,7 @@ export function CreateSaga(dispatcher, state, data_create) {
     };
 
     const created = this.state.tree.locate(this.state.creating);
-    const created_gui_id = created.get_node().gui_id;
+    const created_gui_id = created.get_gui_id();
     const created_id = created.get_node().elem_id;
 
     this.state.operation = "create";

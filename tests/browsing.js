@@ -144,22 +144,33 @@ function create_sample_database() {
 }
 
 function create_sample_tree() {
-  const graph = new Graph([
-    create_sample_node("Grandparent", null),
-    create_sample_node("Parent", "Grandparent"),
-    create_sample_node("Pivot", "Parent"),
-    create_sample_node("Child1", "Pivot"),
-    create_sample_node("Child2", "Pivot")
-  ]);
+  const gui_nodes = new Map();
+  const nodes = new Map();
+  add_node("Grandparent", null);
+  add_node("Parent", "Grandparent");
+  add_node("Pivot", "Parent");
+  add_node("Child1", "Pivot");
+  add_node("Child2", "Pivot");
+  const graph = new Graph(gui_nodes, nodes);
 
   return new Tree("GUI_Pivot", ["GUI_Parent", "GUI_Grandparent"], graph);
+
+  function add_node(label, parent_label) {
+    const node = create_sample_node(label);
+    const gui_node = {
+      gui_id: "GUI_" + label,
+      parent_gui_id: parent_label !== null ? "GUI_" + parent_label : null,
+      id: node.elem_id
+    };
+
+    gui_nodes.set(gui_node.gui_id, gui_node);
+    nodes.set(node.elem_id, node);
+  }
 }
 
-function create_sample_node(label, parent_label) {
+function create_sample_node(label) {
   return {
-    gui_id: "GUI_" + label,
     elem_id: "ID_" + label,
-    parent_gui_id: parent_label !== null ? "GUI_" + parent_label : null,
     name: label,
     description: label + "'s description"
     // still missing: eval, isMultiPar, is_deleted, type

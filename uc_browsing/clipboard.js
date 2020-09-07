@@ -21,7 +21,7 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
 
       data_copy_by_reference(selected_items, target.get_node().elem_id, () => {
         this.state.operation = "browse"; // is this right?
-        dispatcher.select_and_zoom_to(target.get_node().gui_id);
+        dispatcher.select_and_zoom_to(target.get_gui_id());
       });
     };
   };
@@ -32,8 +32,8 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
     }
 
     const clipped = state.selected
-      .map((gui_id) => this.tree.locate(gui_id))
-      .map((pos) => ({ source: pos.locate_parent().get_node().elem_id, target: pos.get_node().elem_id }))
+      .map((gui_id) => this.state.tree.locate(gui_id))
+      .map((pos) => ({ parent: pos.locate_parent().get_node().elem_id, child: pos.get_node().elem_id }))
       .filter((link) => link.source !== null);
 
     this.action_in_clipboard = () => {
@@ -48,7 +48,7 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
       data_cut(clipped, target.get_node().elem_id, () => {
         this.action_in_clipboard = null;
         this.state.operation = "browse"; // is this right?
-        dispatcher.select_and_zoom_to(target.get_node().gui_id);
+        dispatcher.select_and_zoom_to(target.get_gui_id());
       });
     };
   };
