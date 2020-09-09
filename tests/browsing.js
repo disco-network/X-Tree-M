@@ -84,7 +84,7 @@ describe("The Use Case Browsing Model", () => {
 
       // Act #1
       // load tree
-      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
+      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
       yield* runner.await_state_change();
       yield* wait(() => !state.can_browse());
       // begin creating
@@ -102,10 +102,52 @@ describe("The Use Case Browsing Model", () => {
       yield* wait(() => !state.can_browse());
 
       // Assert #2
-      assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot"]);
+      assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]);
       assert.isTrue(state.is_single_selection());
-      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot"])));
-      assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["Child1", "Child2", "New Node's Name"]);
+      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
+      assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["New Node's Name"]);
+
+      done();
+    });
+  });
+
+  it("blabb", (done) => {
+    const runner = new AssertionRunner();
+
+    runner.arrange();
+    runner.act_and_assert(function* ({model}) {
+      const state = model.get_state();
+
+      // Act #1
+      // load tree
+      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
+      yield* runner.await_state_change();
+      yield* wait(() => !state.can_browse());
+      // begin creating
+      yield* runner.run(() => model.begin_creating());
+      yield* runner.await_state_change();
+      
+      // Assert #1
+      assert.isFalse(state.can_browse(), "Cannot browse when input prompt is shown");
+      assert.isNotNull(state.creating);
+      assert.equal(state.creating, state.tree.locate_pivot().get_gui_id());
+
+      // Act #2
+      yield* runner.run(() => model.apply_name_input("New Node's Name"));
+      yield* runner.await_state_change();
+      yield* wait(() => !state.can_browse());
+
+      // Assert #2
+      assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]);
+      assert.isTrue(state.is_single_selection());
+      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
+      assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["New Node's Name"]);
+
+      // Act #3
+      yield* runner.run(() => model.move_selection_down());
+      yield* runner.await_state_change();
+      yield* runner.run(() => model.move_selection_down());
+      yield* runner.await_state_change();
 
       done();
     });

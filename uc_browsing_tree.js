@@ -94,31 +94,29 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
     return locate(pivot_gui_id);
   }
 
+  function locate_root() {
+    const root_gui_id = self.graph.get_gui_children_of(null)[0];
+    return self.locate(root_gui_id);
+  }
+
   function locate_using_downward_path(downward_path) {
-    const pivot_pos = locate_pivot();
+    const root_pos = locate_root();
+    const root_id = root_pos.get_node().elem_id;
     const pivot_path = locate_pivot().get_downward_path();
-    
-    if (pivot_path.length >= downward_path.length) {
-      if (arrays_equal(pivot_path.slice(0, downward_path.length), downward_path)) {
-        let i = pivot_path.length - 1;
-        let cursor = pivot_pos;
-        for (; i > downward_path.length - 1; --i) {
-          cursor = cursor.locate_parent();
-        }
-        return cursor;
-      }
-    } else {
-      let cursor = pivot_pos;
-      for (let i = pivot_path.length; i < downward_path.length; ++i) {
-        cursor = cursor.locate_child_by_id(downward_path[i]);
-        if (cursor === null) {
-          return null;
-        }
-      }
-      return cursor;
+
+    if (root_id !== downward_path[0]) {
+      return null;
     }
 
-    return null;
+    let i = 1;
+    let prefix_position = root_pos;
+    for (; i < downward_path.length; ++i) {
+      prefix_position = prefix_position.locate_child_by_id(downward_path[i]);
+      if (prefix_position === null) {
+        return null;
+      }
+    }
+    return prefix_position;
   }
 
   function get_graph() {
