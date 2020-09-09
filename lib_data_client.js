@@ -41,9 +41,9 @@ export function Database() {
   this.get_tree = (downward_path) => {
     
     const downward_explorer_path = downward_path.slice(0, -1);
+    const pivot_id = downward_path.slice(-1)[0];
     const upper_explorer_path = downward_explorer_path.slice(0, -1);
     const pivot_parent_id = downward_explorer_path.slice(-1)[0];
-    const pivot_id = path.slice(-1)[0];
     const tree_origin_id = pivot_parent_id !== undefined ? pivot_parent_id : pivot_id;
     const depth = pivot_parent_id !== undefined ? 10 : 9;
 
