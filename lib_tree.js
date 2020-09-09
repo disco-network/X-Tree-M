@@ -112,18 +112,18 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
-function lib_tree_print_item_rec(pos, selected_gui_ids, expanded_gui_ids, create_gui_id, rename_gui_id) {
+function lib_tree_print_item_rec(pos, selected_positions, expanded_gui_ids, create_gui_id, rename_gui_id) {
   var self = this;
   const node = pos.get_node();
   const gui_id = pos.get_gui_id();
-  const selected = selected_gui_ids.indexOf(gui_id) >= 0;
+  const selected = selected_positions.map(pos => pos.get_gui_id()).indexOf(gui_id) >= 0;
   const expanded = expanded_gui_ids[gui_id] !== undefined;
   const on_click = function(event) { return self.handler("tree_select", gui_id + "_a", event) };
   const rename_this = pos.get_gui_id() === rename_gui_id;
   const create_child = pos.get_gui_id() === create_gui_id;
 
   const children = pos.locate_children().map(child_pos => {
-    return self.print_item_rec(child_pos, selected_gui_ids, expanded_gui_ids, create_gui_id, rename_gui_id);
+    return self.print_item_rec(child_pos, selected_positions, expanded_gui_ids, create_gui_id, rename_gui_id);
   });
 
   if (create_child) {
@@ -311,7 +311,7 @@ function get_disptype_tree_vnode(state)
                                     // initialize for Explorer Bar
 
   const tree = state.tree;
-  const selected = state.selected;
+  const selected = state.locate_all_selected();
   const expanded = state.expanded;
   const creating = state.creating;
   const renaming = state.renaming;

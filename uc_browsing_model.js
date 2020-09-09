@@ -46,12 +46,12 @@ export function uc_browsing_model(dispatcher, lib_data) {
       cb_success: cb_success
     }, "change_item_field"));
   self.create_saga = new CreateSaga(self.edit_dispatcher, self.visible_state,
-    (id, name, cb_success) => lib_data.command({
+    (id, name, cb_success) => lib_data.create_tree_item({
       parent_elem_id: id,
       name: name,
       type: c_LANG_LIB_TREE_ELEMTYPE[1][0],
       cb_success: cb_success
-    }, "create_item"));
+    }));
 
   self.dispatcher = dispatcher;
   self.lib_data = lib_data;

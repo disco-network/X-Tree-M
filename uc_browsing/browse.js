@@ -1,3 +1,5 @@
+import { Path } from "./state.js";
+
 export function BrowsingSaga(dispatcher, state, request_tree) {
   this.is_busy = false;
   this.path_to_root = null;
@@ -9,15 +11,9 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
       return;
     }
 
-    const old_selection = this.state.selected;
-    const selection_with_deselected_element = this.state.selected.filter(function (id) { return gui_id !== id });
-    const was_present_in_old_selection = old_selection.length > selection_with_deselected_element.length;
-
-    if (was_present_in_old_selection) {
-      this.state.selected = selection_with_deselected_element;
-    } else {
-      this.state.selected = [ gui_id ].concat(old_selection);
-    }
+    const position = this.state.tree.locate(gui_id);
+    const toggled_path = new Path(position.get_downward_path());
+    this.state.selected.toggle(toggled_path);
 
     this.dispatcher.tree_changed();
   }
@@ -78,7 +74,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
   }
 
   this.are_single_selection_operations_available = () => {
-    return this.are_browsing_operations_available() && this.state.selected.length === 1;
+    return this.are_browsing_operations_available() && this.state.is_single_selection();
   }
 
   this.are_browsing_operations_available = () => {
@@ -94,8 +90,10 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
     const prev_pos = this.locate_node_before(position);
 
     if (prev_pos !== null && prev_pos.is_in_tree()) {
-      const old_selection = this.state.selected;
-      this.state.selected = [ prev_pos.get_gui_id() ];
+      const selected_path = new Path(prev_pos.get_downward_path());
+
+      this.state.selected.clear();
+      this.state.selected.add(selected_path);
 
       this.dispatcher.tree_changed();
     } else if (prev_pos !== null) {
@@ -112,8 +110,10 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
     const next_pos = this.locate_node_after(position);
 
     if (next_pos !== null && next_pos.is_in_tree()) {
-      const old_selection = this.state.selected;
-      this.state.selected = [ next_pos.get_gui_id() ];
+      const selected_path = new Path(next_pos.get_downward_path());
+
+      this.state.selected.clear();
+      this.state.selected.add(selected_path);
 
       this.dispatcher.tree_changed();
     }
@@ -178,7 +178,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
   }
 
   this.is_single_selection = () => {
-    return this.state.selected.length === 1;
+    return this.state.selected.size() === 1;
   }
 
   this.reload = () => {
@@ -198,8 +198,10 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
         this.is_busy = false;
         const gui_id = tree.locate_pivot().get_gui_id();
         const expanded  = { [gui_id]: true };
-        const selected = [ gui_id ];
-        this.state.set(tree, selected, expanded);
+        this.state.set(tree, expanded);
+
+        const pivot_path = new Path(tree.locate_pivot().get_downward_path());
+        this.state.selected.add(pivot_path);
 
         this.dispatcher.tree_changed();
       });

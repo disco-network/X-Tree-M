@@ -1,3 +1,5 @@
+import { arrays_equal } from "../global_functions.js";
+
 export function Graph (gui_node_map, node_map) {
   const self = this;
 
@@ -66,6 +68,7 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
   self.get_graph = get_graph;
   self.locate = locate;
   self.locate_pivot = locate_pivot;
+  self.locate_using_downward_path = locate_using_downward_path;
 
   // private
   self.graph = graph;
@@ -91,6 +94,33 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
     return locate(pivot_gui_id);
   }
 
+  function locate_using_downward_path(downward_path) {
+    const pivot_pos = locate_pivot();
+    const pivot_path = locate_pivot().get_downward_path();
+    
+    if (pivot_path.length >= downward_path.length) {
+      if (arrays_equal(pivot_path.slice(0, downward_path.length), downward_path)) {
+        let i = pivot_path.length - 1;
+        let cursor = pivot_pos;
+        for (; i > downward_path.length - 1; --i) {
+          cursor = cursor.locate_parent();
+        }
+        return cursor;
+      }
+    } else {
+      let cursor = pivot_pos;
+      for (let i = pivot_path.length; i < downward_path.length; ++i) {
+        cursor = cursor.locate_child_by_id(downward_path[i]);
+        if (cursor === null) {
+          return null;
+        }
+      }
+      return cursor;
+    }
+
+    return null;
+  }
+
   function get_graph() {
     return self.graph;
   }
@@ -111,6 +141,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   self.locate_parent = locate_parent;
   self.locate_parent_in_tree = locate_parent_in_tree;
   self.locate_children = locate_children;
+  self.locate_child_by_id = locate_child_by_id;
   self.locate_siblings = locate_siblings;
   self.locate_next_sibling = locate_next_sibling;
   self.locate_prev_sibling = locate_prev_sibling;
@@ -175,6 +206,13 @@ function uc_browsing_tree_position(tree, downward_path) {
     return children.map(function (child) {
       return new uc_browsing_tree_position(tree, self.downward_path.concat([ child ]));
     });
+  }
+
+  function locate_child_by_id(id) {
+    const child = locate_children().find(child => child.get_node().elem_id === id);
+    return child !== undefined
+      ? child
+      : null;
   }
 
   function locate_prev_sibling() {

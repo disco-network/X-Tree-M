@@ -79,6 +79,32 @@ export function Database() {
     return tree;
   };
 
+  this.create_node = (parent_elem_id, name, type) => {
+    // Generate a unique ID
+    let numeric_id = 0;
+    let id;
+    do {
+      id = "ID_" + numeric_id++;
+    } while (this.nodes.has(id));
+
+    // Create the node
+    const node = {
+      elem_id: id,
+      name: name,
+      description: "",
+      type: type,
+      eval: [],
+      child_links: []
+    }
+    this.nodes.set(id, node);
+
+    // Link to the parent
+    if (parent_elem_id !== null) {
+      this.nodes.get(parent_elem_id).child_links.push(id);
+    }
+    return id;
+  };
+
   // private
   this.get_tree_builder = (id, is_deleted, depth) => {
     if (depth < 0) {
@@ -143,5 +169,10 @@ export function lib_data_client() {
   this.req_tree_only = ({ path, cb_success }) => {
     const tree = this.database.get_tree(path);
     setTimeout(() => cb_success(tree));
+  };
+
+  this.create_tree_item = ({ parent_elem_id, name, type, cb_success }) => {
+    const id = this.database.create_node(parent_elem_id, name, type);
+    setTimeout(() => cb_success(id));
   };
 }

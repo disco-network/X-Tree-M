@@ -28,6 +28,7 @@ export function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsi
   this.set_default_parents = lib_data_main_set_default_parents.bind(this);
 
   this.req_tree_only = lib_data_main_req_tree_only.bind(this);
+  this.create_tree_item = lib_data_main_create_tree_item.bind(this);
   
   // object variables
   this.db_obj = null;
@@ -86,6 +87,10 @@ function lib_data_main_command(iparams, cmd_name)
 
 function lib_data_main_req_tree_only(iparams) {
   this.command(iparams, "req_tree_only");
+}
+
+function lib_data_main_create_tree_item(iparams) {
+  this.command(iparams, "create_item");
 }
 
 

@@ -1,3 +1,7 @@
+export function arrays_equal(a, b) {
+  return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
 export function report_duration(name, start) {
   console.log(name + " took " + ((new Date()) - start) + " milliseconds.");
 }

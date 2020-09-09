@@ -8,7 +8,7 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
       return;
     }
 
-    const selected_items = state.selected.map(this.to_elem_id);
+    const selected_items = state.selected.get_selected_paths().map(path => path.get_lower_id());
     this.action_in_clipboard = () => {
       if (!this.state.is_single_selection() || !this.state.can_browse()) {
         return;
@@ -31,9 +31,9 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
       return;
     }
 
-    const clipped = state.selected
-      .map((gui_id) => this.state.tree.locate(gui_id))
-      .map((pos) => ({ parent: pos.locate_parent().get_node().elem_id, child: pos.get_node().elem_id }))
+    // TODO: ensure that parent exists
+    const clipped = state.locate_all_selected()
+      .map(pos => ({ parent: pos.locate_parent().get_node().elem_id, child: pos.get_node().elem_id }))
       .filter((link) => link.source !== null);
 
     this.action_in_clipboard = () => {

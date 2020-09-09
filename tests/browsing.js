@@ -1,6 +1,6 @@
 import { DeleteSaga } from "../uc_browsing/delete.js";
 import { Tree, Graph } from "../uc_browsing_tree.js";
-import { VisibleState } from "../uc_browsing/state.js";
+import { Path, VisibleState } from "../uc_browsing/state.js";
 
 import { lib_data_client } from "../lib_data_client.js";
 import { uc_browsing_model } from "../uc_browsing_model.js";
@@ -17,44 +17,153 @@ const assert = chai.assert;
 describe("The Use Case Browsing Model", () => {
 
   it("loads the tree on startup", (done) => {
-    const assertion_runner = gen_assertion_runner();
+    const runner = new AssertionRunner();
 
-    // arrange 
-    const db = create_sample_database();
+    runner.arrange();
+    runner.act_and_assert(gen_assertion_runner);
 
-    const dispatcher = {
-      tree_changed: () => {
-        assertion_runner.next();
-      }
-    };
-
-    const model = new uc_browsing_model(dispatcher, db);
-
-    // act
-    model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]);
-
-    // assert
-    function* gen_assertion_runner() {
-      // loading
-      yield;
+    function* gen_assertion_runner({model}) {
+      // Act
+      // load tree
+      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
+      yield* runner.await_state_change();
+      // wait until loaded
       while(!model.get_state().can_browse()) {
         const state = model.get_state();
         assert.equal(state.operation, "browse", "While loading, the operation attribute is 'browse'");
         assert.isFalse(state.is_available, "While loading, the tree is not available");
-        yield;
+        yield* runner.await_state_change();
       }
 
-      // After loading, the tree is shown
+      // Assert
+      // The tree is available
       const state = model.get_state();
       assert.isTrue(state.can_browse());
-
+      // The pivot and selection are correct
       const pivot_pos = state.tree.locate_pivot();
       assert.equal(pivot_pos.get_node().elem_id, "ID_Pivot", "After loading, the pivot of the tree has ID 'ID_Pivot'");
+      assert.isTrue(state.is_single_selection(), "After loading, exactly one node is selected");
+      assert.equal(state.locate_single_selected().get_node().elem_id, "ID_Pivot", "After loading, the pivot is selected");
 
       done();
     }
   });
+
+  it("moves the selection down", (done) => {
+
+    const runner = new AssertionRunner();
+
+    runner.arrange();
+    runner.act_and_assert(gen_assertion_runner);
+
+    function* gen_assertion_runner({model}) {
+      // Act
+      // load tree
+      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
+      yield* runner.await_state_change();
+      yield* wait(() => !model.get_state().can_browse());
+      // move selection down
+      yield* runner.run(() => model.move_selection_down());
+      yield* runner.await_state_change();
+
+      // Assert
+      const state = model.get_state();
+      assert.isTrue(state.is_single_selection(), "After moving down, exactly one child is selected");
+      assert.equal(state.locate_single_selected().get_node().elem_id, "ID_Child1", "After moving down, the first child is selected");
+
+      done();
+    }
+  });
+
+  it("creates a new element", (done) => {
+    const runner = new AssertionRunner();
+
+    runner.arrange();
+    runner.act_and_assert(function* ({model}) {
+      const state = model.get_state();
+
+      // Act #1
+      // load tree
+      yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
+      yield* runner.await_state_change();
+      yield* wait(() => !state.can_browse());
+      // begin creating
+      yield* runner.run(() => model.begin_creating());
+      yield* runner.await_state_change();
+      
+      // Assert #1
+      assert.isFalse(state.can_browse(), "Cannot browse when input prompt is shown");
+      assert.isNotNull(state.creating);
+      assert.equal(state.creating, state.tree.locate_pivot().get_gui_id());
+
+      // Act #2
+      yield* runner.run(() => model.apply_name_input("New Node's Name"));
+      yield* runner.await_state_change();
+      yield* wait(() => !state.can_browse());
+
+      // Assert #2
+      assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot"]);
+      assert.isTrue(state.is_single_selection());
+      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
+      assert.isNotNull(state.tree.locate_using_downward_path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
+
+      done();
+    });
+  });
 });
+
+function AssertionRunner() {
+
+  this.arrange = () => {
+    this.db = create_sample_database();
+
+    this.dispatcher = {
+      tree_changed: () => {
+        this.assertion_runner.next("tree_changed");
+      }
+    };
+
+    this.model = new uc_browsing_model(this.dispatcher, this.db);
+  };
+
+  this.act_and_assert = (generator) => {
+    this.assertion_runner = generator({
+      model: this.model
+    });
+
+    this.assertion_runner.next();
+  };
+
+  this.await_state_change = function* () {
+    assert.equal(yield, "tree_changed");
+  };
+  
+  this.run = function* (fn) {
+    let did_tree_change = false;
+    setTimeout(() => {
+      this.assertion_runner.next("begin_function");
+      fn();
+      this.assertion_runner.next("end_function");
+      if (did_tree_change) {
+        this.assertion_runner.next("tree_changed");
+      }
+    });
+
+    assert.equal(yield, "begin_function");
+    let yield_value = yield;
+    while (yield_value === "tree_changed") {
+      did_tree_change = true;
+      yield_value = yield;
+    }
+    assert.equal(yield_value, "end_function");
+  };
+}
+
+function* wait(predicate) {
+  while (predicate()) {
+    yield;
+  }
+}
 
 describe("DeleteSaga", () => {
   it("indicates loading, then finishes", (done) => {
