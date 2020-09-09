@@ -104,8 +104,8 @@ describe("The Use Case Browsing Model", () => {
       // Assert #2
       assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot"]);
       assert.isTrue(state.is_single_selection());
-      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
-      assert.isNotNull(state.tree.locate_using_downward_path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
+      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot"])));
+      assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["Child1", "Child2", "New Node's Name"]);
 
       done();
     });

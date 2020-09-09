@@ -19,8 +19,8 @@ export function Path(ids_on_path) {
 export function Selection() {
   this.selected_paths = [];
 
-  this.has = (path) => this.selected_paths.find(path.equals_to) !== null;
-  this.add = (path) => this.has(path) && this.selected_paths.push(path);
+  this.has = (path) => this.selected_paths.find(path.equals_to) !== undefined;
+  this.add = (path) => this.has(path) || this.selected_paths.push(path);
   this.remove = (path) => this.selected_paths = this.selected_paths.filter(not(path.equals_to));
   this.toggle = (path) => this.has(path) ? this.remove(path) : this.add(path);
   this.clear = () => this.selected_paths = [];

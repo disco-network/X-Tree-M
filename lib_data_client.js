@@ -79,7 +79,7 @@ export function Database() {
     return tree;
   };
 
-  this.create_node = (parent_elem_id, name, type) => {
+  this.create_tree_item = (parent_elem_id, name, type) => {
     // Generate a unique ID
     let numeric_id = 0;
     let id;
@@ -100,7 +100,7 @@ export function Database() {
 
     // Link to the parent
     if (parent_elem_id !== null) {
-      this.nodes.get(parent_elem_id).child_links.push(id);
+      this.nodes.get(parent_elem_id).child_links.push({is_deleted: 0, child_id: id});
     }
     return id;
   };
@@ -172,7 +172,7 @@ export function lib_data_client() {
   };
 
   this.create_tree_item = ({ parent_elem_id, name, type, cb_success }) => {
-    const id = this.database.create_node(parent_elem_id, name, type);
+    const id = this.database.create_tree_item(parent_elem_id, name, type);
     setTimeout(() => cb_success(id));
   };
 }
