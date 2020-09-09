@@ -16,6 +16,7 @@ export function uc_browsing_model(dispatcher, lib_data) {
   self.reload = reload;
   self.select_and_zoom = select_and_zoom;
   self.select_and_zoom_to = select_and_zoom_to;
+  self.toggle_in_multiselection = toggle_in_multiselection;
 
 //  self.begin_renaming = begin_renaming;
 //  self.begin_creating = begin_creating;
@@ -71,6 +72,10 @@ export function uc_browsing_model(dispatcher, lib_data) {
 
   function select_and_zoom_to(gui_id) {
     return self.browsing_saga.select_and_zoom_to(gui_id);
+  }
+
+  function toggle_in_multiselection(gui_id) {
+    return self.browsing_saga.toggle_in_multiselection(gui_id);
   }
 
 
