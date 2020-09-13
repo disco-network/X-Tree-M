@@ -15,13 +15,14 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
       }
 
       const target = this.state.locate_single_selected();
+      const target_path = target.get_downward_path();
 
       this.state.operation = "paste";
       this.dispatcher.tree_changed();
 
       data_copy_by_reference(selected_items, target.get_node().elem_id, () => {
-        this.state.operation = "browse"; // is this right?
-        dispatcher.select_and_zoom_to(target.get_gui_id());
+        this.state.operation = "browse";
+        dispatcher.select_and_zoom(target_path);
       });
     };
   };
@@ -45,20 +46,18 @@ export function ClipboardSaga(dispatcher, state, data_copy_by_reference, data_cu
       this.dispatcher.tree_changed();
 
       const target = this.state.locate_single_selected();
+      const target_path = target.get_downward_path();
+
       data_cut(clipped, target.get_node().elem_id, () => {
         this.action_in_clipboard = null;
-        this.state.operation = "browse"; // is this right?
-        dispatcher.select_and_zoom_to(target.get_gui_id());
+        this.state.operation = "browse";
+        dispatcher.select_and_zoom(target_path);
       });
     };
   };
 
   this.paste = () => {
     this.action_in_clipboard();
-  };
-
-  this.to_elem_id = (gui_id) => {
-    return this.state.tree.locate(gui_id).get_node().elem_id;
   };
 }
 

@@ -37,8 +37,8 @@ export function uc_browsing_model(dispatcher, cache_manager) {
     expand_children: () => self.browsing_saga.expand_children()
   };
   self.clipboard_saga = new ClipboardSaga(self.edit_dispatcher, self.visible_state,
-    (copy_ids, target_id, cb_success) => lib_data.command({src_ids: copy_ids, target_id, cb_success}, "copy_item"),
-    (copy_links, target_id, cb_success) => lib_data.command({sources: copy_links, target_id, cb_success}, "move_item"));
+    (copy_ids, target_id, cb_success) => cache_manager.copy_items({src_ids: copy_ids, target_id, cb_success}),
+    (copy_links, target_id, cb_success) => cache_manager.move_items({sources: copy_links, target_id, cb_success}));
   self.delete_saga = new DeleteSaga(self.edit_dispatcher, self.visible_state,
     (links) => { const deferred = $.Deferred(); cache_manager.delete_tree_item({ links, cb_success: () => deferred.resolve() }); return deferred.promise() });
   self.rename_saga = new RenameSaga(self.edit_dispatcher, self.visible_state,

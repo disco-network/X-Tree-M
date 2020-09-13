@@ -74,5 +74,23 @@ export function CacheManager(data_source) {
       cb_success();
     }});
   };
+
+  this.copy_items = ({ src_ids, target_id, cb_success }) => {
+    this.data_source.copy_items({ src_ids, target_id, cb_success: () => {
+      this.cache.clear();
+      this.notify_observers();
+      this.eager_loading_list_changed(this.eager_loading_list);
+      cb_success();
+    }});
+  };
+
+  this.move_items = ({ sources, target_id, cb_success }) => {
+    this.data_source.move_items({ sources, target_id, cb_success: () => {
+      this.cache.clear();
+      this.notify_observers();
+      this.eager_loading_list_changed(this.eager_loading_list);
+      cb_success();
+    }});
+  };
 }
 
