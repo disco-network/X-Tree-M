@@ -7,7 +7,7 @@ import { DeleteSaga } from "./uc_browsing/delete.js";
 import { RenameSaga } from "./uc_browsing/rename.js";
 import { CreateSaga } from "./uc_browsing/create.js";
 
-export function uc_browsing_model(dispatcher, lib_data) {
+export function uc_browsing_model(dispatcher, cache_manager) {
   var self = this;
 
   // public
@@ -24,11 +24,13 @@ export function uc_browsing_model(dispatcher, lib_data) {
 
   // private
   self.visible_state = new VisibleState();
+  self.dispatcher = dispatcher;
+  self.cache_manager = cache_manager;
 
   self.browsing_dispatcher = {
     tree_changed: () => dispatcher.tree_changed()
   };
-  self.browsing_saga = new BrowsingSaga(self.browsing_dispatcher, self.visible_state, (path, cb_success) => lib_data.req_tree_only({path, cb_success}));
+  self.browsing_saga = new BrowsingSaga(self.browsing_dispatcher, self.visible_state, self.cache_manager);
   self.edit_dispatcher = {
     tree_changed: () => dispatcher.tree_changed(),
     select_and_zoom_to: (gui_id) => self.browsing_saga.select_and_zoom_to(gui_id),
@@ -54,8 +56,6 @@ export function uc_browsing_model(dispatcher, lib_data) {
       cb_success: cb_success
     }));
 
-  self.dispatcher = dispatcher;
-  self.lib_data = lib_data;
 //  self.action_in_clipboard = null;
   
   function get_state() {

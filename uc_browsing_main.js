@@ -20,6 +20,8 @@ import { lib_tree } from "./lib_tree.js";
 import { lib_dbg_log } from "./lib_dbg_log.js";
 import { c_FEATURE_MODE_FAVORITES } from "./uc_browsing_defs.js";
 
+import { CacheManager } from "./uc_browsing/cache.js";
+
 const c_BS_UNINITIALIZED = 0;
 const c_BS_LOADING = 1;
 const c_BS_BROWSING = 2;
@@ -819,11 +821,8 @@ function uc_browsing_main_init_model() {
     }
   };
 
-  var logger = function(msg) {
-    console.log(msg);
-  }
-
-  this.model = new uc_browsing_model(dispatcher, this.db_obj, logger);
+  this.cache_manager = new CacheManager(this.db_obj);
+  this.model = new uc_browsing_model(dispatcher, this.cache_manager);
 }
 
 

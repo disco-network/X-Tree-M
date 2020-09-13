@@ -72,7 +72,7 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
 
   // private
   self.graph = graph;
-  self.explorer_path = explorer_path.map(id => graph.get_node_by_gui_id(id));
+  self.explorer_path = explorer_path;
 
   /*
    * Determines the position (path from the explorer root) of the item with the given gui_id.
@@ -151,7 +151,7 @@ function uc_browsing_tree_position(tree, downward_path) {
     throw new Error("downward_path must be non-empty.");
   }
 
-  if (!is_prefix(self.tree.explorer_path.concat([]).reverse().slice(0, self.downward_path.length), self.downward_path, function (a, b) { return a.gui_id === b.gui_id })) {
+  if (!is_prefix(self.tree.explorer_path.slice(0, self.downward_path.length), self.downward_path, function (a, b) { return a === b })) {
     throw new Error("downward_path is incompatible with explorer_path.");
   }
 

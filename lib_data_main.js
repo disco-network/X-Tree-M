@@ -29,6 +29,7 @@ export function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsi
 
   this.req_tree_only = lib_data_main_req_tree_only.bind(this);
   this.create_tree_item = lib_data_main_create_tree_item.bind(this);
+  this.req_tree = lib_data_main_req_tree.bind(this);
   
   // object variables
   this.db_obj = null;
@@ -64,7 +65,7 @@ function lib_data_main_command(iparams, cmd_name)
   var ovalues = [];
   switch (cmd_name)
   {
-    case "req_tree"                     : this.db_obj.req_tree(iparams); break;
+    case "req_tree"                     : ovalues = this.db_obj.req_tree(iparams); break;
     case "req_tree_only"                : this.db_obj.req_tree_only(iparams); break;
     case "get_tree"                     : ovalues = this.db_obj.get_tree(iparams); break;
     case "write_tree"                   : this.db_obj.write_tree(iparams); break; // not needed anymore?
@@ -91,6 +92,10 @@ function lib_data_main_req_tree_only(iparams) {
 
 function lib_data_main_create_tree_item(iparams) {
   this.command(iparams, "create_item");
+}
+
+function lib_data_main_req_tree(iparams) {
+  return this.command(iparams, "req_tree");
 }
 
 

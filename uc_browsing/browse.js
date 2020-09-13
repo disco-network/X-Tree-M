@@ -1,10 +1,16 @@
 import { Path } from "./state.js";
+import { Graph, Tree } from "../uc_browsing_tree.js";
 
-export function BrowsingSaga(dispatcher, state, request_tree) {
-  this.is_busy = false;
-  this.path_to_root = null;
-  this.state = state;
-  this.dispatcher = dispatcher;
+export function BrowsingSaga(dispatcher, state, cache_manager) {
+
+  // Constructor, is called after initializing the methods
+  this.init = () => {
+    this.path_to_root = null;
+    this.state = state;
+    this.dispatcher = dispatcher;
+    this.cache_manager = cache_manager;
+    this.cache_manager_unsubscribe = this.cache_manager.subscribe(this.change_cache);
+  }
 
   this.toggle_in_multiselection = (gui_id) => {
     if (!this.are_browsing_operations_available()) {
@@ -78,7 +84,7 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
   }
 
   this.are_browsing_operations_available = () => {
-    return this.state.is_available && !this.is_busy && this.state.operation === "browse";
+    return this.state.is_available && this.state.operation === "browse";
   }
 
   this.move_selection_up = () => {
@@ -186,31 +192,117 @@ export function BrowsingSaga(dispatcher, state, request_tree) {
   }
 
   this.select_and_zoom = (path) => {
-    if (this.is_busy) {
-      return;
-    }
-
-    this.is_busy = true;
-    this.path_to_root = path;
-    this.state.reset();
-
-    request_tree(path, (tree) => {
-        this.is_busy = false;
-        const gui_id = tree.locate_pivot().get_gui_id();
-        const expanded  = { [gui_id]: true };
-        this.state.set(tree, expanded);
-
-        const pivot_path = new Path(tree.locate_pivot().get_downward_path());
-        this.state.selected.add(pivot_path);
-
-        this.dispatcher.tree_changed();
-      });
-
-    this.dispatcher.tree_changed();
+    this.state.selected.clear();
+    this.state.selected.add(new Path(path));
+    this.state.expanded = {};
+    this.change_path(path);
   };
 
   this.select_and_zoom_to = (gui_id) => {
     this.select_and_zoom(this.state.tree.locate(gui_id).get_downward_path());
   }
+
+  this.get_eager_loading_list = () => {
+    const path_to_root = this.path_to_root;
+
+    return [
+      { ids: path_to_root, depth: 2 }
+    ];
+  };
+
+  this.change_path = (new_path) => {
+    this.path_to_root = new_path;
+    this.update_tree();
+  };
+
+  this.change_cache = (cache) => {
+    this.update_tree();
+  };
+
+  this.update_tree = () => {
+    const cache = this.cache_manager.get_cache();
+    const path_to_root = this.path_to_root;
+    const expanded = this.state.expanded;
+
+    this.state.tree = compute_gui_tree(cache, path_to_root, expanded);
+    this.state.is_available = this.state.tree !== null;
+
+    this.cache_manager.eager_loading_list_changed(this.get_eager_loading_list());
+    this.dispatcher.tree_changed();
+  };
+
+  function compute_gui_tree(cache, path_to_root, expanded) {
+    const is_navigation_available = path_to_root.every(id => cache.has(id));
+    if (!is_navigation_available) {
+      return null;
+    }
+
+    const gui_nodes = new Map();
+
+    const navigation_ids = path_to_root.slice(0, -1);
+    const pivot_id = path_to_root.slice(-1)[0];
+    const navigation_path = add_navigation_bar(navigation_ids);
+    let pivot_gui_id;
+    if (navigation_path.length > 0) {
+      const parent_id = navigation_ids.slice(-1)[0];
+      const parent_gui_id = navigation_path.slice(-1)[0];
+      const child_map = add_subtrees_below(parent_gui_id, navigation_ids, cache.get(parent_id));
+      pivot_gui_id = child_map.has(pivot_id) ? child_map.get(pivot_id) : null;
+    } else {
+      pivot_gui_id = add_tree_below(null, [], cache.get(path_to_root[0]));
+    }
+
+    const graph = new Graph(
+      gui_nodes,
+      cache
+    );
+
+    return new Tree(
+      pivot_gui_id,
+      navigation_path,
+      graph
+    );
+
+    function add_navigation_bar(navigation_ids) {
+      let parent_gui_id = null;
+      return navigation_ids.map(id => parent_gui_id = add_node(parent_gui_id, cache.get(id)).gui_id);
+    }
+
+    function add_node(parent_gui_id, data) {
+      const gui_id = parent_gui_id === null
+        ? "Tree->" + data.elem_id
+        : parent_gui_id + "->" + data.elem_id;
+
+      const gui_node = {
+        gui_id: gui_id,
+        parent_gui_id: parent_gui_id,
+        id: data.elem_id
+      };
+      gui_nodes.set(gui_node.gui_id, gui_node);
+      return gui_node;
+    }
+
+    function add_tree_below(parent_gui_id, path_to_parent, data) {
+      const my_gui_node = add_node(parent_gui_id, data);
+      const my_gui_id = my_gui_node.gui_id;
+      const my_path = [...path_to_parent, my_gui_node.id];
+      
+      const are_children_available = data.child_links !== null;
+
+      if (are_children_available) {
+        add_subtrees_below(my_gui_id, my_path, data);
+      }
+
+      return my_gui_id;
+    }
+
+    function add_subtrees_below(parent_gui_id, path_to_parent, data) {
+      return new Map(data.child_links.map(link => {
+        return [link.child_id, add_tree_below(parent_gui_id, path_to_parent, cache.get(link.child_id))];
+      }));
+    }
+  }
+  
+  this.init();
 }
 
