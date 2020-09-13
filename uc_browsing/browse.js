@@ -39,7 +39,7 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     }
 
     this.state.expanded[gui_id] = true;
-    this.dispatcher.tree_changed();
+    this.update_tree();
   }
 
   this.collapse_children = () => {
@@ -203,11 +203,42 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
   }
 
   this.get_eager_loading_list = () => {
-    const path_to_root = this.path_to_root;
+    const ids = this.state.tree !== null
+      ? new Set([...this.get_visible_positions()].map(pos => pos.get_node().elem_id))
+      : new Set(this.path_to_root);
 
     return [
-      { ids: path_to_root, depth: 2 }
+      { ids: [...ids], depth: 2 }
     ];
+  };
+
+  this.get_visible_positions = () => {
+    const tree = this.state.tree;
+    let expanded_positions = new Set();
+    let visible_positions = new Set();
+
+    const pivot = tree.locate_pivot();
+    const pivot_parent = pivot.locate_parent();
+    const expansion_root = pivot_parent !== null
+      ? pivot_parent
+      : pivot;
+
+    pivot.locate_all_ancestors().forEach(ancestor => {
+      visible_positions.add(ancestor);
+    });
+
+    expanded_positions.add(expansion_root);
+    expanded_positions.forEach(position => {
+      const children = position.locate_children();
+      children.forEach(child => {
+        visible_positions.add(child);
+        if (this.state.expanded[child.get_gui_id()]) {
+          expanded_positions.add(child);
+        }
+      });
+    });
+
+   return visible_positions;
   };
 
   this.change_path = (new_path) => {

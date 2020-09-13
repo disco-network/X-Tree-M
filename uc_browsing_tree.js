@@ -138,6 +138,7 @@ function uc_browsing_tree_position(tree, downward_path) {
   self.is_in_tree = is_in_tree;
   self.locate_parent = locate_parent;
   self.locate_parent_in_tree = locate_parent_in_tree;
+  self.locate_all_ancestors = locate_all_ancestors;
   self.locate_children = locate_children;
   self.locate_child_by_id = locate_child_by_id;
   self.locate_siblings = locate_siblings;
@@ -187,6 +188,10 @@ function uc_browsing_tree_position(tree, downward_path) {
     return parent.is_in_tree()
       ? parent
       : null;
+  }
+
+  function locate_all_ancestors() {
+    return self.downward_path.map((_, index) => new uc_browsing_tree_position(tree, self.downward_path.slice(0, index + 1)));
   }
 
   function get_gui_id() {
