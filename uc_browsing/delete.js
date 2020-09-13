@@ -10,7 +10,7 @@ export function DeleteSaga(dispatcher, state, data_delete) {
       const parent_id = link.parent.get_node().elem_id;
       const promise = data_delete([{id: id, parent_id: parent_id}]);
 
-      return this.observe_deletion(link, promise);
+      return this.observe_deletion(link.parent.get_downward_path(), promise);
     } else {
       const deferred = $.Deferred();
       deferred.resolve(null);
@@ -36,7 +36,7 @@ export function DeleteSaga(dispatcher, state, data_delete) {
     };
   };
 
-  this.observe_deletion = (link, deletion_promise) => {
+  this.observe_deletion = (path_to_parent, deletion_promise) => {
     this.state.operation = "delete";
     this.dispatcher.tree_changed();
 
@@ -46,8 +46,7 @@ export function DeleteSaga(dispatcher, state, data_delete) {
       .then(() => {
         this.state.operation = "browse";
         // select and zoom to parent
-        deferred.resolve(link.parent.get_gui_id());
-        //this.dispatcher.select_and_zoom_to(link.parent.get_node().gui_id);
+        deferred.resolve(path_to_parent);
       });
 
     return deferred.promise();

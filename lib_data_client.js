@@ -135,6 +135,13 @@ export function Database() {
     return id;
   };
 
+  this.delete_tree_items = (links) => {
+    links.forEach(({id, parent_id}) => {
+      const parent_node = this.nodes.get(parent_id);
+      parent_node.child_links = parent_node.child_links.filter(l => l.child_id !== id);
+    });
+  };
+
   // private
   this.get_tree_builder = (id, is_deleted, depth) => {
     if (depth < 0) {
@@ -242,6 +249,15 @@ export function lib_data_client() {
     this.begin_request();
     setTimeout(() => {
       cb_success(id);
+      this.end_request();
+    });
+  };
+
+  this.delete_tree_item = ({ links, cb_success }) => {
+    this.database.delete_tree_items(links);
+    this.begin_request();
+    setTimeout(() => {
+      cb_success();
       this.end_request();
     });
   };

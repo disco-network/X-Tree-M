@@ -40,7 +40,7 @@ export function uc_browsing_model(dispatcher, cache_manager) {
     (copy_ids, target_id, cb_success) => lib_data.command({src_ids: copy_ids, target_id, cb_success}, "copy_item"),
     (copy_links, target_id, cb_success) => lib_data.command({sources: copy_links, target_id, cb_success}, "move_item"));
   self.delete_saga = new DeleteSaga(self.edit_dispatcher, self.visible_state,
-    (links) => { const deferred = $.Deferred(); lib_data.command({ links, cb_success: () => deferred.resolve() }, "delete_item"); return deferred.promise() });
+    (links) => { const deferred = $.Deferred(); cache_manager.delete_tree_item({ links, cb_success: () => deferred.resolve() }); return deferred.promise() });
   self.rename_saga = new RenameSaga(self.edit_dispatcher, self.visible_state,
     (id, name, cb_success) => lib_data.command({
       elem_id: id,
@@ -122,8 +122,8 @@ export function uc_browsing_model(dispatcher, cache_manager) {
 
   this.delete_selected = () => {
     this.delete_saga.delete_selected()
-      .then((new_pivot_gui_id) => {
-        this.select_and_zoom_to(new_pivot_gui_id);
+      .then((path) => {
+        path && this.select_and_zoom(path);
       });
   };
 

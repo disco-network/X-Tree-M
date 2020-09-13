@@ -372,7 +372,7 @@ function lib_data_paul_create_tree_item( iparams )  // iparams = {parent_elem_id
   
   
 // delete item and all of its children
-function lib_data_paul_delete_tree_item(iparams)          //  iparams = {parent_elem_id, elem_id, cb_success}
+function lib_data_paul_delete_tree_item(iparams)          //  iparams = {links: {id, parent_id}, cb_success}
 {  
   // create local copy of params
   var iparams_cp = jQuery.extend(true, {}, iparams);   
