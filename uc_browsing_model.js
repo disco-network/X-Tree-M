@@ -33,7 +33,7 @@ export function uc_browsing_model(dispatcher, cache_manager) {
   self.browsing_saga = new BrowsingSaga(self.browsing_dispatcher, self.visible_state, self.cache_manager);
   self.edit_dispatcher = {
     tree_changed: () => dispatcher.tree_changed(),
-    select_and_zoom_to: (gui_id) => self.browsing_saga.select_and_zoom_to(gui_id),
+    select_and_zoom: (path) => self.browsing_saga.select_and_zoom(path),
     expand_children: () => self.browsing_saga.expand_children()
   };
   self.clipboard_saga = new ClipboardSaga(self.edit_dispatcher, self.visible_state,
@@ -49,7 +49,7 @@ export function uc_browsing_model(dispatcher, cache_manager) {
       cb_success: cb_success
     }, "change_item_field"));
   self.create_saga = new CreateSaga(self.edit_dispatcher, self.visible_state,
-    (id, name, cb_success) => lib_data.create_tree_item({
+    (id, name, cb_success) => cache_manager.create_tree_item({
       parent_elem_id: id,
       name: name,
       type: c_LANG_LIB_TREE_ELEMTYPE[1][0],

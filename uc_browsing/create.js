@@ -22,16 +22,17 @@ export function CreateSaga(dispatcher, state, data_create) {
       return;
     };
 
-    const created = this.state.tree.locate(this.state.creating);
-    const created_gui_id = created.get_gui_id();
-    const created_id = created.get_node().elem_id;
+    const creation_parent = this.state.tree.locate(this.state.creating);
+    const creation_parent_path = creation_parent.get_downward_path();
+    const creation_parent_id = creation_parent.get_node().elem_id;
 
     this.state.operation = "create";
+    this.state.creating = null;
     this.dispatcher.tree_changed();
 
-    this.data_create(created_id, name, () => {
+    this.data_create(creation_parent_id, name, () => {
       this.state.operation = "browse";
-      this.dispatcher.select_and_zoom_to(created_gui_id);
+      this.dispatcher.select_and_zoom(creation_parent_path);
     });
   };
 }

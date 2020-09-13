@@ -242,7 +242,7 @@ export function lib_data_client() {
     this.begin_request();
     setTimeout(() => {
       cb_success(id);
-        this.end_request();
+      this.end_request();
     });
   };
 }

@@ -202,8 +202,13 @@ function AssertionRunner() {
       }
     });
 
-    assert.equal(yield, "begin_function");
     let yield_value = yield;
+    while (yield_value === "tree_changed") {
+      did_tree_change = true;
+      yield_value = yield;
+    }
+    assert.equal(yield_value, "begin_function");
+    yield_value = yield;
     while (yield_value === "tree_changed") {
       did_tree_change = true;
       yield_value = yield;
