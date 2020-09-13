@@ -13,6 +13,7 @@ export function Database() {
    *   name
    *   description
    *   eval
+   *   type
    *   child_links
    *     is_deleted
    *     child_id

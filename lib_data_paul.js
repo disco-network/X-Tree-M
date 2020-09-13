@@ -315,6 +315,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {ids, depth}
           elem_id: "" + raw_node.id,
           name: raw_node.name,
           description: raw_node.description,
+          type: get_xtype("1", raw_node.type),
           eval: [],
           child_links: raw_node.children_included
             ? raw_node.children.map(child_id => ({ is_deleted: 0, child_id: child_id })) // TODO: deleted children
