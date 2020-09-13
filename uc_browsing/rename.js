@@ -21,15 +21,16 @@ export function RenameSaga(dispatcher, state, data_rename) {
     };
 
     const renamed = this.state.tree.locate(this.state.renaming);
-    const renamed_gui_id = renamed.get_gui_id();
+    const renamed_path = renamed.get_downward_path();
     const renamed_id = renamed.get_node().elem_id;
 
     this.state.operation = "rename";
+    this.state.renaming = null;
     this.dispatcher.tree_changed();
 
     this.data_rename(renamed_id, name, () => {
       this.state.operation = "browse";
-      this.dispatcher.select_and_zoom_to(renamed_gui_id);
+      this.dispatcher.select_and_zoom(renamed_path);
     });
   };
 }

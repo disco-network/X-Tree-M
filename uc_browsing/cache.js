@@ -58,7 +58,16 @@ export function CacheManager(data_source) {
   };
 
   this.delete_tree_item = ({links, cb_success}) => {
-    this.data_source.delete_tree_item({links, cb_success: id => {
+    this.data_source.delete_tree_item({links, cb_success: () => {
+      this.cache.clear();
+      this.notify_observers();
+      this.eager_loading_list_changed(this.eager_loading_list);
+      cb_success();
+    }});
+  };
+
+  this.change_tree_item_field = ({ elem_id, field_id, content, cb_success }) => {
+    this.data_source.change_tree_item_field({ elem_id, field_id, content, cb_success: () => {
       this.cache.clear();
       this.notify_observers();
       this.eager_loading_list_changed(this.eager_loading_list);

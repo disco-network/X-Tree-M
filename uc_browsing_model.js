@@ -42,12 +42,12 @@ export function uc_browsing_model(dispatcher, cache_manager) {
   self.delete_saga = new DeleteSaga(self.edit_dispatcher, self.visible_state,
     (links) => { const deferred = $.Deferred(); cache_manager.delete_tree_item({ links, cb_success: () => deferred.resolve() }); return deferred.promise() });
   self.rename_saga = new RenameSaga(self.edit_dispatcher, self.visible_state,
-    (id, name, cb_success) => lib_data.command({
+    (id, name, cb_success) => cache_manager.change_tree_item_field({
       elem_id: id,
       field_id: "name",
       content: name,
       cb_success: cb_success
-    }, "change_item_field"));
+    }));
   self.create_saga = new CreateSaga(self.edit_dispatcher, self.visible_state,
     (id, name, cb_success) => cache_manager.create_tree_item({
       parent_elem_id: id,

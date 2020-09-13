@@ -30,6 +30,7 @@ export function lib_data_main(defaultParentStorage, uc_browsing_setup, uc_browsi
   this.req_tree_only = lib_data_main_req_tree_only.bind(this);
   this.delete_tree_item = lib_data_main_delete_tree_item.bind(this);
   this.create_tree_item = lib_data_main_create_tree_item.bind(this);
+  this.change_tree_item_field = lib_data_main_change_tree_item_field.bind(this);
   this.req_tree = lib_data_main_req_tree.bind(this);
   
   // object variables
@@ -101,6 +102,10 @@ function lib_data_main_delete_tree_item(iparams) {
 
 function lib_data_main_create_tree_item(iparams) {
   return this.command(iparams, "create_item");
+}
+
+function lib_data_main_change_tree_item_field(iparams) {
+  return this.command(iparams, "change_item_field");
 }
 
 
