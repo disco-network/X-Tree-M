@@ -1,4 +1,3 @@
-import { Path } from "./state.js";
 import { Graph, Tree } from "../uc_browsing_tree.js";
 
 export function BrowsingSaga(dispatcher, state, cache_manager) {
@@ -18,7 +17,7 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     }
 
     const position = this.state.tree.locate(gui_id);
-    const toggled_path = new Path(position.get_downward_path());
+    const toggled_path = position.get_downward_path();
     this.state.selected.toggle(toggled_path);
 
     this.dispatcher.tree_changed();
@@ -38,7 +37,8 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
       return;
     }
 
-    this.state.expanded[gui_id] = true;
+    const pos = this.state.tree.locate(gui_id);
+    this.state.expanded.add(pos.get_downward_path());
     this.update_tree();
   }
 
@@ -55,7 +55,8 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
       return;
     }
 
-    delete this.state.expanded[gui_id];
+    const pos = this.state.tree.locate(gui_id);
+    delete this.state.expanded.remove(pos.get_downward_path());
     this.dispatcher.tree_changed();
   }
 
@@ -96,7 +97,7 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     const prev_pos = this.locate_node_before(position);
 
     if (prev_pos !== null && prev_pos.is_in_tree()) {
-      const selected_path = new Path(prev_pos.get_downward_path());
+      const selected_path = prev_pos.get_downward_path();
 
       this.state.selected.clear();
       this.state.selected.add(selected_path);
@@ -116,7 +117,7 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     const next_pos = this.locate_node_after(position);
 
     if (next_pos !== null && next_pos.is_in_tree()) {
-      const selected_path = new Path(next_pos.get_downward_path());
+      const selected_path = next_pos.get_downward_path();
 
       this.state.selected.clear();
       this.state.selected.add(selected_path);
@@ -175,8 +176,9 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
 
   this.locate_visible_children = (position) => {
     const gui_id = position.get_gui_id();
+    const pos = this.state.tree.locate(gui_id);
 
-    if (!position.is_in_tree() || this.state.expanded[gui_id]) {
+    if (!position.is_in_tree() || this.state.expanded.has(pos.get_downward_path())) {
       return position.locate_children();
     }
 
@@ -193,8 +195,9 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
 
   this.select_and_zoom = (path) => {
     this.state.selected.clear();
-    this.state.selected.add(new Path(path));
-    this.state.expanded = {};
+    this.state.selected.add(path);
+    this.state.expanded.clear();
+    this.state.expanded.add(path);
     this.change_path(path);
   };
 
@@ -232,7 +235,7 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
       const children = position.locate_children();
       children.forEach(child => {
         visible_positions.add(child);
-        if (this.state.expanded[child.get_gui_id()]) {
+        if (this.state.expanded.has(child.get_downward_path())) {
           expanded_positions.add(child);
         }
       });

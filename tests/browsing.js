@@ -105,7 +105,7 @@ describe("The Use Case Browsing Model", () => {
       // Assert #2
       assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]);
       assert.isTrue(state.is_single_selection());
-      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
+      assert.isTrue(state.selected.has(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
       assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["New Node's Name"]);
 
       done();
@@ -141,7 +141,7 @@ describe("The Use Case Browsing Model", () => {
       // Assert #2
       assert.deepEqual(state.tree.locate_pivot().get_downward_path(), ["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]);
       assert.isTrue(state.is_single_selection());
-      assert.isTrue(state.selected.has(new Path(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"])));
+      assert.isTrue(state.selected.has(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
       assert.deepEqual(state.tree.locate_pivot().locate_children().map(pos => pos.get_node().name), ["New Node's Name"]);
 
       // Act #3
@@ -225,7 +225,10 @@ describe("DeleteSaga", () => {
     // arrange
     const tree = create_sample_tree();
     const state = new VisibleState();
-    state.set(tree, ["GUI_Child1"], {});
+    state.is_available = true;
+    state.tree = tree;
+    state.expanded.clear();
+    state.expanded.add(tree.locate("GUI_Child1"));
 
     const dispatcher = {
       tree_changed: () => {
@@ -319,7 +322,7 @@ function create_sample_tree() {
   add_node("Child2", "Pivot");
   const graph = new Graph(gui_nodes, nodes);
 
-  return new Tree("GUI_Pivot", ["GUI_Parent", "GUI_Grandparent"], graph);
+  return new Tree("GUI_Pivot", ["GUI_Grandparent", "GUI_Parent"], graph);
 
   function add_node(label, parent_label) {
     const node = create_sample_node(label);

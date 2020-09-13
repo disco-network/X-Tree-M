@@ -112,18 +112,18 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
-function lib_tree_print_item_rec(pos, selected_positions, expanded_gui_ids, create_gui_id, rename_gui_id) {
+function lib_tree_print_item_rec(pos, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id) {
   var self = this;
   const node = pos.get_node();
   const gui_id = pos.get_gui_id();
   const selected = selected_positions.map(pos => pos.get_gui_id()).indexOf(gui_id) >= 0;
-  const expanded = expanded_gui_ids[gui_id] !== undefined;
+  const expanded = is_gui_id_expanded(gui_id);
   const on_click = function(event) { return self.handler("tree_select", gui_id + "_a", event) };
   const rename_this = pos.get_gui_id() === rename_gui_id;
   const create_child = pos.get_gui_id() === create_gui_id;
 
   const children = pos.locate_children().map(child_pos => {
-    return self.print_item_rec(child_pos, selected_positions, expanded_gui_ids, create_gui_id, rename_gui_id);
+    return self.print_item_rec(child_pos, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id);
   });
 
   if (create_child) {
@@ -313,6 +313,7 @@ function get_disptype_tree_vnode(state)
   const tree = state.tree;
   const selected = state.locate_all_selected();
   const expanded = state.expanded;
+  const is_gui_id_expanded = (gui_id) => state.expanded.has(tree.locate(gui_id).get_downward_path());
   const creating = state.creating;
   const renaming = state.renaming;
 
@@ -361,7 +362,7 @@ function get_disptype_tree_vnode(state)
     {
       retval = sibling_pos.get_node();
     }
-    return this.print_item_rec(sibling_pos, selected, expanded, creating, renaming); // TODO
+    return this.print_item_rec(sibling_pos, selected, is_gui_id_expanded, creating, renaming); // TODO
   });
 
   const tree_root_div = h("div.tree", [

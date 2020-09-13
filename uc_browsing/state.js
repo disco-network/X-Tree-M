@@ -19,34 +19,25 @@ export function Path(ids_on_path) {
 export function Selection() {
   this.selected_paths = [];
 
-  this.has = (path) => this.selected_paths.find(path.equals_to) !== undefined;
-  this.add = (path) => this.has(path) || this.selected_paths.push(path);
-  this.remove = (path) => this.selected_paths = this.selected_paths.filter(not(path.equals_to));
+  this.has = (path) => this.selected_paths.find((new Path(path)).equals_to) !== undefined;
+  this.add = (path) => this.has(path) || this.selected_paths.push(new Path(path));
+  this.remove = (path) => this.selected_paths = this.selected_paths.filter(not((new Path(path)).equals_to));
   this.toggle = (path) => this.has(path) ? this.remove(path) : this.add(path);
   this.clear = () => this.selected_paths = [];
 
-  this.get_selected_paths = () => this.selected_paths;
+  this.get_selected_paths = () => this.selected_paths.map(p => p);
   this.size = () => this.selected_paths.length;
 }
 
 function not(predicate) { return x => !predicate(x) };
 
 export function VisibleState() {
-  this.set = (tree, expanded) => {
-    this.operation = "browse"; // others: paste, create, rename
-    this.is_available = true;
-    this.tree = tree;
-    this.selected = new Selection();
-    this.expanded = expanded;
-    this.creating = null;
-    this.renaming = null;
-  };
   this.reset = () => {
     this.operation = "browse";
     this.is_available = false;
     this.tree = null;
     this.selected = new Selection();
-    this.expanded = null;
+    this.expanded = new Selection();
     this.creating = null;
     this.renaming = null;
   };
