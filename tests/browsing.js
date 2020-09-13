@@ -27,7 +27,6 @@ describe("The Use Case Browsing Model", () => {
       // Act
       // load tree
       yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
-      yield* runner.await_state_change();
       // wait until loaded
       while(!model.get_state().can_browse()) {
         const state = model.get_state();
@@ -61,11 +60,9 @@ describe("The Use Case Browsing Model", () => {
       // Act
       // load tree
       yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot"]));
-      yield* runner.await_state_change();
       yield* wait(() => !model.get_state().can_browse());
       // move selection down
       yield* runner.run(() => model.move_selection_down());
-      yield* runner.await_state_change();
 
       // Assert
       const state = model.get_state();
@@ -86,11 +83,9 @@ describe("The Use Case Browsing Model", () => {
       // Act #1
       // load tree
       yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
-      yield* runner.await_state_change();
       yield* wait(() => !state.can_browse());
       // begin creating
       yield* runner.run(() => model.begin_creating());
-      yield* runner.await_state_change();
       
       // Assert #1
       assert.isFalse(state.can_browse(), "Cannot browse when input prompt is shown");
@@ -99,7 +94,6 @@ describe("The Use Case Browsing Model", () => {
 
       // Act #2
       yield* runner.run(() => model.apply_name_input("New Node's Name"));
-      yield* runner.await_state_change();
       yield* wait(() => !state.can_browse());
 
       // Assert #2
@@ -179,16 +173,17 @@ function AssertionRunner() {
   };
 
   this.await_state_change = function* () {
-    this.db.subscribe_all_done(() => {
-      this.assertion_runner.next("database_done");
-    });
-    while (true) {
-      const yield_val = yield;
-      if (yield_val !== "tree_changed") {
-        assert.equal(yield_val, "database_done");
-        break;
-      }
-    }
+    assert.equal(yield, "tree_changed");
+//    this.db.subscribe_all_done(() => {
+//      this.assertion_runner.next("database_done");
+//    });
+//    while (true) {
+//      const yield_val = yield;
+//      if (yield_val !== "tree_changed") {
+//        assert.equal(yield_val, "database_done");
+//        break;
+//      }
+//    }
   };
   
   this.run = function* (fn) {
