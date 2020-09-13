@@ -28,6 +28,35 @@ export function Database() {
     this.nodes = nodes;
   };
 
+  this.req_tree = (ids, depth) => {
+    const nodes = new Map();
+
+    let requested_ids = new Set(ids);
+    for (let i = 0; i <= depth; ++i) {
+      const new_requested_ids = new Set();
+
+      requested_ids.forEach(id => {
+        const include_children = i < depth;
+        const db_node = this.nodes.get(id);
+        const requested_node = {
+          ...db_node,
+          child_links: include_children
+            ? db_node.child_links
+            : null
+        };
+        nodes.set(id, requested_node);
+
+        db_node.child_links
+          .filter(link => !nodes.has(link.child_id))
+          .forEach(link => new_requested_ids.add(link.child_id));
+      });
+
+      requested_ids = new_requested_ids;
+    }
+
+    return nodes;
+  }
+
   /**
    * (public)
    * Create the tree object that is associated to the given path.
@@ -146,6 +175,26 @@ export function lib_data_client() {
 
   this.database = new Database();
 
+  this.completion_subscriber = () => {};
+  this.pending_requests = 0;
+  this.begin_request = () => {
+    ++this.pending_requests;
+  };
+  this.end_request = () => {
+    --this.pending_requests;
+    const subscriber = this.completion_subscriber;
+    this.completion_subscriber = () => {};
+    setTimeout(subscriber);
+  };
+
+  this.subscribe_all_done = (subscriber) => {
+    if (this.pending_requests === 0) {
+      setTimeout(subscriber);
+    } else {
+      this.completion_subscriber = subscriber;
+    }
+  };
+
   /**
    * (public)
    * Call this function to prepare the available nodes.
@@ -153,6 +202,18 @@ export function lib_data_client() {
    */
   this.set_nodes = (nodes) => {
     this.database.set_nodes(nodes);
+  };
+
+  this.req_tree = ({ ids, depth }) => {
+    const nodes = this.database.req_tree(ids, depth);
+
+    this.begin_request();
+    return $.Deferred(deferred => {
+      setTimeout(() => {
+        deferred.resolve([...nodes.values()]);
+        this.end_request();
+      })
+    }).promise();
   };
 
   /**
@@ -168,11 +229,19 @@ export function lib_data_client() {
    */
   this.req_tree_only = ({ path, cb_success }) => {
     const tree = this.database.get_tree(path);
-    setTimeout(() => cb_success(tree));
+    this.begin_request();
+    setTimeout(() => {
+      cb_success(tree);
+        this.end_request();
+    });
   };
 
   this.create_tree_item = ({ parent_elem_id, name, type, cb_success }) => {
     const id = this.database.create_tree_item(parent_elem_id, name, type);
-    setTimeout(() => cb_success(id));
+    this.begin_request();
+    setTimeout(() => {
+      cb_success(id);
+        this.end_request();
+    });
   };
 }

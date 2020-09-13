@@ -1,6 +1,7 @@
 import { DeleteSaga } from "../uc_browsing/delete.js";
 import { Tree, Graph } from "../uc_browsing_tree.js";
 import { Path, VisibleState } from "../uc_browsing/state.js";
+import { CacheManager } from "../uc_browsing/cache.js";
 
 import { lib_data_client } from "../lib_data_client.js";
 import { uc_browsing_model } from "../uc_browsing_model.js";
@@ -158,6 +159,7 @@ function AssertionRunner() {
 
   this.arrange = () => {
     this.db = create_sample_database();
+    this.cache_manager = create_sample_cache_manager(this.db);
 
     this.dispatcher = {
       tree_changed: () => {
@@ -165,7 +167,7 @@ function AssertionRunner() {
       }
     };
 
-    this.model = new uc_browsing_model(this.dispatcher, this.db);
+    this.model = new uc_browsing_model(this.dispatcher, this.cache_manager);
   };
 
   this.act_and_assert = (generator) => {
@@ -177,7 +179,16 @@ function AssertionRunner() {
   };
 
   this.await_state_change = function* () {
-    assert.equal(yield, "tree_changed");
+    this.db.subscribe_all_done(() => {
+      this.assertion_runner.next("database_done");
+    });
+    while (true) {
+      const yield_val = yield;
+      if (yield_val !== "tree_changed") {
+        assert.equal(yield_val, "database_done");
+        break;
+      }
+    }
   };
   
   this.run = function* (fn) {
@@ -256,6 +267,10 @@ describe("DeleteSaga", () => {
   });
 });
 
+
+function create_sample_cache_manager(db) {
+  return new CacheManager(db);
+}
 
 function create_sample_database() {
   const nodes = new Map();
