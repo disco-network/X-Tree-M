@@ -18,9 +18,12 @@ export function CreateSaga(dispatcher, state, data_create) {
   };
 
   this.apply = (name) => {
-    if (this.state.creating === null || this.state.operation !== "create_input") {
+    if (
+      this.state.creating === null ||
+      this.state.operation !== "create_input"
+    ) {
       return;
-    };
+    }
 
     const creation_parent = this.state.tree.locate(this.state.creating);
     const creation_parent_path = creation_parent.get_downward_path();
@@ -36,4 +39,3 @@ export function CreateSaga(dispatcher, state, data_create) {
     });
   };
 }
-

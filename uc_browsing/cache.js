@@ -116,6 +116,7 @@ export function CacheManager(data_source) {
       type,
       cb_success: (id) => {
         this.cache.clear();
+        this.newest_cache.clear();
         this.notify_observers();
         this.eager_loading_list_changed(this.eager_loading_list); // reload
         cb_success(id);
@@ -128,6 +129,7 @@ export function CacheManager(data_source) {
       links,
       cb_success: () => {
         this.cache.clear();
+        this.newest_cache.clear();
         this.notify_observers();
         this.eager_loading_list_changed(this.eager_loading_list);
         cb_success();
@@ -147,6 +149,7 @@ export function CacheManager(data_source) {
       content,
       cb_success: () => {
         this.cache.clear();
+        this.newest_cache.clear();
         this.notify_observers();
         this.eager_loading_list_changed(this.eager_loading_list);
         cb_success();
@@ -160,6 +163,7 @@ export function CacheManager(data_source) {
       target_id,
       cb_success: () => {
         this.cache.clear();
+        this.newest_cache.clear();
         this.notify_observers();
         this.eager_loading_list_changed(this.eager_loading_list);
         cb_success();
@@ -173,6 +177,7 @@ export function CacheManager(data_source) {
       target_id,
       cb_success: () => {
         this.cache.clear();
+        this.newest_cache.clear();
         this.notify_observers();
         this.eager_loading_list_changed(this.eager_loading_list);
         cb_success();
