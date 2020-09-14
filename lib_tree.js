@@ -112,7 +112,7 @@ function lib_tree_print_title()
 // ### Tree Functions                                                                  ###
 // #######################################################################################
 
-function lib_tree_print_item_rec(pos, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id) {
+function lib_tree_print_item_rec(pos, tree_diff, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id) {
   var self = this;
   const node = pos.get_node();
   const gui_id = pos.get_gui_id();
@@ -123,7 +123,7 @@ function lib_tree_print_item_rec(pos, selected_positions, is_gui_id_expanded, cr
   const create_child = pos.get_gui_id() === create_gui_id;
 
   const children = pos.locate_children().map(child_pos => {
-    return self.print_item_rec(child_pos, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id);
+    return self.print_item_rec(child_pos, tree_diff, selected_positions, is_gui_id_expanded, create_gui_id, rename_gui_id);
   });
 
   if (create_child) {
@@ -132,14 +132,15 @@ function lib_tree_print_item_rec(pos, selected_positions, is_gui_id_expanded, cr
       type: node.type, // is this right?
       eval: this.empty_eval_struct
     };
-    const new_vnode = this.print_item("N0", new_node, () => {}, false, false, [], true);
+    const new_vnode = this.print_item("N0", new_node, () => {}, false, false, [], true, false);
     children.push(new_vnode);
   }
 
-  return this.print_item(pos.get_gui_id(), pos.get_node(), on_click, selected, !expanded, children, rename_this);
+  const diff_deleted = tree_diff.was_link_deleted(pos);
+  return this.print_item(pos.get_gui_id(), pos.get_node(), on_click, selected, !expanded, children, rename_this, diff_deleted);
 }
 
-function lib_tree_print_item(node_gui_id, node, on_click, selected, hide_ul, children, rename) {
+function lib_tree_print_item(node_gui_id, node, on_click, selected, hide_ul, children, rename, diff_deleted) {
   // HTML-Code :
   // <LI>
   //   <IMG ... /IMG>  
@@ -205,77 +206,17 @@ function lib_tree_print_item(node_gui_id, node, on_click, selected, hide_ul, chi
     }
   }, children);
 
-  const ret_class = selected ? "tree-item selected" : "tree-item";
+  const ret_class = [
+    "tree-item",
+    selected && "selected",
+    diff_deleted && "diff-deleted",
+  ]
+    .filter((cl) => cl)
+    .join(" ");
   return h("li#" + node_gui_id + "_li", { key: node_gui_id, props: { className: ret_class } }, [
     name_vnode,
     ul_vnode
   ]);
-
-//                                     // LI container for single Item  
-//   var newLiItem = document.createElement("li");
-//     newLiItem.id = node.gui_id+"_li";
-//     newLiItem.style.cssText = 'list-style: none; margin: 0; padding: 0;';    
-//                                     // Symbol displaying the Element Type
-//   var newTypeImgItem = document.createElement("img");
-//   if (node.type != "none")
-//   {
-//     newTypeImgItem.id = node.gui_id+"_sym";
-//     newTypeImgItem.src = lib_tree_get_symb(node.type);
-//     newTypeImgItem.align = "left";
-//     newTypeImgItem.width = 20;  
-//     newTypeImgItem.height = 20;    
-//   }    
-// 	                                  // Element Name	  
-//   var newDivItem = document.createElement("div");
-//     newDivItem.id = node.gui_id+'_div';
-//     if (node.is_deleted === 1)
-//       newDivItem.style.cssText = 'display: block;  color:#FFFFB0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';
-//     else
-//       newDivItem.style.cssText = 'display: block;  color:#3030C0; list-style: none; width:100%; margin: 0.1em; padding: 0; vertical-align: top; margin-left:-1.5em;';            
-//     setInnerHTML(newDivItem, '<span><a id=\"' + gui_id + '\" style=\"display: block; padding-top:0.2em; padding-left:1em;\">' + node.name + '</a></span>');  
-//     const a_elem = newDivItem.getElementsByTagName("a")[0];
-//     a_elem.onclick = on_click;
-//                                     // Prepare container for Child Elements (UL)
-//   var newUlItem = document.createElement("ul");
-//     newUlItem.id = node.gui_id+"_ul";
-//     newUlItem.style.cssText = 'margin: 0; padding-left: 1.5em';
-//     if (hide_ul)
-//       newUlItem.style.display = "none";
-//                                     // connect items
-//                                     // 1.) insert Type Symbol as first child into Container
-//   newLiItem.appendChild(newTypeImgItem);     
-//                                     // 2.) insert Hierarchy Config Symbol (if avail) as second child
-//   if (node.tree_hier != undefined)
-//   {
-//     var newHierImgItem = document.createElement("img");
-//     newHierImgItem.id = node.gui_id+"_hiercfg_sym";
-//     newHierImgItem.src = "symbol_cfg.gif";
-//     newHierImgItem.align = "left";
-//     newHierImgItem.width = 22;  
-// 	  newHierImgItem.height = 22;
-//     newLiItem.appendChild(newHierImgItem);  
-//   }           
-//                                     // generate Evaluation Bar and fit it together with name field
-//   var eval_value = 0.0;
-//   if (node.eval != undefined) 
-//   {
-//     for (var i=0; i<this.eval_cat_num; i++)
-//     { 
-//       if (node.eval[i] != undefined)
-//         eval_value = eval_value + node.eval[i].avg;
-//     }
-//   }
-//   eval_value = ((eval_value / (this.eval_cat_num * 1.0)) / global_setup.eval_scale_db) * this.scale_eval_tree;
-//   const my_eval_bar = f_eval_bar(newDivItem, eval_value);      
-//   my_eval_bar.style.marginLeft = "2.8em";    
-//                                     // 3.) insert Name field with Eval Bar as third child
-//   newLiItem.appendChild(newDivItem);
-//                                     // 4.) insert Child List as fourth child  
-//   newLiItem.appendChild(newUlItem);
-//                                     // insert current Item into parent's UL element
-//   root_ul.appendChild(newLiItem);
-// 
-//   insert_children(newUlItem);
 }
 
 function print_disptype_tree(state)
@@ -320,7 +261,6 @@ function get_disptype_tree_vnode(state)
   const explorer_item_vnodes = [];
 
   // part 1 : print Explorer Bar
-  const explorer_bar_items = [];
   for (var predecessor = tree.locate_pivot(); predecessor.locate_parent() !== null; predecessor = predecessor.locate_parent()) {
                                     // prepare variables
     var position = predecessor.locate_parent();
@@ -362,7 +302,7 @@ function get_disptype_tree_vnode(state)
     {
       retval = sibling_pos.get_node();
     }
-    return this.print_item_rec(sibling_pos, selected, is_gui_id_expanded, creating, renaming); // TODO
+    return this.print_item_rec(sibling_pos, state.diff, selected, is_gui_id_expanded, creating, renaming); // TODO
   });
 
   const tree_root_div = h("div.tree", [

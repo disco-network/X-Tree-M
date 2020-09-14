@@ -1,6 +1,4 @@
-import { arrays_equal } from "../global_functions.js";
-
-export function Graph (gui_node_map, node_map) {
+export function Graph(gui_node_map, node_map) {
   const self = this;
 
   self.gui_node_map = gui_node_map;
@@ -39,11 +37,12 @@ export function Graph (gui_node_map, node_map) {
    * gui_id may be null to find roots
    */
   self.get_gui_children_of = (wanted_gui_id) => {
-    const predicate = ([gui_id, gui_node]) => gui_node.parent_gui_id === wanted_gui_id;
-    
+    const predicate = ([_, gui_node]) =>
+      gui_node.parent_gui_id === wanted_gui_id;
+
     return [...self.gui_node_map.entries()]
       .filter(predicate)
-      .map(([gui_id, gui_node]) => gui_id);
+      .map(([gui_id, _]) => gui_id);
   };
 
   /*
@@ -102,7 +101,6 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
   function locate_using_downward_path(downward_path) {
     const root_pos = locate_root();
     const root_id = root_pos.get_node().elem_id;
-    const pivot_path = locate_pivot().get_downward_path();
 
     if (root_id !== downward_path[0]) {
       return null;
@@ -125,7 +123,9 @@ export function Tree(pivot_gui_id, explorer_path, graph) {
 }
 
 function is_prefix(prefix, array, equals_to) {
-  return prefix.every(function (a, i) { return equals_to(a, array[i]) });
+  return prefix.every(function (a, i) {
+    return equals_to(a, array[i]);
+  });
 }
 
 function uc_browsing_tree_position(tree, downward_path) {
@@ -152,7 +152,15 @@ function uc_browsing_tree_position(tree, downward_path) {
     throw new Error("downward_path must be non-empty.");
   }
 
-  if (!is_prefix(self.tree.explorer_path.slice(0, self.downward_path.length), self.downward_path, function (a, b) { return a === b })) {
+  if (
+    !is_prefix(
+      self.tree.explorer_path.slice(0, self.downward_path.length),
+      self.downward_path,
+      function (a, b) {
+        return a === b;
+      }
+    )
+  ) {
     throw new Error("downward_path is incompatible with explorer_path.");
   }
 
@@ -162,20 +170,24 @@ function uc_browsing_tree_position(tree, downward_path) {
 
   function get_downward_path() {
     const graph = self.tree.get_graph();
-    return self.downward_path
-      .map(gui_id => graph.get_node_by_gui_id(gui_id).elem_id);
+    return self.downward_path.map(
+      (gui_id) => graph.get_node_by_gui_id(gui_id).elem_id
+    );
   }
 
   function is_in_tree() {
     return self.downward_path.length > self.tree.explorer_path.length;
   }
-  
+
   function locate_parent() {
     if (self.downward_path.length < 2) {
       return null;
     }
 
-    const parent = new uc_browsing_tree_position(tree, self.downward_path.slice(0, -1));
+    const parent = new uc_browsing_tree_position(
+      tree,
+      self.downward_path.slice(0, -1)
+    );
     return parent;
   }
 
@@ -184,14 +196,18 @@ function uc_browsing_tree_position(tree, downward_path) {
     if (parent === null) {
       return parent;
     }
-    
-    return parent.is_in_tree()
-      ? parent
-      : null;
+
+    return parent.is_in_tree() ? parent : null;
   }
 
   function locate_all_ancestors() {
-    return self.downward_path.map((_, index) => new uc_browsing_tree_position(tree, self.downward_path.slice(0, index + 1)));
+    return self.downward_path.map(
+      (_, index) =>
+        new uc_browsing_tree_position(
+          tree,
+          self.downward_path.slice(0, index + 1)
+        )
+    );
   }
 
   function get_gui_id() {
@@ -207,21 +223,26 @@ function uc_browsing_tree_position(tree, downward_path) {
     const children = tree.get_graph().get_gui_children_of(self.get_gui_id());
 
     return children.map(function (child) {
-      return new uc_browsing_tree_position(tree, self.downward_path.concat([ child ]));
+      return new uc_browsing_tree_position(
+        tree,
+        self.downward_path.concat([child])
+      );
     });
   }
 
   function locate_child_by_id(id) {
-    const child = locate_children().find(child => child.get_node().elem_id === id);
-    return child !== undefined
-      ? child
-      : null;
+    const child = locate_children().find(
+      (child) => child.get_node().elem_id === id
+    );
+    return child !== undefined ? child : null;
   }
 
   function locate_prev_sibling() {
     const siblings = locate_siblings();
-    const my_index = siblings.findIndex(function (pos) { return self.equals_to(pos) });
-    
+    const my_index = siblings.findIndex(function (pos) {
+      return self.equals_to(pos);
+    });
+
     if (my_index === -1) {
       throw new Error("Tree position is invalid: Node is not its own sibling.");
     }
@@ -232,8 +253,10 @@ function uc_browsing_tree_position(tree, downward_path) {
 
   function locate_next_sibling() {
     const siblings = locate_siblings();
-    const my_index = siblings.findIndex(function (pos) { return self.equals_to(pos) });
-    
+    const my_index = siblings.findIndex(function (pos) {
+      return self.equals_to(pos);
+    });
+
     if (my_index === -1) {
       throw new Error("Tree position is invalid: Node is not its own sibling.");
     }
@@ -246,28 +269,31 @@ function uc_browsing_tree_position(tree, downward_path) {
     const siblings = tree.graph.get_gui_siblings_of(self.get_gui_id());
 
     return siblings.map(function (sibling) {
-      return new uc_browsing_tree_position(tree, self.downward_path.slice(0, -1).concat([ sibling ]));
+      return new uc_browsing_tree_position(
+        tree,
+        self.downward_path.slice(0, -1).concat([sibling])
+      );
     });
   }
 }
 
-function GraphBuilder () {
+function GraphBuilder() {
   // abstract:
   //
   // function attach (parent_gui_id, graph); <-- returns id of the root
-  
+
   this.build = function () {
     const gui_nodes = new Map();
     const nodes = new Map();
     const annotation = this.attach(null, gui_nodes, nodes);
     return {
       graph: new Graph(gui_nodes, nodes),
-      annotation: annotation
+      annotation: annotation,
     };
   };
 }
 
-export function LinearGraphBuilder (builders, reducer) {
+export function LinearGraphBuilder(builders, reducer) {
   this.__proto__ = new GraphBuilder();
 
   if (builders.length === 0) {
@@ -276,7 +302,7 @@ export function LinearGraphBuilder (builders, reducer) {
 
   this.attach = function (parent_id, gui_nodes, nodes) {
     var prev_id = parent_id;
-    const ids = builders.map(builder => {
+    const ids = builders.map((builder) => {
       prev_id = builder.attach(prev_id, gui_nodes, nodes);
       return prev_id;
     });
@@ -284,14 +310,14 @@ export function LinearGraphBuilder (builders, reducer) {
   };
 }
 
-export function TreeGraphBuilder (root_data, subtree_builders, reducer) {
+export function TreeGraphBuilder(root_data, subtree_builders, reducer) {
   this.__proto__ = new GraphBuilder();
 
   this.attach = function (parent_id, gui_nodes, nodes) {
     const gui_node = {
       gui_id: "T" + gui_nodes.size,
       parent_gui_id: parent_id,
-      id: root_data.elem_id
+      id: root_data.elem_id,
     };
 
     gui_nodes.set(gui_node.gui_id, gui_node);
@@ -300,8 +326,9 @@ export function TreeGraphBuilder (root_data, subtree_builders, reducer) {
       nodes.set(root_data.elem_id, root_data);
     }
 
-    const subtree_annotations = subtree_builders.map(builder => builder.attach(gui_node.gui_id, gui_nodes, nodes));
+    const subtree_annotations = subtree_builders.map((builder) =>
+      builder.attach(gui_node.gui_id, gui_nodes, nodes)
+    );
     return reducer(gui_node.gui_id, subtree_annotations);
   };
 }
-

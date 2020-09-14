@@ -797,16 +797,13 @@ function uc_browsing_main_init()
 
 function render_tree() {
   const self = this;
-  
-  self.tree_panel.print_tree(
-    self.model.get_state()
-  );
+  self.tree_panel.print_tree(self.model.get_state());
 }
 
 function uc_browsing_main_init_model() {
   var self = this;
   var dispatcher = {
-    tree_changed: function() {
+    tree_changed: function () {
       self.render_tree();
 
       const new_sel = self.model.get_state().selected;
@@ -818,6 +815,7 @@ function uc_browsing_main_init_model() {
   };
 
   this.cache_manager = new CacheManager(this.db_obj);
+  this.cache_manager.start_continuous_reloading();
   this.model = new uc_browsing_model(dispatcher, this.cache_manager);
 }
 

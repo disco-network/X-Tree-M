@@ -56,3 +56,7 @@
 .tree .tree-item.selected>div.div {
   background-color: #C0C0F0;
 }
+
+.tree .tree-item.diff-deleted>div.div {
+  text-decoration: line-through;
+}
