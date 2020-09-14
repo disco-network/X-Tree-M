@@ -25,11 +25,7 @@ import { CacheManager } from "./uc_browsing/cache.js";
 const c_BS_UNINITIALIZED = 0;
 const c_BS_LOADING = 1;
 const c_BS_BROWSING = 2;
-const c_BS_NAMEINPUT = 3;
 const c_BS_ERROR = 4;
-const BROWSING_STATES = {
-  UNINITIALIZED: c_BS_UNINITIALIZED, LOADING: c_BS_LOADING, BROWSING: c_BS_BROWSING, NAMEINPUT: c_BS_NAMEINPUT, ERROR: c_BS_ERROR
-};
 
 export function uc_browsing_main( dispatcher, global_setup, global_main_save_setup, my_path  ) 
 {
@@ -265,7 +261,7 @@ function uc_browsing_main_load(path) {
 
   const self = this;
   const cb_success = function () {
-    dispatcher("uc_browsing", "panel1", "show_tree", "T0_a", c_KEYB_MODE_NONE);
+    self.dispatcher("uc_browsing", "panel1", "show_tree", "T0_a", c_KEYB_MODE_NONE);
   }
   this.db_obj.command({path, cb_success}, "req_tree_only");
 }
