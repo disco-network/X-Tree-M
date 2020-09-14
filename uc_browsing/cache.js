@@ -13,7 +13,7 @@ export function CacheManager(data_source) {
   };
 
   this.adopt_newest_cache = () => {
-    this.cache = this.newest_cache;
+    this.cache = new Map(this.newest_cache);
     this.notify_observers();
   };
 

@@ -57,7 +57,7 @@
   background-color: #C0C0F0;
 }
 
-.tree .tree-item.diff-deleted>div.div {
+.tree .tree-item.diff-deleted>div.div > .names {
   text-decoration: line-through;
 }
 
