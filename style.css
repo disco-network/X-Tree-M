@@ -60,3 +60,18 @@
 .tree .tree-item.diff-deleted>div.div {
   text-decoration: line-through;
 }
+
+.tree .tree-item>div.div .diff-new-children {
+  margin-left: 1em;
+  background-color: rgb(150, 255, 150);
+  border-radius: 0.1em;
+}
+
+.tree .tree-item>div.div .names {
+  display: inline-block;
+}
+
+.tree .tree-item>div.div .diff-new-name {
+  font-size: 0.5em;
+}
+
