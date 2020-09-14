@@ -199,6 +199,10 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     this.select_and_zoom(this.path_to_root);
   };
 
+  this.adopt_newest_cache = () => {
+    this.cache_manager.adopt_newest_cache();
+  };
+
   this.select_and_zoom = (path) => {
     this.state.selected.clear();
     this.state.selected.add(path);

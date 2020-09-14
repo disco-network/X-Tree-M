@@ -440,6 +440,10 @@ function uc_browsing_main_clicked_at(sender, submodule, item, mode)
           case "collapse_children":
             this.model.collapse_children_of(item);
           break;
+
+          case "reload":
+            this.model.adopt_newest_cache();
+          break;
             
           default :
             alert(c_LANG_UC_BROWSING_MSG_UNKNOWN_SUBMODULE[this.global_setup.curr_lang] + submodule);

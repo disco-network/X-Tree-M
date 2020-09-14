@@ -416,16 +416,26 @@ function get_disptype_tree_vnode(state) {
     ); // TODO
   });
 
+  const reload_vnode = h(
+    "a",
+    {
+      on: {
+        click: () => self.handler("reload", ""),
+      },
+    },
+    ["Reload"]
+  );
+
   const tree_root_div = h("div.tree", [
     navbar_vnode,
     h("ul#" + this.current_panel + "_root_ul.siblings", tree_item_vnodes),
   ]);
 
-  const vnode = h("div#" + this.gui_tree_context, [tree_root_div]);
-
+  const vnode = h("div#" + this.gui_tree_context, [
+    reload_vnode,
+    tree_root_div,
+  ]);
   return vnode;
-
-  return retval;
 }
 
 // print part of a tree in the respective GUI element

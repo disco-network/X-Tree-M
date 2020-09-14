@@ -12,6 +12,11 @@ export function CacheManager(data_source) {
     }, 5000);
   };
 
+  this.adopt_newest_cache = () => {
+    this.cache = this.newest_cache;
+    this.notify_observers();
+  };
+
   this.eager_loading_list_changed = (eager_loading_list) => {
     this.eager_loading_list = eager_loading_list;
     eager_loading_list.forEach((entry) => {

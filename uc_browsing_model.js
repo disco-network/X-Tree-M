@@ -14,6 +14,7 @@ export function uc_browsing_model(dispatcher, cache_manager) {
   self.get_state = get_state;
 
   self.reload = reload;
+  self.adopt_newest_cache = adopt_newest_cache;
   self.select_and_zoom = select_and_zoom;
   self.select_and_zoom_to = select_and_zoom_to;
   self.toggle_in_multiselection = toggle_in_multiselection;
@@ -91,6 +92,10 @@ export function uc_browsing_model(dispatcher, cache_manager) {
 
   function reload() {
     return self.browsing_saga.reload();
+  }
+
+  function adopt_newest_cache() {
+    return self.browsing_saga.adopt_newest_cache();
   }
 
   function select_and_zoom(path) {
