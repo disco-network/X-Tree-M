@@ -116,11 +116,9 @@ describe("The Use Case Browsing Model", () => {
       // Act #1
       // load tree
       yield* runner.run(() => model.select_and_zoom(["ID_Grandparent", "ID_Parent", "ID_Pivot", "ID_Child1"]));
-      yield* runner.await_state_change();
       yield* wait(() => !state.can_browse());
       // begin creating
       yield* runner.run(() => model.begin_creating());
-      yield* runner.await_state_change();
       
       // Assert #1
       assert.isFalse(state.can_browse(), "Cannot browse when input prompt is shown");
@@ -129,7 +127,6 @@ describe("The Use Case Browsing Model", () => {
 
       // Act #2
       yield* runner.run(() => model.apply_name_input("New Node's Name"));
-      yield* runner.await_state_change();
       yield* wait(() => !state.can_browse());
 
       // Assert #2
@@ -140,9 +137,7 @@ describe("The Use Case Browsing Model", () => {
 
       // Act #3
       yield* runner.run(() => model.move_selection_down());
-      yield* runner.await_state_change();
       yield* runner.run(() => model.move_selection_down());
-      yield* runner.await_state_change();
 
       done();
     });
@@ -188,27 +183,45 @@ function AssertionRunner() {
   
   this.run = function* (fn) {
     let did_tree_change = false;
+
+    // Outsource the control flow that we want to
+    // test so that we observe it using our own
+    // control flow (see after setTimeout)
     setTimeout(() => {
       this.assertion_runner.next("begin_function");
       fn();
       this.assertion_runner.next("end_function");
+
+      // If "tree_changed" events were deferred,
+      // send them now
       if (did_tree_change) {
         this.assertion_runner.next("tree_changed");
       }
     });
 
+    // Suppress "tree_changed" events before fn is executed
     let yield_value = yield;
     while (yield_value === "tree_changed") {
-      did_tree_change = true;
+      // did_tree_change = true; No, this should not count as a change in reaction to the execution of fn()
       yield_value = yield;
     }
+
+    // After that, expect that the execution of fn starts
     assert.equal(yield_value, "begin_function");
+
+    // Suppress "tree_changed" events during the execution of fn
+    // and defer their handling after the execution of fn
     yield_value = yield;
     while (yield_value === "tree_changed") {
       did_tree_change = true;
       yield_value = yield;
     }
+
+    // After that, expect that the execution of fn has finished
     assert.equal(yield_value, "end_function");
+
+    // Await a notification from the model
+    assert.equal(yield, "tree_changed");
   };
 }
 
