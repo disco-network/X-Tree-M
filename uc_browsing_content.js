@@ -1,4 +1,4 @@
-import { c_KEYB_MODE_NONE } from "./global_defs.js";
+﻿import { c_KEYB_MODE_NONE } from "./global_defs.js";
 import { getInnerHTML, setInnerHTML, URLlinks } from "./global_functions.js";
 import { c_LANG_UC_BROWSING_PANEL2_EVAL_CATS } from "./uc_browsing_lang.js";
 import {
@@ -6,7 +6,7 @@ import {
 } from "./global_lang.js";
 
 // Class 'uc_browsing_content' -> Panel2
-export function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup)
+export function uc_browsing_content(main, gui_headline_context, lang_headline, gui_content_context, current_usecase, current_panel, dispatcher, db_obj, global_setup, global_main_save_setup, cache_manager)
 {
   // save params to object
   this.main = main;
@@ -19,7 +19,7 @@ export function uc_browsing_content(main, gui_headline_context, lang_headline, g
   this.db_obj = db_obj;
   this.global_setup = global_setup;    
   this.global_main_save_setup = global_main_save_setup;
-  
+  this.cache_manager = cache_manager;  
 
   // bind object functions
   this.clicked_at = uc_browsing_content_clicked_at.bind(this);
@@ -66,12 +66,14 @@ function uc_browsing_content_clicked_at(submodule, item, mode)
                 var cb_success = function() {
                   self.main.model.reload();
                 }
+                const new_sel = this.main.model.get_state().selected;                       
+                const elem_id = new_sel.selected_paths[0].ids_on_path.slice(-1)[0];  
                 if (submodule == "content")
-                  this.db_obj.command({elem_id:[this.item_content.elem_id], field_id:"content", content:URLlinks(getInnerHTML(document.getElementById("panel2_content_fulltext"))), cb_success: cb_success}, "change_item_field");
+                  this.db_obj.command({elem_id:elem_id, field_id:"content", content:URLlinks(getInnerHTML(document.getElementById("panel2_content_fulltext"))), cb_success: cb_success}, "change_item_field");
 //                this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:URLlinks(nl2br(getInnerHTML(document.getElementById("panel2_content_fulltext")))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
 //                this.db_obj.command({items:this.panel1_selected_items, field_id:"content", content:getInnerHTML(document.getElementById("panel2_content_fulltext")), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
                 else
-                  this.db_obj.command({items:[this.item_content], field_id:"comment", content:URLlinks(getInnerHTML(document.getElementById("panel2_comment_fulltext"))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
+                  this.db_obj.command({elem_id:elem_id, field_id:"comment", content:URLlinks(getInnerHTML(document.getElementById("panel2_comment_fulltext"))), lock_id:uc_browsing_setup.tree_locked_item, cb_fctn_str:on_click_str}, "change_item_field");                
               }                
               
           break;
@@ -275,30 +277,40 @@ function uc_browsing_content_set_db(db_obj)
   this.db_obj = db_obj;
 }
 
-function uc_browsing_load_item_content(item_content)
+function uc_browsing_load_item_content(elem_id)
 {
-  this.item_content = jQuery.extend(true, {}, item_content);
+  let cache = this.cache_manager.get_newest_cache();
 
-  for (var i=1; i<c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length; i++)
+  if (cache.has(elem_id))
   {
-    // if not found in Cookie, use Average as Default ...
-    if (this.item_content.eval[i-1] == undefined)
-      this.item_eval[i-1] = 0.0;
-    else
-      this.item_eval[i-1] = (this.item_content.eval[i-1].avg / this.global_setup.eval_scale_db) * this.global_setup.eval_scale_gui;    // later on this needs to be filled with the true eval values
-    // else use Cookie Value
+    const elem = cache.get(elem_id);    
+
+    for (var i=1; i<c_LANG_UC_BROWSING_PANEL2_EVAL_CATS.length; i++)
+    {
+      // if not found in Cookie, use Average as Default ...
+      if (elem.eval[i-1] == undefined)
+        elem.eval[i-1] = 0.0;
+      else
+        elem.eval[i-1] = (elem.eval[i-1].avg / this.global_setup.eval_scale_db) * this.global_setup.eval_scale_gui;    // later on this needs to be filled with the true eval values
+      // else use Cookie Value
     
-    // set class Name to those eval fields which are selected
-  }
+      // set class Name to those eval fields which are selected
+    }
   
-  setInnerHTML(document.getElementById(this.current_panel + "_content_headline"), this.item_content.name); 
+    setInnerHTML(document.getElementById(this.current_panel + "_content_headline"), elem.name); 
 //  document.getElementById(this.current_panel + "_content_fulltext").value = item_content.description;
-  setInnerHTML(document.getElementById(this.current_panel + "_content_fulltext"), this.item_content.description);
+    if (elem.description === undefined)
+      setInnerHTML(document.getElementById(this.current_panel + "_content_fulltext"), "Content undefined");
+    else
+      setInnerHTML(document.getElementById(this.current_panel + "_content_fulltext"), elem.description);
+
+
   // further item content :
   //    - voting
   //    - history
   //    - forum discussion
   //    ...
+  }
 }
 
 

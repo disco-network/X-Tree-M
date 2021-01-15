@@ -6,7 +6,9 @@ export var c_DEFAULT_UC_BROWSING_SETUP_COOKIE = "UC_Browsing_Setup";
                                  
 export var c_DEFAULT_UC_BROWSING_SETUP = {};                                
 c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_type = c_DATA_SOURCE_TYPE_ID_PAUL; 
-c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_path = "http://xtreem.datokrat.sirius.uberspace.de/api/nodes/"; 
+c_DEFAULT_UC_BROWSING_SETUP.tree_data_src_path = "https://xtreem.datokrat.uber.space/api/nodes/"; 
+
+																								//"http://xtreem.datokrat.sirius.uberspace.de/api/nodes/"; 
                                                 // "local";       // "local" is always used when Database is located at same location
                                                                 // as the rest of the code; otherwise use the following style : 
                                                                 // "www.google.de" (no "http://" and no "/" at the end !!!)

@@ -99,16 +99,16 @@ function uc_browsing_main_process_elem_menu(item)
         break;
     case "clone_item" :
         // this.main.cloned_items = jQuery.extend(true, [], this.main.panel1_selected_items);
-        this.main.model.handle_key_press("Ctrl+C");
+        this.main.model.handle_key_press("Ctrl+L", false);
         break;
     case "copy_item"   :
         // this.main.copied_items = jQuery.extend(true, [], this.main.panel1_selected_items);
-        this.main.model.handle_key_press("Ctrl+L");
+        this.main.model.handle_key_press("Ctrl+C", false);
         break;
     case "cut_item"    :
         // this.main.cut_items = jQuery.extend(true, [], this.main.panel1_selected_items);
         // this.main.tree_panel.mark_items_as_cut(this.main.panel1_selected_items, true);
-        this.main.model.handle_key_press("Ctrl+X");
+        this.main.model.handle_key_press("Ctrl+X", false);
         break;
     case "paste_item"  :
                                     // number of destination nodes which are selected == 1
@@ -168,7 +168,7 @@ function uc_browsing_main_process_elem_menu(item)
         // }
         // else
         //   alert(c_LANG_WARNING_SINGLE_ITEM_NEEDED[this.main.global_setup.curr_lang]);        
-        this.main.model.handle_key_press("Ctrl+V");
+        this.main.model.handle_key_press("Ctrl+V", false);
         break;
         
     case "export_item" :

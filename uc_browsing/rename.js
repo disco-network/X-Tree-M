@@ -12,8 +12,19 @@ export function RenameSaga(dispatcher, state, data_rename) {
 
     this.state.renaming = selected.get_gui_id();
     this.state.operation = "rename_input";
+//    this.dispatcher.text_focus = 1;
     this.dispatcher.tree_changed();
   };
+
+  this.skip = () => {
+    if (this.state.renaming === null || this.state.operation !== "rename_input") {
+      return;
+    };
+    this.state.renaming = null;
+    this.state.operation = "browse";
+    this.dispatcher.tree_changed();
+  };
+
 
   this.apply = (name) => {
     if (this.state.renaming === null || this.state.operation !== "rename_input") {

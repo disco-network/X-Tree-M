@@ -1,4 +1,4 @@
-import { uc_browsing_change_permission } from "./uc_browsing_setup.js";
+﻿import { uc_browsing_change_permission } from "./uc_browsing_setup.js";
 import { c_LANG } from "./global_lang.js";
 import { c_LANG_LIB_TREE_ELEMTYPE } from "./lib_tree_lang.js";
 
@@ -14,8 +14,8 @@ export function f_set_menubar()
             [    "input_item"                               ,"New (Alt-N)"                          ,"Neu (Alt-N)"                          ],
             [    "change_item"                              ,"Change (F2)"                          ,"&Auml;ndern (F2)"                     ],
             [    "delete_item"                              ,"Delete (Del)"                         ,"L&ouml;schen (Entf)"                  ],
-            [    "copy_item"                                ,"Copy by Ref (Ctrl-L)"                 ,"Link Kopieren (Strg-L)"               ],
-            [    "clone_item"                               ,"Clone (Ctrl-C)"                       ,"Vollst. Kopieren (Strg-C)"              ],
+            [    "copy_item"                                ,"Copy by Ref (Ctrl-C)"                 ,"Link Kopieren (Strg-C)"               ],
+//            [    "clone_item"                               ,"Clone"                                ,"Vollst. Kopieren"                     ],
             [    "cut_item"                                 ,"Cut (Ctrl-X)"                         ,"Ausschn. (Strg-X)"                    ],
             [    "paste_item"                               ,"Paste (Ctrl-V)"                       ,"Einf&uumlgen (Strg-V)"                ],
             [    "export_item"                              ,"Export (Ctrl-Shift-Alt-E)"            ,"Exportieren (Strg-Shift-Alt-E)"       ],

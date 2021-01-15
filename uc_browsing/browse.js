@@ -61,22 +61,24 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     this.dispatcher.tree_changed();
   };
 
-  this.handle_key_press = (key_chord) => {
-    if (this.are_single_selection_operations_available()) {
-      switch (key_chord) {
-        case "right":
-          this.expand_children();
-          return;
-        case "left":
-          this.collapse_children();
-          return;
-        case "up":
-          this.move_selection_up();
-          return;
-        case "down":
-          this.move_selection_down();
-          return;
-      }
+  this.handle_key_press = (key_chord, shift_pressed) => {
+    switch (key_chord) {
+      case "right":
+    		if (this.are_single_selection_operations_available()) {
+        	this.expand_children();
+       	}
+        return;
+      case "left":
+    		if (this.are_single_selection_operations_available()) {        
+        	this.collapse_children();
+        }	
+        return;
+      case "up":
+        this.move_selection_up(shift_pressed);
+        return;
+      case "down":
+        this.move_selection_down(shift_pressed);
+        return;
     }
   };
 
@@ -91,18 +93,17 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     return this.state.is_available && this.state.operation === "browse";
   };
 
-  this.move_selection_up = () => {
-    if (!this.are_single_selection_operations_available()) {
-      return;
-    }
+  this.move_selection_up = (shift_pressed) => {
 
-    const position = this.state.locate_single_selected();
+    const position = this.state.locate_last_selected();
     const prev_pos = this.locate_node_before(position);
 
     if (prev_pos !== null && prev_pos.is_in_tree()) {
       const selected_path = prev_pos.get_downward_path();
 
-      this.state.selected.clear();
+			if (!shift_pressed) {
+      	this.state.selected.clear();
+     	}
       this.state.selected.add(selected_path);
 
       this.dispatcher.tree_changed();
@@ -111,18 +112,17 @@ export function BrowsingSaga(dispatcher, state, cache_manager) {
     }
   };
 
-  this.move_selection_down = () => {
-    if (!this.are_single_selection_operations_available()) {
-      return;
-    }
+  this.move_selection_down = (shift_pressed) => {
 
-    const position = this.state.locate_single_selected();
+    const position = this.state.locate_last_selected();
     const next_pos = this.locate_node_after(position);
 
     if (next_pos !== null && next_pos.is_in_tree()) {
       const selected_path = next_pos.get_downward_path();
 
-      this.state.selected.clear();
+			if (!shift_pressed) {
+	      this.state.selected.clear();
+	    }
       this.state.selected.add(selected_path);
 
       this.dispatcher.tree_changed();

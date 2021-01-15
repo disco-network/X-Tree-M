@@ -3,14 +3,22 @@ export function DeleteSaga(dispatcher, state, data_delete) {
   this.dispatcher = dispatcher;
 
   this.delete_selected = () => {
-    const link = this.get_link_to_delete();
+    const links = this.get_links_to_delete();
 
-    if (link !== null) {
-      const id = link.child.get_node().elem_id;
-      const parent_id = link.parent.get_node().elem_id;
-      const promise = data_delete([{id: id, parent_id: parent_id}]);
+    if ((links !== null) && (links.length > 0)) {
+      const send_data = links.map(x => {
+        return { id: x.child.get_node().elem_id, parent_id: x.parent.get_node().elem_id }
+      });
+      const promise = data_delete(send_data);
+      
+      // choose parent of 1st element and find out whether or not it is inside the deletion list -> true : advance further to root (root itselfs cannot be deleted)
+      let root_parent = links[0].parent;
+      while (send_data.some(x => x.id === root_parent.get_node().elem_id))
+      {
+        root_parent = root_parent.locate_parent();
+      }
 
-      return this.observe_deletion(link.parent.get_downward_path(), promise);
+      return this.observe_deletion(root_parent.get_downward_path(), promise);
     } else {
       const deferred = $.Deferred();
       deferred.resolve(null);
@@ -18,22 +26,20 @@ export function DeleteSaga(dispatcher, state, data_delete) {
     }
   };
 
-  this.get_link_to_delete = () => {
-    if (!this.state.can_browse() || !this.state.is_single_selection()) {
+  this.get_links_to_delete  = () => {
+    if (!this.state.can_browse()) {
       return null;
     }
 
-    const selected = this.state.locate_single_selected();
-    const parent = selected.locate_parent();
+    const selected = this.state.locate_all_selected();
+    return selected.map( x => {
+      const parent = x.locate_parent();
+      return {
+        child: x,
+        parent: parent
+      };
+    }).filter(x => x.parent !== null);
 
-    if (parent === null) {
-      return null;
-    }
-
-    return {
-      child: selected,
-      parent: parent
-    };
   };
 
   this.observe_deletion = (path_to_parent, deletion_promise) => {

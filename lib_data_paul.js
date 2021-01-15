@@ -1,4 +1,4 @@
-import { report_duration, f_append_to_pad } from "./global_functions.js";
+﻿import { report_duration, f_append_to_pad } from "./global_functions.js";
 import { Graph, Tree, LinearGraphBuilder, TreeGraphBuilder } from "./uc_browsing_tree.js";
 import {
   c_LANG_UC_BROWSING_PANEL2_EVAL_CATS
@@ -314,7 +314,7 @@ function lib_data_paul_req_tree(iparams)   // iparams = {ids, depth}
         deferred.resolve(Object.values(result.nodes).map(raw_node => ({
           elem_id: "" + raw_node.id,
           name: raw_node.name,
-          description: raw_node.description,
+          description: raw_node.content,
           type: get_xtype("1", raw_node.type),
           eval: [],
           child_links: raw_node.children_included

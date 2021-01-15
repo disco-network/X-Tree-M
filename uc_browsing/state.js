@@ -54,4 +54,5 @@ export function VisibleState() {
   this.is_single_selection = () => this.selected !== null && this.selected.size() === 1;
   this.locate_all_selected = () => this.selected.get_selected_paths().map(path => this.tree.locate_using_downward_path(path.get_downward_ids()));
   this.locate_single_selected = () => this.locate_all_selected()[0];
+  this.locate_last_selected = () => this.locate_all_selected().slice(-1)[0];  
 }

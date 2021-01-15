@@ -131,25 +131,12 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // ESC
           case 27 :
             //alert("ESC");
-            if ((this.main.panel1_new_tree_item_input == true) || (this.main.panel1_saved_rename_item != null))
+            if (this.main.text_focus == 1)
             {
-              this.main.text_focus = 0;            
-              if (this.main.panel1_new_tree_item_input == true)
-              {
-                                          // remove newly created gui item
-                var item_to_clear = document.getElementById("N0_li");
-                item_to_clear.parentNode.removeChild(item_to_clear);
-                                          // clear flag
-                this.main.panel1_new_tree_item_input = false;
-              }
-              if (this.main.panel1_saved_rename_item != null)
-              {
-                                          // reload tree from database
-                this.main.select_by_id(this.main.panel1_selected_items[0].elem_id)                                    
-                                          // clear flag
-                this.main.panel1_saved_rename_item = null;
-              }
+							this.main.model.skip_name_input();            	
             }
+            this.main.text_focus = 0;            
+           
           break;
   
           // F2
@@ -159,6 +146,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
             {
               this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "change_item", c_KEYB_MODE_NONE);            
             }
+            this.main.text_focus = 1;
           break;
     
           // DEL
@@ -177,7 +165,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
             //   var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
             //   curr_ul.style.display="none";
             // }
-            this.main.model.handle_key_press("left");
+            this.main.model.handle_key_press("left", false);
           break;
   
           // arrow up
@@ -211,7 +199,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
             //   }
             //   window.scrollTo(0, 0);              
             // }
-            this.main.model.handle_key_press("up");
+            this.main.model.handle_key_press("up", false);
           break;
            
           // arrow right
@@ -222,7 +210,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
             //   var curr_ul = document.getElementById(this.main.panel1_selected_items[0].gui_id + '_ul');
             //   curr_ul.style.display="block";
             // }
-            this.main.model.handle_key_press("right");
+            this.main.model.handle_key_press("right", false);
           break;
               
           // arrow down
@@ -252,7 +240,7 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
             //   }
             //   window.scrollTo(0, 0);
             // }
-            this.main.model.handle_key_press("down");
+            this.main.model.handle_key_press("down", false);
           break;
   
           
@@ -271,29 +259,29 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
           // CTRL + C
           case 67 : 
             //alert("CTRL-C");
-            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "clone_item", c_KEYB_MODE_CTRL_ONLY);
-            this.main.model.handle_key_press("Ctrl+C");
+            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "copy_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+C", false);
           break; 
           
           // CTRL + L
           case 76 :
             //alert("CTRL-L");
-            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "copy_item", c_KEYB_MODE_CTRL_ONLY);
-            this.main.model.handle_key_press("Ctrl+L");
+            //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "clone_item", c_KEYB_MODE_CTRL_ONLY);
+            this.main.model.handle_key_press("Ctrl+L", false);
           break;
   
           // CTRL + V
           case 86 :
             //alert("CTRL-V");
             //this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "paste_item", c_KEYB_MODE_CTRL_ONLY);
-            this.main.model.handle_key_press("Ctrl+V");
+            this.main.model.handle_key_press("Ctrl+V", false);
           break;
           
           // CTRL + X
           case 88 :
             //alert("CTRL-X");
             // this.main.clicked_at("menubar", c_LANG_UC_BROWSING_MENUBAR[0][0][0], "cut_item", c_KEYB_MODE_CTRL_ONLY);
-            this.main.model.handle_key_press("Ctrl+X");
+            this.main.model.handle_key_press("Ctrl+X", false);
           break;
   
           default : break;
@@ -325,6 +313,16 @@ function uc_browsing_keyb_keyb_proc(my_key, my_extra_keys, e)
                 this.main.panel1_selected_items_afterop = jQuery.extend(true, [], this.main.panel1_cut_items);
               }
             }
+          break;
+
+          // arrow up
+          case 38 : 
+            this.main.model.handle_key_press("up", true);
+          break;
+                         
+          // arrow down
+          case 40 : 
+            this.main.model.handle_key_press("down", true);
           break;
   
           default :

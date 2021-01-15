@@ -83,7 +83,6 @@ export function uc_browsing_model(dispatcher, cache_manager) {
         cb_success: cb_success,
       })
   );
-
   //  self.action_in_clipboard = null;
 
   function get_state() {
@@ -110,12 +109,15 @@ export function uc_browsing_model(dispatcher, cache_manager) {
     return self.browsing_saga.toggle_in_multiselection(gui_id);
   }
 
-  this.handle_key_press = (key_chord) => {
-    self.browsing_saga.handle_key_press(key_chord);
+  this.handle_key_press = (key_chord, shift_pressed) => {
+    self.browsing_saga.handle_key_press(key_chord, shift_pressed);
 
     switch (key_chord) {
-      case "Ctrl+L":
+      case "Ctrl+C":
         self.clipboard_saga.copy_by_reference();
+        break;
+      case "Ctrl-L":
+        // cloning not yet supported
         break;
       case "Ctrl+X":
         self.clipboard_saga.cut();
@@ -142,12 +144,12 @@ export function uc_browsing_model(dispatcher, cache_manager) {
     this.browsing_saga.collapse_children_of(gui_id);
   };
 
-  this.move_selection_down = () => {
-    this.browsing_saga.move_selection_down();
+  this.move_selection_down = (shift_pressed) => {
+    this.browsing_saga.move_selection_down(shift_pressed);
   };
 
-  this.move_selection_up = () => {
-    this.browsing_saga.move_selection_up();
+  this.move_selection_up = (shift_pressed) => {
+    this.browsing_saga.move_selection_up(shift_pressed);
   };
 
   this.delete_selected = () => {
@@ -167,5 +169,9 @@ export function uc_browsing_model(dispatcher, cache_manager) {
   this.apply_name_input = (name) => {
     this.rename_saga.apply(name);
     this.create_saga.apply(name);
+  };
+  
+  this.skip_name_input = () => {
+  	this.rename_saga.skip();
   };
 }

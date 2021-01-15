@@ -144,6 +144,7 @@ function global_main_win_resize()
 //  elem = document.getElementById("div_panel4"); elem.style.height = low_area_height_str;
 //  elem = document.getElementById("div_panel4_content"); elem.style.height = low_area_height_str;
 //  alert("resize6");
+	global_main_change_panel_focus(0);
 }
 
 
@@ -356,7 +357,6 @@ function global_main_init()
        global_main_key_event(event);
      });
   });
-
 }
 
 // This is deferred until the page was parsed

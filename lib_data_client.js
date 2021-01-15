@@ -164,7 +164,7 @@ export function Database() {
     const node = {
       elem_id: id,
       name: raw_node.name,
-      description: raw_node.description,
+      description: raw_node.content,
       type: DEFAULT_TYPE,
       is_deleted: is_deleted,
       isMultiPar: false,

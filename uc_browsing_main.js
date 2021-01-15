@@ -188,7 +188,7 @@ function uc_browsing_main_select_item(submodule, gui_id, mode)
     break;
 
     case c_KEYB_MODE_SHIFT_ONLY :
-        // to be defined
+    		this.model.toggle_in_multiselection(gui_id);
     break;
     
     case c_KEYB_MODE_NONE :
@@ -806,30 +806,34 @@ function render_tree() {
 
 function uc_browsing_main_init_model() {
   var self = this;
+
   var dispatcher = {
     tree_changed: function () {
       self.render_tree();
 
       const new_sel = self.model.get_state().selected;
-      if (new_sel !== null && new_sel.length === 1) {
-        const gui_id = new_sel[0];
-        self.content_panel.load_item_content(self.tree_panel.get_item_data(gui_id));
+      if (new_sel !== null && new_sel.selected_paths.length === 1) {
+        const elem_id = new_sel.selected_paths[0].ids_on_path.slice(-1)[0];
+
+        self.content_panel.load_item_content(elem_id);
       }
     }
   };
 
-  this.cache_manager = new CacheManager(this.db_obj);
-  this.cache_manager.start_continuous_reloading();
   this.model = new uc_browsing_model(dispatcher, this.cache_manager);
 }
 
 
 function uc_browsing_main_launch()
 {
+
+  this.cache_manager = new CacheManager(this.db_obj);
+  this.cache_manager.start_continuous_reloading();
+
                                     // create Panel 1
   this.tree_panel = new lib_tree("div_panel1_headline", c_LANG_UC_BROWSING_MENUBAR[3][3][1], "div_panel1_pad", "uc_browsing", "panel1", this.dispatcher);
                                     // create Panel 2
-  this.content_panel = new uc_browsing_content(this, "div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsi", "panel2", this.dispatcher, this.db_obj, this.global_setup, this.global_main_save_setup); 
+  this.content_panel = new uc_browsing_content(this, "div_panel2_headline", c_LANG_UC_BROWSING_PANEL2_TITLE, "div_panel2_pad", "uc_browsing", "panel2", this.dispatcher, this.db_obj, this.global_setup, this.global_main_save_setup, this.cache_manager); 
                                     // create Menu and ToolBar just below MenuBar                                                  
   this.menubar = new uc_browsing_menubar( 'div_menubar', this, 'menubar', c_LANG_UC_BROWSING_MENUBAR); 
   this.toolbar = new uc_browsing_toolbar( 'div_toolbar', this.dispatcher);
